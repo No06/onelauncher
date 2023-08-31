@@ -1,0 +1,1 @@
+abstract final class LauncherSetting {}
