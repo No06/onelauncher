@@ -3,6 +3,7 @@ import 'package:beacon/models/app_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
 
 import '../models/theme_config.dart';
@@ -61,7 +62,6 @@ class AccountPage extends RoutePage {
                   (account) => ValueListenableBuilder(
                     valueListenable: appConfig.selectedAccountNotifier,
                     builder: (_, selectedAccount, __) => _AccountItem(
-                      key: ValueKey(account.uuid),
                       account: account,
                       isSelected: appConfig.selectedAccount == account,
                       onTap: () => appConfig.selectedAccount = account,
@@ -85,7 +85,7 @@ class AccountPage extends RoutePage {
   }
 }
 
-class _AccountItem extends StatelessWidget {
+class _AccountItem extends HookWidget {
   _AccountItem({
     super.key,
     required this.account,
@@ -109,6 +109,8 @@ class _AccountItem extends StatelessWidget {
     final selectedColor = colors.primary;
     final unSelectedColor = colorWithValue(colors.surface, .1);
     final fontColor = isSelected ? colors.onPrimary : colors.onSurface;
+    final future = useMemoized(() => account.skin.drawAvatar());
+    final snapshot = useFuture(future);
 
     return GestureDetector(
       onTap: onTap,
@@ -146,27 +148,42 @@ class _AccountItem extends StatelessWidget {
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             SizedBox(
-                              width: 32,
-                              height: 32,
-                              // TODO: 头像显示
-                              child: FutureBuilder(
-                                future: account.skin.u8l,
-                                builder: (_, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.done) {
-                                    if (snapshot.hasError) {
-                                      return const Icon(Icons.error);
+                              width: 40,
+                              height: 40,
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.all(1),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.transparent,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black45,
+                                          blurRadius: 5,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  () {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.done) {
+                                      if (snapshot.hasError) {
+                                        return const Icon(Icons.error);
+                                      } else {
+                                        return Image.memory(
+                                          snapshot.data!,
+                                          fit: BoxFit.contain,
+                                        );
+                                      }
                                     } else {
-                                      Image.memory(
-                                        snapshot.data!,
-                                        fit: BoxFit.cover,
+                                      return CircularProgressIndicator(
+                                        color: isSelected
+                                            ? colors.onPrimary
+                                            : null,
                                       );
                                     }
-                                  }
-                                  return CircularProgressIndicator(
-                                    color: isSelected ? colors.onPrimary : null,
-                                  );
-                                },
+                                  }(),
+                                ],
                               ),
                             ),
                             Column(

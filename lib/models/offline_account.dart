@@ -15,7 +15,13 @@ class OfflineAccount extends Account {
   })  : _displayName = displayName,
         _uuid = uuid ?? const Uuid().v5(Uuid.NAMESPACE_OID, displayName),
         _skin = skin ??
-            Skin(type: uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve),
+            Skin(
+              type: const Uuid().v5(Uuid.NAMESPACE_OID, displayName).hashCode &
+                          1 ==
+                      1
+                  ? SkinType.alex
+                  : SkinType.steve,
+            ),
         super(type);
 
   String _displayName;
