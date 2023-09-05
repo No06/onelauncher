@@ -11,7 +11,7 @@ Game _$GameFromJson(Map<String, dynamic> json) => Game(
       useGlobalSetting: json['useGlobalSetting'] as bool? ?? true,
       setting: json['setting'] == null
           ? null
-          : GameSetting.fromJson(json['setting'] as Map<String, dynamic>),
+          : GameSettingConfig.fromJson(json['setting'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$GameToJson(Game instance) => <String, dynamic>{

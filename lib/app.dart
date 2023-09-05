@@ -1,27 +1,22 @@
+import 'package:beacon/models/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:beacon/controller/storage.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'interface/window_surface.dart';
+import 'pages/home.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final configController = Get.find<ConfigController>();
-    return configController.obx(
-      (data) {
-        final theme = configController.appTheme;
-        return GetMaterialApp(
-          theme: theme.lightTheme(),
-          darkTheme: theme.darkTheme(),
-          themeMode: theme.mode,
-          debugShowCheckedModeBanner: false,
-          home: const Home(),
-        );
-      },
+    final theme = AppConfig.instance.theme;
+    return GetMaterialApp(
+      theme: theme.lightTheme(),
+      darkTheme: theme.darkTheme(),
+      themeMode: theme.mode,
+      debugShowCheckedModeBanner: false,
+      home: const Home(),
     );
   }
 }
@@ -47,7 +42,7 @@ class Home extends StatelessWidget {
         child: const Column(
           children: [
             Divider(height: 1),
-            Expanded(child: WindowSurface()),
+            Expanded(child: HomePage()),
           ],
         ),
       ),

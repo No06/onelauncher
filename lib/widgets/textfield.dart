@@ -1,6 +1,5 @@
+import 'package:beacon/consts.dart';
 import 'package:flutter/material.dart';
-
-import '../theme.dart';
 
 ThemeData simpleInputDecorationTheme(BuildContext context) {
   return Theme.of(context).copyWith(

@@ -1,8 +1,8 @@
+import 'package:beacon/models/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:beacon/controller/storage.dart';
 
-import '/widgets/page.dart';
+import '../widgets/route_page.dart';
 
 class AppearancePage extends RoutePage {
   const AppearancePage({super.key});
@@ -14,24 +14,25 @@ class AppearancePage extends RoutePage {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(15),
-      children: [title(), body()],
+      children: [
+        title(),
+        body(),
+      ],
     );
   }
 
   Widget radio(
-    ThemeMode themeMode,
     String text,
-    Rx<ThemeMode> groupValue,
+    ThemeMode themeMode,
+    ThemeMode groupValue,
     void Function(ThemeMode?)? onChanged,
   ) {
     return Row(
       children: [
-        Obx(
-          () => Radio(
-            value: themeMode,
-            groupValue: groupValue.value,
-            onChanged: onChanged,
-          ),
+        Radio(
+          value: themeMode,
+          groupValue: groupValue,
+          onChanged: onChanged,
         ),
         Padding(
           padding: const EdgeInsets.only(left: 5),
@@ -47,9 +48,6 @@ class AppearancePage extends RoutePage {
       ThemeMode.light: "浅色",
       ThemeMode.dark: "深色",
     };
-    final configController = Get.find<ConfigController>();
-    final theme = configController.appTheme;
-    final rxThemeMode = theme.mode.obs;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,23 +59,25 @@ class AppearancePage extends RoutePage {
           ),
         ),
         const SizedBox(height: 5),
-        Column(
-          children: radioValues.entries
-              .map(
-                (e) => radio(
-                  e.key,
-                  e.value,
-                  rxThemeMode,
-                  (value) {
-                    rxThemeMode(value);
-                    theme.mode = rxThemeMode.value;
-                    configController.updateConfig();
-                    Get.changeThemeMode(e.key);
-                  },
-                ),
-              )
-              .toList(),
-        ),
+        ObxValue(
+          (p0) => Column(
+            children: radioValues.entries
+                .map(
+                  (e) => radio(
+                    e.value,
+                    e.key,
+                    p0.value,
+                    (value) {
+                      Get.changeThemeMode(e.key);
+                      p0.value = value!;
+                      AppConfig.instance.theme.mode = value;
+                    },
+                  ),
+                )
+                .toList(),
+          ),
+          AppConfig.instance.theme.mode.obs,
+        )
       ],
     );
   }

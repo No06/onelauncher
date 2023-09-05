@@ -1,19 +1,19 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'theme.dart';
+part of 'theme_config.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-AppTheme _$AppThemeFromJson(Map<String, dynamic> json) => AppTheme(
-      mode: $enumDecodeNullable(_$ThemeModeEnumMap, json['mode']) ??
-          ThemeMode.system,
-      color: $enumDecodeNullable(_$SeedColorEnumMap, json['color']) ??
-          SeedColor.blue,
+AppThemeConfig _$AppThemeConfigFromJson(Map<String, dynamic> json) =>
+    AppThemeConfig(
+      mode: $enumDecodeNullable(_$ThemeModeEnumMap, json['mode']),
+      color: $enumDecodeNullable(_$SeedColorEnumMap, json['color']),
     );
 
-Map<String, dynamic> _$AppThemeToJson(AppTheme instance) => <String, dynamic>{
+Map<String, dynamic> _$AppThemeConfigToJson(AppThemeConfig instance) =>
+    <String, dynamic>{
       'mode': _$ThemeModeEnumMap[instance.mode]!,
       'color': _$SeedColorEnumMap[instance.color]!,
     };

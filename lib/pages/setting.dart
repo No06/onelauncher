@@ -1,19 +1,19 @@
 import 'dart:math';
 
+import 'package:beacon/consts.dart';
+import 'package:beacon/models/app_config.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:get/get.dart';
-import 'package:beacon/controller/storage.dart';
-import 'package:beacon/theme.dart';
+import 'package:beacon/models/theme_config.dart';
 import 'package:beacon/utils/file_picker.dart';
 import 'package:beacon/widgets/dialog.dart';
 import 'package:beacon/widgets/textfield.dart';
 import 'package:beacon/widgets/widget_group.dart';
 
-import '../utils/game/path.dart';
-import '/utils/auth/accounts.dart';
-import '/utils/game/java.dart';
+import '../models/game_path_config.dart';
+import '/models/java.dart';
 import '/utils/sysinfo.dart';
-import '/widgets/page.dart';
+import '../widgets/route_page.dart';
 
 class SettingPage extends RoutePage {
   const SettingPage({super.key});
@@ -69,10 +69,338 @@ abstract class _SettingBasePage extends StatelessWidget {
   }
 }
 
-class _GlobalGameSettingPage extends _SettingBasePage {
-  _GlobalGameSettingPage();
+class _GlobalGameSettingPage extends StatelessWidget {
+  const _GlobalGameSettingPage();
 
-  final configController = Get.find<ConfigController>();
+  @override
+  Widget build(BuildContext context) {
+    final gameSetting = AppConfig.instance.gameSetting;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final totalMemSize = SysInfo.totalPhyMem / kMegaByte;
+    return ListView(
+      padding: const EdgeInsets.all(15),
+      children: [
+        TitleWidgetGroup(
+          "Java",
+          children: [
+            ListTile(
+              title: const Text("Java路径"),
+              subtitle: () {
+                var text = gameSetting.java;
+                if (text == "auto") {
+                  text = "自动选择最佳版本";
+                }
+                return Text(text);
+              }(),
+              onTap: () => showDialog(
+                context: Get.context!,
+                builder: (_) {
+                  return DefaultDialog(
+                    title: const Text("Java路径"),
+                    onlyConfirm: true,
+                    onConfirmed: () => dialogPop(),
+                    content: Material(
+                      color: Colors.transparent,
+                      borderRadius: kBorderRadius,
+                      clipBehavior: Clip.antiAlias,
+                      child: ObxValue(
+                        (groupValue) => Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                                RadioListTile(
+                                    value: "auto",
+                                    groupValue: groupValue,
+                                    title: const Text("自动选择最佳版本"),
+                                    onChanged: (value) =>
+                                        gameSetting.java = value as String)
+                              ] +
+                              Javas.list
+                                  .map(
+                                    (e) => RadioListTile(
+                                        value: e.path,
+                                        groupValue: groupValue,
+                                        title: Text(e.versionNumber),
+                                        subtitle: Text(e.path),
+                                        onChanged: (value) =>
+                                            gameSetting.java = value as String),
+                                  )
+                                  .toList(),
+                        ),
+                        gameSetting.java.obs,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text("JVM启动参数"),
+              subtitle: Text(
+                  "${gameSetting.defaultJvmArgs ? '默认' : ''}${gameSetting.jvmArgs.isEmpty || !gameSetting.defaultJvmArgs ? '' : ' + '}${gameSetting.jvmArgs}"),
+              onTap: () {
+                final jvmArgsController =
+                    TextEditingController(text: gameSetting.jvmArgs);
+                RxBool isExpaned = false.obs;
+                showDialog(
+                  context: Get.context!,
+                  builder: (_) => DefaultDialog(
+                    title: const Text("JVM启动参数"),
+                    onCanceled: () {
+                      dialogPop();
+                      jvmArgsController.text = gameSetting.jvmArgs;
+                    },
+                    onConfirmed: () {
+                      dialogPop();
+                      gameSetting.jvmArgs = jvmArgsController.text;
+                    },
+                    // TODO: 判断输入正确
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 400,
+                          child: Theme(
+                            data: simpleInputDecorationTheme(context),
+                            child: TextField(
+                              controller: jvmArgsController,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Material(
+                          color: Colors.transparent,
+                          borderRadius: kBorderRadius,
+                          clipBehavior: Clip.antiAlias,
+                          child: Obx(
+                            () => ExpansionListTile(
+                              isExpaned: isExpaned.value,
+                              tile: ListTile(
+                                title: const Text("高级"),
+                                onTap: () => isExpaned(!isExpaned.value),
+                                leading: const Icon(Icons.expand_more),
+                              ),
+                              expandTile: SwitchListTile(
+                                  title: const Text("默认参数"),
+                                  value: gameSetting.defaultJvmArgs,
+                                  onChanged: (value) =>
+                                      gameSetting.defaultJvmArgs = value),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        ValueBuilder<bool?>(
+          initialValue: gameSetting.autoMemory,
+          builder: (value, updater) {
+            return TitleWidgetGroup(
+              "内存",
+              children: [
+                ExpansionListTile(
+                  isExpaned: !value!,
+                  tile: SwitchListTile(
+                    title: const Text("游戏内存"),
+                    subtitle: const Text("自动分配"),
+                    value: value,
+                    selected: value,
+                    hoverColor: colorWithValue(colors.secondaryContainer, -.05),
+                    onChanged: (value) {
+                      gameSetting.autoMemory = value;
+                      updater(value);
+                    },
+                  ),
+                  expandTile: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 15),
+                        child: Row(
+                          children: [
+                            const Text("手动分配"),
+                            Expanded(
+                              child: Obx(
+                                () => Slider(
+                                    inactiveColor:
+                                        colors.primary.withOpacity(.2),
+                                    value: gameSetting.maxMemory.toDouble(),
+                                    min: 0,
+                                    max: totalMemSize,
+                                    label: gameSetting.maxMemory.toString(),
+                                    onChanged: (value) =>
+                                        gameSetting.maxMemory = value.toInt(),
+                                    onChangeEnd: (value) =>
+                                        gameSetting.maxMemory = value.toInt()),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 15, right: 15, bottom: 10),
+                        child: _MemoryAllocationBar(
+                          totalMemSize,
+                          SysInfo.freePhyMem / kMegaByte,
+                          gameSetting.maxMemory.toDouble(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        TitleWidgetGroup(
+          "游戏",
+          children: [
+            ValueBuilder<bool?>(
+              initialValue: gameSetting.fullScreen,
+              builder: (value, updater) => ExpansionListTile(
+                isExpaned: !value!,
+                tile: SwitchListTile(
+                  value: value,
+                  selected: value,
+                  title: const Text("全屏"),
+                  onChanged: (value) {
+                    gameSetting.fullScreen = value;
+                    updater(value);
+                  },
+                ),
+                expandTile: ListTile(
+                  title: const Text("自定义分辨率"),
+                  trailing: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 7.5),
+                    child: Theme(
+                      data: simpleInputDecorationTheme(context),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 65,
+                            child: resolutionTextField(
+                              gameSetting.width,
+                              onSubmitted: (value) {
+                                gameSetting.width = int.parse(value);
+                              },
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: Text("X"),
+                          ),
+                          SizedBox(
+                            width: 65,
+                            child: resolutionTextField(
+                              gameSetting.height,
+                              onSubmitted: (value) {
+                                gameSetting.height = int.parse(value);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            ValueBuilder<bool?>(
+              initialValue: gameSetting.log,
+              builder: (value, updater) => SwitchListTile(
+                value: value!,
+                selected: value,
+                title: const Text("日志"),
+                onChanged: (value) {
+                  updater(value);
+                  gameSetting.log = value;
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text("启动参数"),
+              trailing: SizedBox(
+                width: 300,
+                child: Theme(
+                  data: simpleInputDecorationTheme(context),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: textField(
+                      gameSetting.args,
+                      onSubmitted: (value) {
+                        gameSetting.args = value;
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text("启动后自动加入服务器"),
+              trailing: SizedBox(
+                width: 300,
+                child: Theme(
+                  data: simpleInputDecorationTheme(context),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: textField(
+                      gameSetting.serverAddress,
+                      onSubmitted: (value) {
+                        gameSetting.serverAddress = value;
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        TitleWidgetGroup(
+          "测试",
+          children: [
+            ListTile(
+              title: Row(
+                children: [
+                  FilledButton(
+                    onPressed: () => Javas.list.forEach((java) => print(java)),
+                    child: const Text("测试"),
+                  ),
+                  FilledButton(
+                    onPressed: () {
+                      for (final game in GamePath.paths) {
+                        game.searchOnVersions();
+                      }
+                    },
+                    child: const Text("搜索游戏"),
+                  ),
+                  FilledButton(
+                    onPressed: () {
+                      for (final path in GamePath.paths) {
+                        print(
+                            "游戏路径: ${path.path}, 可用游戏: ${path.availableGames}");
+                      }
+                    },
+                    child: const Text("打印搜索到的游戏"),
+                  ),
+                  FilledButton(
+                    onPressed: () => print(appConfig.accounts),
+                    child: const Text("打印存储的账号"),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget resolutionTextField(
     int value, {
@@ -113,373 +441,10 @@ class _GlobalGameSettingPage extends _SettingBasePage {
       onSubmitted: onSubmitted,
     );
   }
-
-  @override
-  List<Widget> children(context) {
-    final gameSetting = configController.gameSetting;
-    var autoMemory = gameSetting.autoMemory.obs;
-    var maxMemory = gameSetting.maxMemory.obs;
-    var jvmArgs = gameSetting.jvmArgs.obs;
-    var defaultJvmArgs = gameSetting.defaultJvmArgs.obs;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final totalMemSize = SysInfo.totalPhyMem / kMegaByte;
-    return [
-      TitleWidgetGroup(
-        "Java",
-        children: [
-          ListTile(
-            title: const Text("Java路径"),
-            subtitle: GetBuilder<ConfigController>(
-              id: "javaPath",
-              builder: (c) {
-                var text = gameSetting.java;
-                if (text == "auto") {
-                  text = "自动选择最佳版本";
-                }
-                return Text(text);
-              },
-            ),
-            onTap: () => showDialog(
-              context: Get.context!,
-              builder: (_) {
-                return DefaultDialog(
-                  title: const Text("Java路径"),
-                  onlyConfirm: true,
-                  onConfirmed: () => dialogPop(),
-                  content: Material(
-                    color: Colors.transparent,
-                    borderRadius: kBorderRadius,
-                    clipBehavior: Clip.antiAlias,
-                    child: GetBuilder<ConfigController>(
-                      id: "javaPath",
-                      builder: (c) {
-                        var groupValue = gameSetting.java;
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                                RadioListTile(
-                                  value: "auto",
-                                  groupValue: groupValue,
-                                  title: const Text("自动选择最佳版本"),
-                                  onChanged: (value) {
-                                    gameSetting.java = value!;
-                                    c.updateConfig(["javaPath"]);
-                                  },
-                                )
-                              ] +
-                              Javas.list
-                                  .map(
-                                    (e) => RadioListTile(
-                                      value: e.path,
-                                      groupValue: groupValue,
-                                      title: Text(e.versionNumber),
-                                      subtitle: Text(e.path),
-                                      onChanged: (value) {
-                                        gameSetting.java = value!;
-                                        c.updateConfig(["javaPath"]);
-                                      },
-                                    ),
-                                  )
-                                  .toList(),
-                        );
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Obx(
-            () => ListTile(
-              title: const Text("JVM启动参数"),
-              subtitle: Text(
-                  "${defaultJvmArgs.value ? '默认' : ''}${jvmArgs.value.isEmpty || !defaultJvmArgs.value ? '' : ' + '}${jvmArgs.value}"),
-              onTap: () {
-                final jvmArgsController =
-                    TextEditingController(text: jvmArgs.value);
-                RxBool isExpaned = false.obs;
-                showDialog(
-                  context: Get.context!,
-                  builder: (_) => DefaultDialog(
-                    title: const Text("JVM启动参数"),
-                    onCanceled: () {
-                      dialogPop();
-                      jvmArgsController.text = jvmArgs.value;
-                    },
-                    onConfirmed: () {
-                      dialogPop();
-                      jvmArgs(jvmArgsController.text);
-                      gameSetting.jvmArgs = jvmArgsController.text;
-                      configController.updateConfig();
-                    },
-                    // TODO: 判断输入正确
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 400,
-                          child: Theme(
-                            data: simpleInputDecorationTheme(context),
-                            child: TextField(
-                              controller: jvmArgsController,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Material(
-                          color: Colors.transparent,
-                          borderRadius: kBorderRadius,
-                          clipBehavior: Clip.antiAlias,
-                          child: Obx(
-                            () => ExpansionListTile(
-                              isExpaned: isExpaned.value,
-                              tile: ListTile(
-                                title: const Text("高级"),
-                                onTap: () => isExpaned(!isExpaned.value),
-                                leading: const Icon(Icons.expand_more),
-                              ),
-                              expandTile: SwitchListTile(
-                                title: const Text("默认参数"),
-                                value: defaultJvmArgs.value,
-                                onChanged: (value) {
-                                  defaultJvmArgs(value);
-                                  gameSetting.defaultJvmArgs = value;
-                                  configController.updateConfig();
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          )
-        ],
-      ),
-      ValueBuilder<bool?>(
-        initialValue: autoMemory.value,
-        builder: (value, updater) {
-          return TitleWidgetGroup(
-            "内存",
-            children: [
-              ExpansionListTile(
-                isExpaned: !value!,
-                tile: SwitchListTile(
-                  title: const Text("游戏内存"),
-                  subtitle: const Text("自动分配"),
-                  value: value,
-                  selected: value,
-                  hoverColor: colorWithValue(colors.secondaryContainer, -.05),
-                  onChanged: (value) {
-                    autoMemory(value);
-                    gameSetting.autoMemory = value;
-                    configController.updateConfig();
-                    updater(value);
-                  },
-                ),
-                expandTile: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 15),
-                      child: Row(
-                        children: [
-                          const Text("手动分配"),
-                          Expanded(
-                            child: Obx(
-                              () => Slider(
-                                inactiveColor: colors.primary.withOpacity(.2),
-                                value: maxMemory.toDouble(),
-                                min: 0,
-                                max: totalMemSize,
-                                label: maxMemory.toString(),
-                                onChanged: (value) => maxMemory(value.toInt()),
-                                onChangeEnd: (value) {
-                                  maxMemory(value.toInt());
-                                  gameSetting.maxMemory = value.toInt();
-                                  configController.updateConfig();
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 15, right: 15, bottom: 10),
-                      child: Obx(
-                        () => _MemoryAllocationBar(
-                          totalMemSize,
-                          SysInfo.freePhyMem / kMegaByte,
-                          maxMemory.toDouble(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-      TitleWidgetGroup(
-        "游戏",
-        children: [
-          ValueBuilder<bool?>(
-            initialValue: gameSetting.fullScreen,
-            builder: (value, updater) => ExpansionListTile(
-              isExpaned: !value!,
-              tile: SwitchListTile(
-                value: value,
-                selected: value,
-                title: const Text("全屏"),
-                onChanged: (value) {
-                  updater(value);
-                  gameSetting.fullScreen = value;
-                  configController.updateConfig();
-                },
-              ),
-              expandTile: ListTile(
-                title: const Text("自定义分辨率"),
-                trailing: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 7.5),
-                  child: Theme(
-                    data: simpleInputDecorationTheme(context),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 65,
-                          child: resolutionTextField(
-                            gameSetting.width,
-                            onSubmitted: (value) {
-                              gameSetting.width = int.parse(value);
-                              configController.updateConfig();
-                            },
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text("X"),
-                        ),
-                        SizedBox(
-                          width: 65,
-                          child: resolutionTextField(
-                            gameSetting.height,
-                            onSubmitted: (value) {
-                              gameSetting.height = int.parse(value);
-                              configController.updateConfig();
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          ValueBuilder<bool?>(
-            initialValue: gameSetting.log,
-            builder: (value, updater) => SwitchListTile(
-              value: value!,
-              selected: value,
-              title: const Text("日志"),
-              onChanged: (value) {
-                updater(value);
-                gameSetting.log = value;
-                configController.updateConfig();
-              },
-            ),
-          ),
-          ListTile(
-            title: const Text("启动参数"),
-            trailing: SizedBox(
-              width: 300,
-              child: Theme(
-                data: simpleInputDecorationTheme(context),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: textField(
-                    gameSetting.args,
-                    onSubmitted: (value) {
-                      gameSetting.args = value;
-                      configController.updateConfig();
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-          ListTile(
-            title: const Text("启动后自动加入服务器"),
-            trailing: SizedBox(
-              width: 300,
-              child: Theme(
-                data: simpleInputDecorationTheme(context),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: textField(
-                    gameSetting.serverAddress,
-                    onSubmitted: (value) {
-                      gameSetting.serverAddress = value;
-                      configController.updateConfig();
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      TitleWidgetGroup(
-        "测试",
-        children: [
-          ListTile(
-            title: Row(
-              children: [
-                FilledButton(
-                  onPressed: () => Javas.list.forEach((java) => print(java)),
-                  child: const Text("测试"),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    for (final game in GamePath.paths) {
-                      game.searchOnVersions();
-                    }
-                  },
-                  child: const Text("搜索游戏"),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    for (final path in GamePath.paths) {
-                      print("游戏路径: ${path.path}, 可用游戏: ${path.availableGames}");
-                    }
-                  },
-                  child: const Text("打印搜索到的游戏"),
-                ),
-                FilledButton(
-                  onPressed: () => print(Accounts.map),
-                  child: const Text("打印存储的账号"),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ];
-  }
 }
 
 class _LauncherSettingPage extends _SettingBasePage {
   _LauncherSettingPage();
-  final configController = Get.find<ConfigController>();
   final formKey = GlobalKey<FormState>();
   final theme = Get.theme;
 
@@ -513,7 +478,6 @@ class _LauncherSettingPage extends _SettingBasePage {
                                   GamePath(name: name.text, path: path.text),
                                 );
                                 dialogPop();
-                                configController.updateConfig();
                               }
                             },
                             onCanceled: dialogPop,
@@ -606,7 +570,6 @@ class _LauncherSettingPage extends _SettingBasePage {
                               icon: const Icon(Icons.delete),
                               onPressed: () {
                                 GamePath.paths.remove(path);
-                                configController.updateConfig();
                               },
                             ),
                           ),

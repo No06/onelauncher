@@ -16,8 +16,6 @@ typedef GetLastErrorFunc = Int32 Function();
 // 定义一个typedef来表示Dart函数的类型签名
 typedef GetLastError = int Function();
 
-const kMegaByte = 1024 * 1024;
-
 // 定义一个类来表示C结构体MEMORYSTATUSEX
 final class MEMORYSTATUSEX extends Struct {
   @Uint32()

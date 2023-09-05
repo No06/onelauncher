@@ -1,19 +1,18 @@
+import 'package:beacon/models/app_config.dart';
 import 'package:flutter/material.dart';
 
-import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '/utils/game/java.dart';
-import 'controller/storage.dart';
+import '/models/java.dart';
 import 'app.dart';
 
 void main() async {
-  init();
+  await init();
   runApp(const MyApp());
 }
 
 Future<void> init() async {
-  Get.put(ConfigController(), permanent: true);
+  await AppConfig.init();
   Javas.init();
   // 初始化窗口
   WidgetsFlutterBinding.ensureInitialized();

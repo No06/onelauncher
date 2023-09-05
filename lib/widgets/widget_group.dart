@@ -1,6 +1,7 @@
+import 'package:beacon/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:beacon/theme.dart';
+import 'package:beacon/models/theme_config.dart';
 
 class WidgetGroup extends StatelessWidget {
   const WidgetGroup({

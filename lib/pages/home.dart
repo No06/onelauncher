@@ -1,333 +1,197 @@
-import 'dart:io';
-import 'dart:ui';
-
 import 'package:animations/animations.dart';
+import 'package:beacon/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:beacon/theme.dart';
 
-import '/pages/game.dart';
-import '/utils/file_picker.dart';
-import '/widgets/page.dart';
-import '/widgets/dialog.dart';
+import '/pages/account.dart';
+import 'game_library.dart';
+import '/pages/appearance.dart';
+import '/pages/setting.dart';
 
-class HomePage extends RoutePage {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
-  @override
-  String routeName() => "库";
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: ListView(
-        padding: const EdgeInsets.all(15),
-        children: [
-          Row(
-            children: [
-              title(),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.more_horiz),
-                onPressed: () {},
-              )
-            ],
-          ),
-          const SizedBox(height: 10),
-          gridView(),
-        ],
-      ),
-    );
-  }
-
-  Widget toolBar() {
-    return SizedBox(
-      height: 65,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: Row(
-          children: [
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () => showDialog(
-                context: Get.context!,
-                builder: (context) => addGameDialog(),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  children: [
-                    Icon(Icons.add),
-                    Text("添加游戏"),
-                    SizedBox(width: 7),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget addGameDialog() {
-    final javaDirController = TextEditingController();
-    final gameDirController = TextEditingController();
-
-    return AlertDialog(
-      title: const Text("添加游戏"),
-      content: SizedBox(
-        width: 600,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconTextField(
-              icon: Icons.file_open,
-              label: "Java路径",
-              hintText: "java.exe",
-              controller: javaDirController,
-              onPressed: () async {
-                final File? file = await filePicker(['exe']);
-                javaDirController.text = file!.path;
-              },
-            ),
-            const SizedBox(height: 10),
-            IconTextField(
-              icon: Icons.folder_open,
-              label: "Minecraft路径",
-              hintText: ".minecraft",
-              controller: gameDirController,
-              onPressed: () async {
-                final File? file = await folderPicker();
-                gameDirController.text = file!.path;
-              },
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        DialogConfirmButton(onPressed: () {}),
-        DialogCancelButton(onPressed: () {}),
-      ],
-    );
-  }
-
-  Widget gridView() {
-    const versions = ["1.8", "1.20"];
-    const assets = [
-      "assets/images/background/2020-04-11_20.37.54.png",
-      "assets/images/background/2018-12-15_10.01.04.jpg",
-    ];
-    final children = List.generate(
-      versions.length,
-      (i) => _Card(
-        key: ValueKey(i),
-        title: versions[i],
-        assetName: assets[i],
-      ),
-    );
-    return GridView.extent(
-      maxCrossAxisExtent: 150,
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 1 / 1.333,
-      shrinkWrap: true,
-      children: children,
-    );
-  }
-}
-
-class IconTextField extends StatelessWidget {
-  const IconTextField({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.hintText,
-    required this.controller,
-    this.onPressed,
-  });
-
-  final IconData icon;
-  final String label;
-  final String hintText;
-  final TextEditingController controller;
-  final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        IconButton(
-          onPressed: onPressed ?? () {},
-          icon: Icon(icon),
-        ),
-        const SizedBox(width: 5),
-        Expanded(
-          child: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-              border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(7.5))),
-              hintText: hintText,
-              label: Text(label),
-            ),
-          ),
-        ),
+        _Navigation(),
+        const VerticalDivider(width: 1),
+        const _NavigationView(),
       ],
     );
   }
 }
 
-class _Card extends StatelessWidget {
-  const _Card({super.key, required this.title, this.assetName});
+class _NavigationButton extends StatelessWidget {
+  const _NavigationButton({
+    required this.name,
+    required this.icon,
+    required this.selectedIcon,
+    this.elevation = 0.0,
+    this.isSelected = false,
+    this.onTap,
+  });
 
-  final String title;
-  final String? assetName;
+  final String name;
+  final Icon icon;
+  final Icon selectedIcon;
+  final bool isSelected;
+  final double elevation;
+  final void Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
-    var hover = false.obs;
-    return _OpenContainerWrapper(
-      openPage: GamePage(assetName: assetName),
-      closedBuilder: (_, openContainer) => Stack(
-        children: [
-          Container(
-            decoration: assetName == null
-                ? null
-                : BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(assetName!),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-          ),
-          Flex(
-            direction: Axis.vertical,
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final seletedColor = colors.primary;
+    return AnimatedContainer(
+      height: 54,
+      duration: Duration(milliseconds: isSelected ? 200 : 0),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: kBorderRadius,
+        color: isSelected ? seletedColor : seletedColor.withOpacity(0),
+        boxShadow: kElevationToShadow[elevation.toInt()],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          splashColor: seletedColor.withOpacity(.5),
+          onTap: isSelected ? () {} : onTap,
+          child: Row(
             children: [
-              const Expanded(child: SizedBox()),
-              Expanded(
-                flex: 0,
-                child: Container(
-                  clipBehavior: Clip.hardEdge,
-                  decoration: const BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black38,
-                        blurRadius: 15,
-                        blurStyle: BlurStyle.outer,
-                      ),
-                    ],
-                  ),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 7.5, sigmaY: 7.5),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      alignment: Alignment.centerLeft,
-                      color: Colors.white.withOpacity(.1),
-                      child: Text(
-                        title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge!
-                            .copyWith(color: Colors.white),
-                      ),
-                    ),
-                  ),
+              const SizedBox(width: 10),
+              isSelected ? selectedIcon : icon,
+              const SizedBox(width: 5),
+              Text(
+                name,
+                style: theme.textTheme.titleSmall!.copyWith(
+                  color: isSelected ? colors.onPrimary : null,
                 ),
               ),
             ],
           ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              splashColor: Colors.black.withOpacity(.1),
-              onTap: () {
-                openContainer();
-                hover(false);
-              },
-              onHover: (value) => hover(value),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(5),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.more_horiz, color: Colors.white),
-              ),
-            ),
-          ),
-          Obx(
-            () => TweenAnimationBuilder(
-              tween: Tween<Offset>(
-                begin: const Offset(0, 51),
-                end: hover.value ? const Offset(0, 0) : const Offset(0, 51),
-              ),
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.linearToEaseOut,
-              builder: (context, offset, child) =>
-                  Transform.translate(offset: offset, child: child),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 10, right: 10),
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: MouseRegion(
-                    onEnter: (event) => hover(true),
-                    onExit: (event) => hover(false),
-                    child: FloatingActionButton.small(
-                      onPressed: () => {print("原神，启动！")},
-                      heroTag: null,
-                      child: const Icon(Icons.play_arrow),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _OpenContainerWrapper extends StatelessWidget {
-  const _OpenContainerWrapper({
-    this.transitionType = ContainerTransitionType.fade,
-    this.onClosed,
-    required this.openPage,
-    required this.closedBuilder,
-  });
-
-  final ContainerTransitionType transitionType;
-  final ClosedCallback<bool?>? onClosed;
-  final Widget openPage;
-  final CloseContainerBuilder closedBuilder;
+class _Navigation extends StatelessWidget {
+  _Navigation();
+  final routes = <Map<String, dynamic>>[
+    {
+      "name": "用户",
+      "path": "/account",
+      "icon": Icons.people_outline,
+      "selectedIcon": Icons.people
+    },
+    {
+      "name": "库",
+      "path": "/home",
+      "icon": Icons.apps_outlined,
+      "selectedIcon": Icons.apps
+    },
+    {
+      "name": "外观",
+      "path": "/appearance",
+      "icon": Icons.palette_outlined,
+      "selectedIcon": Icons.palette
+    },
+    {
+      "name": "设置",
+      "path": "/setting",
+      "icon": Icons.settings_outlined,
+      "selectedIcon": Icons.settings
+    }
+  ];
+  final index = 1.obs;
 
   @override
   Widget build(BuildContext context) {
-    return OpenContainer(
-      useRootNavigator: true,
-      clipBehavior: Clip.antiAliasWithSaveLayer,
-      closedShape: RoundedRectangleBorder(borderRadius: kLagerBorderRadius),
-      openColor: Colors.transparent,
-      closedColor: Colors.transparent,
-      transitionType: transitionType,
-      openBuilder: (BuildContext context, VoidCallback _) => openPage,
-      onClosed: onClosed,
-      tappable: false,
-      closedBuilder: closedBuilder,
+    return Container(
+      width: 200,
+      color: Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+      child: Obx(
+        () => Column(
+          children: [
+            ...routes.asMap().entries.map((entry) {
+              final item = entry.value;
+              final isSelected = index.value == entry.key;
+              final selectedColor = Theme.of(context).colorScheme.onPrimary;
+              return _NavigationButton(
+                name: item["name"],
+                icon: Icon(item["icon"]),
+                selectedIcon: Icon(item["selectedIcon"], color: selectedColor),
+                elevation: isSelected ? 3 : 0,
+                isSelected: isSelected,
+                onTap: () {
+                  Get.offNamed(id: 1, item["path"]);
+                  index(entry.key);
+                },
+              );
+            })
+          ]..insert(routes.length - 1, const Spacer()),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavigationView extends StatelessWidget {
+  const _NavigationView();
+
+  Route createRoute(final Widget widget) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          SharedAxisTransition(
+        transitionType: SharedAxisTransitionType.vertical,
+        fillColor: const Color.fromRGBO(0, 0, 0, 0),
+        animation: animation,
+        secondaryAnimation: secondaryAnimation,
+        child: widget,
+      ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 0.1);
+        const end = Offset.zero;
+        const curve = Curves.ease;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: ClipRect(
+        clipBehavior: Clip.hardEdge,
+        child: Navigator(
+          key: Get.nestedKey(1),
+          initialRoute: '/home',
+          onGenerateRoute: (settings) {
+            switch (settings.name) {
+              case '/account':
+                return createRoute(const AccountPage());
+              case '/home':
+                return createRoute(const GameLibraryPage());
+              case '/appearance':
+                return createRoute(const AppearancePage());
+              case '/setting':
+                return createRoute(const SettingPage());
+            }
+            return null;
+          },
+        ),
+      ),
     );
   }
 }

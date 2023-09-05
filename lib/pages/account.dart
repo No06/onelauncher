@@ -1,17 +1,15 @@
-import 'dart:async';
-
+import 'package:beacon/consts.dart';
+import 'package:beacon/models/app_config.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import '../controller/account.dart';
-import '../theme.dart';
-import '/utils/auth/offline/skin.dart';
-import '/utils/auth/accounts.dart';
-import '/utils/auth/microsoft/microsoft_account.dart';
-import '/utils/auth/offline/offline_account.dart';
-import '/utils/auth/account.dart';
-import '/widgets/page.dart';
+import '../models/theme_config.dart';
+import '../models/microsoft_account.dart';
+import '../models/offline_account.dart';
+import '../models/account.dart';
+import '../widgets/route_page.dart';
 import '/widgets/dialog.dart';
 import '../widgets/snackbar.dart';
 
@@ -34,7 +32,13 @@ class AccountPage extends RoutePage {
             FilledButton(
               onPressed: () => showDialog(
                 context: Get.context!,
-                builder: (context) => _AddAccountDialog(),
+                builder: (context) => _AddAccountDialog(
+                  onSubmit: (account) {
+                    appConfig.accounts.add(account);
+                    appConfig.selectedAccount ??= account;
+                    Get.showSnackbar(successSnackBar("添加成功！"));
+                  },
+                ),
               ),
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10),
@@ -50,18 +54,30 @@ class AccountPage extends RoutePage {
           ],
         ),
         const SizedBox(height: 10),
-        GetX(
-          init: AccountController(),
-          builder: (c) => Column(
-            children: List.generate(
-              Accounts.map.length,
-              (i) => _AccountItem(
-                key: ValueKey(i),
-                account: Accounts.map.values.toList()[i],
-                isSelected: i == c.currentIndex.value,
-                onTap: () => c.currentIndex(i),
-              ),
-            ),
+        Obx(
+          () => Column(
+            children: appConfig.accounts
+                .map(
+                  (account) => ValueListenableBuilder(
+                    valueListenable: appConfig.selectedAccountNotifier,
+                    builder: (_, selectedAccount, __) => _AccountItem(
+                      key: ValueKey(account.uuid),
+                      account: account,
+                      isSelected: appConfig.selectedAccount == account,
+                      onTap: () => appConfig.selectedAccount = account,
+                      onRemoved: (account) {
+                        appConfig.accounts.remove(account);
+                        try {
+                          appConfig.selectedAccount = appConfig.accounts.first;
+                        } catch (e) {
+                          appConfig.selectedAccount = null;
+                        }
+                        Get.showSnackbar(successSnackBar("删除成功"));
+                      },
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ),
       ],
@@ -69,182 +85,153 @@ class AccountPage extends RoutePage {
   }
 }
 
-class _AccountItem extends StatefulWidget {
-  const _AccountItem({
+class _AccountItem extends StatelessWidget {
+  _AccountItem({
     super.key,
     required this.account,
-    this.isSelected,
+    this.isSelected = false,
     this.onTap,
+    this.onRemoved,
   });
 
   final Account account;
-  final bool? isSelected;
+  final bool isSelected;
   final void Function()? onTap;
-
-  @override
-  State<_AccountItem> createState() => _AccountItemState();
-}
-
-class _AccountItemState extends State<_AccountItem> {
-  final _streamController = StreamController<Uint8List>();
-  bool _isPressed = false;
-  final boxShadow = const <BoxShadow>[
-    BoxShadow(
-      color: Colors.black26,
-      offset: Offset(0, 2),
-      blurRadius: 5,
-    ),
-  ];
-
-  @override
-  void initState() {
-    widget.account.skin.u8l
-        .then((value) => _streamController.add(Skin.drawAvatar(value!)));
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _streamController.close();
-    super.dispose();
-  }
+  final void Function(Account account)? onRemoved;
+  final _isTapDown = false.obs;
+  bool get isTapDown => _isTapDown.value;
+  set isTapDown(bool newVal) => _isTapDown.value = newVal;
 
   @override
   Widget build(BuildContext context) {
-    final accountController = Get.find<AccountController>();
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final selectedColor = colors.primary;
     final unSelectedColor = colorWithValue(colors.surface, .1);
-    final fontColor =
-        widget.isSelected ?? false ? colors.onPrimary : colors.onSurface;
-    bool absorbing = false;
+    final fontColor = isSelected ? colors.onPrimary : colors.onSurface;
 
     return GestureDetector(
-      onTap: widget.onTap,
-      onTapDown: (details) => setState(() => _isPressed = true),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTapUp: (details) => setState(() => _isPressed = false),
+      onTap: onTap,
+      onTapDown: (details) => isTapDown = true,
+      onTapCancel: () => isTapDown = false,
+      onTapUp: (details) => isTapDown = false,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 15),
-          child: SizedBox(
-            height: 60,
-            child: AnimatedContainer(
-              margin: _isPressed
+        child: Container(
+          height: 58,
+          margin: const EdgeInsets.only(bottom: 8),
+          child: Obx(
+            () => AnimatedContainer(
+              duration: const Duration(milliseconds: 100),
+              padding: isTapDown
                   ? const EdgeInsets.symmetric(vertical: 1, horizontal: 5)
                   : EdgeInsets.zero,
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              duration: const Duration(milliseconds: 100),
-              decoration: BoxDecoration(
-                borderRadius: kBorderRadius,
-                boxShadow: boxShadow,
-                color: widget.isSelected ?? false
-                    ? selectedColor
-                    : _isPressed
-                        ? selectedColor.withOpacity(.7)
-                        : unSelectedColor,
-              ),
-              child: Row(
-                children: [
-                  Wrap(
-                    spacing: 15,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 10,
-                              spreadRadius: -2,
-                              blurStyle: BlurStyle.outer,
-                            )
+              child: Material(
+                elevation: isTapDown ? 0 : 3,
+                shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+                clipBehavior: Clip.antiAlias,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 100),
+                  color: isSelected
+                      ? selectedColor
+                      : isTapDown
+                          ? selectedColor.withOpacity(.7)
+                          : unSelectedColor,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: Row(
+                      children: [
+                        Wrap(
+                          spacing: 15,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 32,
+                              height: 32,
+                              // TODO: 头像显示
+                              child: FutureBuilder(
+                                future: account.skin.u8l,
+                                builder: (_, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.done) {
+                                    if (snapshot.hasError) {
+                                      return const Icon(Icons.error);
+                                    } else {
+                                      Image.memory(
+                                        snapshot.data!,
+                                        fit: BoxFit.cover,
+                                      );
+                                    }
+                                  }
+                                  return CircularProgressIndicator(
+                                    color: isSelected ? colors.onPrimary : null,
+                                  );
+                                },
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  account.displayName,
+                                  style: TextStyle(
+                                    color: fontColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  account is OfflineAccount
+                                      ? "离线账号"
+                                      : account is MicrosoftAccount
+                                          ? "微软账号"
+                                          : "未知账号",
+                                  style: TextStyle(color: fontColor),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
-                        child: StreamBuilder<Uint8List>(
-                          stream: _streamController.stream,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return Image.memory(
-                                snapshot.data!,
-                                fit: BoxFit.cover,
-                              );
-                            }
-                            return const CircularProgressIndicator();
-                          },
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.account.username,
-                            style: TextStyle(
-                              color: fontColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            widget.account is OfflineAccount
-                                ? "离线账号"
-                                : widget.account is MicrosoftAccount
-                                    ? "微软账号"
-                                    : "未知账号",
-                            style: TextStyle(color: fontColor),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Wrap(
-                    spacing: 5,
-                    children: [
-                      AbsorbPointer(
-                        absorbing: absorbing,
-                        child: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              absorbing = !absorbing;
-                            });
-                          },
-                          icon: Icon(Icons.checkroom_rounded, color: fontColor),
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: fontColor),
-                        onPressed: () {
-                          showDialog(
-                            context: Get.context!,
-                            builder: (context) => DefaultDialog(
-                              title: const Text("移除用户"),
-                              content: Text(
-                                "你确定要移除这个用户吗？此操作将无法撤销！",
-                                style: theme.textTheme.titleMedium,
+                        const Spacer(),
+                        Wrap(
+                          spacing: 5,
+                          children: [
+                            ObxValue(
+                              (p0) => AbsorbPointer(
+                                absorbing: p0.value,
+                                child: IconButton(
+                                  onPressed: () => p0.value = !p0.value,
+                                  icon: Icon(Icons.checkroom_rounded,
+                                      color: fontColor),
+                                ),
                               ),
-                              onConfirmed: () {
-                                dialogPop();
-                                Accounts.delete(widget.account);
-                                final currentIndex =
-                                    accountController.currentIndex;
-                                if (currentIndex.value != 0 &&
-                                    currentIndex.value == Accounts.map.length) {
-                                  currentIndex(currentIndex.value - 1);
-                                }
-                                Get.showSnackbar(successSnackBar("移除成功"));
-                              },
-                              onCanceled: () => dialogPop(),
+                              false.obs,
                             ),
-                          );
-                        },
-                      ),
-                    ],
+                            IconButton(
+                              icon: Icon(Icons.delete, color: fontColor),
+                              onPressed: () {
+                                showDialog(
+                                  context: Get.context!,
+                                  builder: (context) => DefaultDialog(
+                                    title: const Text("移除用户"),
+                                    content: Text(
+                                      "你确定要移除这个用户吗？此操作将无法撤销！",
+                                      style: theme.textTheme.titleMedium,
+                                    ),
+                                    onConfirmed: () {
+                                      dialogPop();
+                                      (onRemoved ?? () {})(account);
+                                    },
+                                    onCanceled: () => dialogPop(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -255,30 +242,22 @@ class _AccountItemState extends State<_AccountItem> {
 }
 
 class _AddAccountDialog extends StatelessWidget {
-  _AddAccountDialog();
+  _AddAccountDialog({this.onSubmit});
+  final void Function(Account account)? onSubmit;
 
-  final TextEditingController username = TextEditingController();
-  final TextEditingController password = TextEditingController();
-  final formKey = GlobalKey<FormState>();
-  late final items = ["离线账户", "微软账户", "外置登录"];
-  late final dropdownItems = List.generate(
-    items.length,
-    (i) => DropdownMenuItem(
-      value: AccountLoginMode.values[i],
-      child: Container(
-        alignment: Alignment.center,
-        child: Text(
-          items[i],
-          style: Get.textTheme.titleSmall,
-        ),
-      ),
-    ),
-  );
+  late final Account account;
+
+  final _accountType = AccountType.offline.obs;
+  final _username = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _dropdownBtns = {
+    AccountType.offline: "离线账户",
+    AccountType.microsoft: "微软账户",
+    AccountType.custom: "外置登录"
+  };
 
   @override
   Widget build(BuildContext context) {
-    var loginMode = AccountLoginMode.offline.obs;
-
     return DefaultDialog(
       title: const Text("添加用户"),
       content: SizedBox(
@@ -298,9 +277,22 @@ class _AddAccountDialog extends StatelessWidget {
                     () => DropdownButton(
                       borderRadius: BorderRadius.circular(7.5),
                       isExpanded: true,
-                      value: loginMode.value,
-                      items: dropdownItems,
-                      onChanged: (value) => loginMode(value),
+                      value: _accountType.value,
+                      items: _dropdownBtns.entries
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item.key,
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  item.value,
+                                  style: Get.textTheme.titleSmall,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) => _accountType.value = value!,
                     ),
                   ),
                 ),
@@ -309,16 +301,16 @@ class _AddAccountDialog extends StatelessWidget {
             const SizedBox(height: 15),
             Obx(
               () => Form(
-                key: formKey,
+                key: _formKey,
                 child: Column(
-                  children: switch (loginMode()) {
-                    AccountLoginMode.offline => [
+                  children: switch (_accountType.value) {
+                    AccountType.offline => [
                         TextFormField(
                           decoration: const InputDecoration(labelText: "用户名"),
                           obscureText: false,
                           readOnly: false,
                           maxLength: 20,
-                          controller: username,
+                          controller: _username,
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                               RegExp("[\u4e00-\u9fa5_a-zA-Z0-9]"),
@@ -329,8 +321,8 @@ class _AddAccountDialog extends StatelessWidget {
                         ),
                       ],
                     // TODO: 正版登录等支持
-                    AccountLoginMode.ms => [],
-                    AccountLoginMode.custom => [],
+                    AccountType.microsoft => [],
+                    AccountType.custom => [],
                   },
                 ),
               ),
@@ -340,19 +332,26 @@ class _AddAccountDialog extends StatelessWidget {
       ),
       onConfirmed: () {
         dialogPop();
-        if (formKey.currentState!.validate()) {
-          switch (loginMode.value) {
-            case AccountLoginMode.offline:
-              Accounts.add(OfflineAccount(username.text));
-            // TODO: 正版验证
-            case AccountLoginMode.ms:
-            // TODO: 第三方登录
-            case AccountLoginMode.custom:
+        if (_formKey.currentState!.validate()) {
+          switch (_accountType.value) {
+            case AccountType.offline:
+              account = OfflineAccount(_username.text);
+            case AccountType.microsoft:
+            // TODO: Handle this case.
+            case AccountType.custom:
+            // TODO: Handle this case.
           }
-          Get.showSnackbar(successSnackBar("添加成功！"));
+          (onSubmit ?? () {})(account);
         }
       },
       onCanceled: () => dialogPop(),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+        .add(DiagnosticsProperty<GlobalKey<FormState>>('formKey', _formKey));
   }
 }

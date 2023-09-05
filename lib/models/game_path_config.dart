@@ -1,30 +1,43 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart' as p;
 
 import 'game.dart';
 
-part 'path.g.dart';
+part 'game_path_config.g.dart';
 
 @JsonSerializable()
-class GamePath {
-  GamePath({this.name = "", this.path = ""});
+class GamePath extends ChangeNotifier {
+  GamePath({String? name, String? path})
+      : _name = ValueNotifier(name ?? ""),
+        _path = ValueNotifier(path ?? ""),
+        super() {
+    _name.addListener(notifyListeners);
+    _path.addListener(notifyListeners);
+  }
 
-  final String name;
-  final String path;
+  ValueNotifier<String> _name;
+  ValueNotifier<String> _path;
+
+  String get name => _name.value;
+  set name(String newVal) => _name.value = newVal;
+
+  String get path => _path.value;
+  set path(String newVal) => _path.value = newVal;
 
   final _availableGames = <Game>[];
   List<Game> get availableGames => _availableGames;
 
+  // TODO: Linux & Macos 官方启动器目录
   static final _paths = [
     GamePath(
       name: "启动器目录",
       path: p.join(File(Platform.resolvedExecutable).parent.path, '.minecraft'),
     ),
-    // TODO: Linux & Macos 官方启动器目录
     GamePath(
       name: "官方启动器目录",
       path: p.join(
@@ -33,9 +46,8 @@ class GamePath {
           'Roadming',
           '.minecraft'),
     ),
-  ].obs;
-  // ignore: invalid_use_of_protected_member
-  static List<GamePath> get paths => _paths.value;
+  ];
+  static List<GamePath> get paths => _paths;
 
   static bool addPath(String name, String path) {
     if (Directory(path).existsSync()) {
@@ -74,7 +86,8 @@ class GamePath {
 
   static List<GamePath> fromJsonList(List<dynamic>? paths) {
     if (paths != null) {
-      _paths.value = paths.map((path) => GamePath.fromJson(path)).toList();
+      _paths.clear();
+      _paths.addAll(paths.map((path) => GamePath.fromJson(path)));
     }
     return _paths;
   }

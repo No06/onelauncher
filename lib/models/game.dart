@@ -4,7 +4,7 @@ import 'package:archive/archive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart' as p;
 
-import 'game_setting.dart';
+import 'game_setting_config.dart';
 
 part 'game.g.dart';
 
@@ -44,7 +44,7 @@ class Game {
   get javaMajorVersion => _javaMajorVersion;
 
   bool useGlobalSetting;
-  GameSetting? setting;
+  GameSettingConfig? setting;
 
   Game(
     this.path, {
