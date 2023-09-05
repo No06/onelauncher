@@ -6,7 +6,7 @@ import 'package:beacon/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '/pages/game.dart';
+import 'game_page.dart';
 import '/utils/file_picker.dart';
 import '../widgets/route_page.dart';
 import '/widgets/dialog.dart';

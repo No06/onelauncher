@@ -3,10 +3,10 @@ import 'package:beacon/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '/pages/account.dart';
-import 'game_library.dart';
-import '/pages/appearance.dart';
-import '/pages/setting.dart';
+import 'account_page.dart';
+import 'game_library_page.dart';
+import 'appearance_page.dart';
+import 'setting_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});

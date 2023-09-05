@@ -62,6 +62,7 @@ class AccountPage extends RoutePage {
                   (account) => ValueListenableBuilder(
                     valueListenable: appConfig.selectedAccountNotifier,
                     builder: (_, selectedAccount, __) => _AccountItem(
+                      key: ObjectKey(account),
                       account: account,
                       isSelected: appConfig.selectedAccount == account,
                       onTap: () => appConfig.selectedAccount = account,
