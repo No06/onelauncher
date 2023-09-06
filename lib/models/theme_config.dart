@@ -22,6 +22,7 @@ final class AppThemeConfig extends ChangeNotifier {
   }
 
   ValueNotifier<ThemeMode> _mode;
+
   ValueNotifier<SeedColor> _color;
 
   ThemeMode get mode => _mode.value;

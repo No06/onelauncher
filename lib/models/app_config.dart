@@ -47,7 +47,6 @@ final class AppConfig {
 
   List<GamePath> get paths => _paths;
   ValueNotifier<Account?> get selectedAccountNotifier => _selectedAccount;
-
   @JsonKey(toJson: _selectedAccounttoString)
   Account? get selectedAccount => _selectedAccount.value;
   set selectedAccount(Account? newVal) => _selectedAccount.value = newVal;
@@ -94,14 +93,16 @@ final class AppConfig {
   }
 
   static Future<void> init() async {
-    final config = File(await _getConfigPath());
-    final readString = await config.readAsString();
-    var content = readString;
-    if (!await config.exists() || readString.isEmpty) {
-      await save();
-      content = await config.readAsString();
+    try {
+      final config = File(await _getConfigPath());
+      if (!await config.exists() || (await config.length()) == 0) {
+        await save();
+      }
+      final content = utf8.decode(await config.readAsBytes());
+      _instance = AppConfig.fromJson(json.decode(content));
+    } catch (e) {
+      print(e);
     }
-    _instance = AppConfig.fromJson(json.decode(content));
   }
 
   static Future<void> save([AppConfig? appConfig]) async {

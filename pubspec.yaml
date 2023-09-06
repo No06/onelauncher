@@ -45,6 +45,7 @@ dependencies:
   json_annotation: ^4.8.1
   window_manager: ^0.3.6
   flutter_hooks: ^0.20.1
+  code_builder: ^4.6.0
 
 dev_dependencies:
 

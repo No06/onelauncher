@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:beacon/consts.dart';
 import 'package:beacon/models/app_config.dart';
+import 'package:beacon/utils/java_util.dart';
+import 'package:beacon/widgets/values_notifier.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:get/get.dart';
 import 'package:beacon/models/theme_config.dart';
@@ -11,7 +13,6 @@ import 'package:beacon/widgets/textfield.dart';
 import 'package:beacon/widgets/widget_group.dart';
 
 import '../models/game_path_config.dart';
-import '/models/java.dart';
 import '/utils/sysinfo.dart';
 import '../widgets/route_page.dart';
 
@@ -74,7 +75,7 @@ class _GlobalGameSettingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gameSetting = AppConfig.instance.gameSetting;
+    final gameSetting = appConfig.gameSetting;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final totalMemSize = SysInfo.totalPhyMem / kMegaByte;
@@ -87,11 +88,19 @@ class _GlobalGameSettingPage extends StatelessWidget {
             ListTile(
               title: const Text("Java路径"),
               subtitle: () {
-                var text = gameSetting.java;
-                if (text == "auto") {
-                  text = "自动选择最佳版本";
-                }
-                return Text(text);
+                return ValueListenableBuilder(
+                  valueListenable: gameSetting.javaNotifier,
+                  builder: (_, java, __) {
+                    String text;
+                    var java = gameSetting.java;
+                    if (java == null) {
+                      text = "自动选择最佳版本";
+                    } else {
+                      text = "${java.versionNumber}: ${java.path}";
+                    }
+                    return Text(text);
+                  },
+                );
               }(),
               onTap: () => showDialog(
                 context: Get.context!,
@@ -99,35 +108,38 @@ class _GlobalGameSettingPage extends StatelessWidget {
                   return DefaultDialog(
                     title: const Text("Java路径"),
                     onlyConfirm: true,
-                    onConfirmed: () => dialogPop(),
+                    confirmText: const Text("返回"),
+                    onConfirmed: dialogPop,
                     content: Material(
                       color: Colors.transparent,
                       borderRadius: kBorderRadius,
                       clipBehavior: Clip.antiAlias,
-                      child: ObxValue(
-                        (groupValue) => Column(
+                      child: ValueListenableBuilder(
+                        valueListenable: gameSetting.javaNotifier,
+                        builder: (_, java, __) => Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                                 RadioListTile(
-                                    value: "auto",
-                                    groupValue: groupValue,
-                                    title: const Text("自动选择最佳版本"),
-                                    onChanged: (value) =>
-                                        gameSetting.java = value as String)
+                                  value: null,
+                                  groupValue: java,
+                                  title: const Text("自动选择最佳版本"),
+                                  onChanged: (value) =>
+                                      gameSetting.java = value,
+                                ),
                               ] +
-                              Javas.list
+                              JavaUtil.list
                                   .map(
                                     (e) => RadioListTile(
-                                        value: e.path,
-                                        groupValue: groupValue,
-                                        title: Text(e.versionNumber),
-                                        subtitle: Text(e.path),
-                                        onChanged: (value) =>
-                                            gameSetting.java = value as String),
+                                      value: e,
+                                      groupValue: java,
+                                      title: Text(e.versionNumber),
+                                      subtitle: Text(e.path),
+                                      onChanged: (value) =>
+                                          gameSetting.java = value,
+                                    ),
                                   )
                                   .toList(),
                         ),
-                        gameSetting.java.obs,
                       ),
                     ),
                   );
@@ -136,8 +148,25 @@ class _GlobalGameSettingPage extends StatelessWidget {
             ),
             ListTile(
               title: const Text("JVM启动参数"),
-              subtitle: Text(
-                  "${gameSetting.defaultJvmArgs ? '默认' : ''}${gameSetting.jvmArgs.isEmpty || !gameSetting.defaultJvmArgs ? '' : ' + '}${gameSetting.jvmArgs}"),
+              subtitle: ValueListenableBuilder(
+                valueListenable: ValuesNotifier([
+                  gameSetting.jvmArgsNotifier,
+                  gameSetting.defaultJvmArgsNotifier,
+                ]),
+                builder: (_, __, ___) {
+                  var defaultJvmArgs = gameSetting.defaultJvmArgs;
+                  var jvmArgs = gameSetting.jvmArgs;
+                  return Text(
+                    defaultJvmArgs
+                        ? jvmArgs.isEmpty
+                            ? '默认'
+                            : '默认 + $jvmArgs'
+                        : jvmArgs.isEmpty
+                            ? '空'
+                            : jvmArgs,
+                  );
+                },
+              ),
               onTap: () {
                 final jvmArgsController =
                     TextEditingController(text: gameSetting.jvmArgs);
@@ -180,11 +209,15 @@ class _GlobalGameSettingPage extends StatelessWidget {
                                 onTap: () => isExpaned(!isExpaned.value),
                                 leading: const Icon(Icons.expand_more),
                               ),
-                              expandTile: SwitchListTile(
+                              expandTile: StatefulBuilder(
+                                builder: (context, setState) => SwitchListTile(
                                   title: const Text("默认参数"),
                                   value: gameSetting.defaultJvmArgs,
-                                  onChanged: (value) =>
-                                      gameSetting.defaultJvmArgs = value),
+                                  onChanged: (value) => setState(
+                                    () => gameSetting.defaultJvmArgs = value,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -196,13 +229,13 @@ class _GlobalGameSettingPage extends StatelessWidget {
             ),
           ],
         ),
-        ValueBuilder<bool?>(
-          initialValue: gameSetting.autoMemory,
-          builder: (value, updater) {
-            return TitleWidgetGroup(
-              "内存",
-              children: [
-                ExpansionListTile(
+        TitleWidgetGroup(
+          "内存",
+          children: [
+            ValueBuilder<bool?>(
+              initialValue: gameSetting.autoMemory,
+              builder: (value, updater) {
+                return ExpansionListTile(
                   isExpaned: !value!,
                   tile: SwitchListTile(
                     title: const Text("游戏内存"),
@@ -224,18 +257,20 @@ class _GlobalGameSettingPage extends StatelessWidget {
                           children: [
                             const Text("手动分配"),
                             Expanded(
-                              child: Obx(
-                                () => Slider(
-                                    inactiveColor:
-                                        colors.primary.withOpacity(.2),
-                                    value: gameSetting.maxMemory.toDouble(),
-                                    min: 0,
-                                    max: totalMemSize,
-                                    label: gameSetting.maxMemory.toString(),
-                                    onChanged: (value) =>
-                                        gameSetting.maxMemory = value.toInt(),
-                                    onChangeEnd: (value) =>
-                                        gameSetting.maxMemory = value.toInt()),
+                              child: StatefulBuilder(
+                                builder: (context, setState) => Slider(
+                                  inactiveColor: colors.primary.withOpacity(.2),
+                                  value: gameSetting.maxMemory.toDouble(),
+                                  min: 0,
+                                  max: totalMemSize,
+                                  label: gameSetting.maxMemory.toString(),
+                                  onChanged: (value) => setState(
+                                    () => gameSetting.maxMemory = value.toInt(),
+                                  ),
+                                  onChangeEnd: (value) => setState(
+                                    () => gameSetting.maxMemory = value.toInt(),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -245,18 +280,21 @@ class _GlobalGameSettingPage extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(
                             left: 15, right: 15, bottom: 10),
-                        child: _MemoryAllocationBar(
-                          totalMemSize,
-                          SysInfo.freePhyMem / kMegaByte,
-                          gameSetting.maxMemory.toDouble(),
+                        child: ValueListenableBuilder(
+                          valueListenable: gameSetting.maxMemoryNotifier,
+                          builder: (_, maxMemory, __) => _MemoryAllocationBar(
+                            totalMemSize,
+                            SysInfo.freePhyMem / kMegaByte,
+                            gameSetting.maxMemory.toDouble(),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            );
-          },
+                );
+              },
+            ),
+          ],
         ),
         TitleWidgetGroup(
           "游戏",
@@ -343,7 +381,7 @@ class _GlobalGameSettingPage extends StatelessWidget {
               ),
             ),
             ListTile(
-              title: const Text("启动后自动加入服务器"),
+              title: const Text("自动加入服务器地址"),
               trailing: SizedBox(
                 width: 300,
                 child: Theme(
@@ -352,7 +390,7 @@ class _GlobalGameSettingPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 5),
                     child: textField(
                       gameSetting.serverAddress,
-                      onSubmitted: (value) {
+                      onChanged: (value) {
                         gameSetting.serverAddress = value;
                       },
                     ),
@@ -369,7 +407,8 @@ class _GlobalGameSettingPage extends StatelessWidget {
               title: Row(
                 children: [
                   FilledButton(
-                    onPressed: () => Javas.list.forEach((java) => print(java)),
+                    onPressed: () =>
+                        JavaUtil.list.forEach((java) => print(java)),
                     child: const Text("测试"),
                   ),
                   FilledButton(
@@ -426,7 +465,11 @@ class _GlobalGameSettingPage extends StatelessWidget {
     );
   }
 
-  Widget textField(String text, {void Function(String value)? onSubmitted}) {
+  Widget textField(
+    String text, {
+    void Function(String value)? onSubmitted,
+    void Function(String)? onChanged,
+  }) {
     final controller = TextEditingController(text: text);
     final focusNode = FocusNode();
     focusNode.addListener(() {
@@ -439,6 +482,7 @@ class _GlobalGameSettingPage extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       onSubmitted: onSubmitted,
+      onChanged: onChanged,
     );
   }
 }
@@ -591,7 +635,7 @@ class _TabController extends GetxController
     with GetSingleTickerProviderStateMixin {
   late final TabController tabController;
   final tabs = {
-    "全局游戏设置": _GlobalGameSettingPage(),
+    "全局游戏设置": const _GlobalGameSettingPage(),
     "启动器": _LauncherSettingPage(),
   };
 

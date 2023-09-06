@@ -8,7 +8,9 @@ part of 'game_setting_config.dart';
 
 GameSettingConfig _$GameSettingConfigFromJson(Map<String, dynamic> json) =>
     GameSettingConfig(
-      java: json['java'] as String?,
+      java: json['java'] == null
+          ? null
+          : Java.fromJson(json['java'] as Map<String, dynamic>),
       defaultJvmArgs: json['defaultJvmArgs'] as bool?,
       jvmArgs: json['jvmArgs'] as String?,
       autoMemory: json['autoMemory'] as bool?,
@@ -21,17 +23,25 @@ GameSettingConfig _$GameSettingConfigFromJson(Map<String, dynamic> json) =>
       serverAddress: json['serverAddress'] as String?,
     );
 
-Map<String, dynamic> _$GameSettingConfigToJson(GameSettingConfig instance) =>
-    <String, dynamic>{
-      'java': instance.java,
-      'defaultJvmArgs': instance.defaultJvmArgs,
-      'jvmArgs': instance.jvmArgs,
-      'autoMemory': instance.autoMemory,
-      'maxMemory': instance.maxMemory,
-      'fullScreen': instance.fullScreen,
-      'width': instance.width,
-      'height': instance.height,
-      'log': instance.log,
-      'args': instance.args,
-      'serverAddress': instance.serverAddress,
-    };
+Map<String, dynamic> _$GameSettingConfigToJson(GameSettingConfig instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('java', instance.java);
+  val['defaultJvmArgs'] = instance.defaultJvmArgs;
+  val['jvmArgs'] = instance.jvmArgs;
+  val['autoMemory'] = instance.autoMemory;
+  val['maxMemory'] = instance.maxMemory;
+  val['fullScreen'] = instance.fullScreen;
+  val['width'] = instance.width;
+  val['height'] = instance.height;
+  val['log'] = instance.log;
+  val['args'] = instance.args;
+  val['serverAddress'] = instance.serverAddress;
+  return val;
+}

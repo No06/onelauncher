@@ -1,3 +1,4 @@
+import 'package:beacon/models/java.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -6,7 +7,7 @@ part 'game_setting_config.g.dart';
 @JsonSerializable()
 class GameSettingConfig extends ChangeNotifier {
   GameSettingConfig({
-    String? java,
+    Java? java,
     bool? defaultJvmArgs,
     String? jvmArgs,
     bool? autoMemory,
@@ -17,7 +18,7 @@ class GameSettingConfig extends ChangeNotifier {
     bool? log,
     String? args,
     String? serverAddress,
-  })  : _java = ValueNotifier(java ?? "auto"),
+  })  : _java = ValueNotifier(java),
         _defaultJvmArgs = ValueNotifier(defaultJvmArgs ?? true),
         _jvmArgs = ValueNotifier(jvmArgs ?? ""),
         _autoMemory = ValueNotifier(autoMemory ?? true),
@@ -29,20 +30,25 @@ class GameSettingConfig extends ChangeNotifier {
         _args = ValueNotifier(args ?? ""),
         _serverAddress = ValueNotifier(serverAddress ?? ""),
         super() {
-    _java.addListener(notifyListeners);
-    _defaultJvmArgs.addListener(notifyListeners);
-    _jvmArgs.addListener(notifyListeners);
-    _autoMemory.addListener(notifyListeners);
-    _maxMemory.addListener(notifyListeners);
-    _fullScreen.addListener(notifyListeners);
-    _width.addListener(notifyListeners);
-    _height.addListener(notifyListeners);
-    _log.addListener(notifyListeners);
-    _args.addListener(notifyListeners);
-    _serverAddress.addListener(notifyListeners);
+    final notifiers = [
+      _java,
+      _defaultJvmArgs,
+      _jvmArgs,
+      _autoMemory,
+      _maxMemory,
+      _fullScreen,
+      _width,
+      _height,
+      _log,
+      _args,
+      _serverAddress,
+    ];
+    for (var notifier in notifiers) {
+      notifier.addListener(notifyListeners);
+    }
   }
 
-  ValueNotifier<String> _java;
+  ValueNotifier<Java?> _java;
   ValueNotifier<bool> _defaultJvmArgs;
   ValueNotifier<String> _jvmArgs;
   ValueNotifier<bool> _autoMemory;
@@ -54,36 +60,48 @@ class GameSettingConfig extends ChangeNotifier {
   ValueNotifier<String> _args;
   ValueNotifier<String> _serverAddress;
 
-  String get java => _java.value;
-  set java(String newVal) => _java.value = newVal;
+  ValueNotifier<Java?> get javaNotifier => _java;
+  @JsonKey(includeIfNull: false)
+  Java? get java => _java.value;
+  set java(Java? newVal) => _java.value = newVal;
 
+  ValueNotifier<bool> get defaultJvmArgsNotifier => _defaultJvmArgs;
   bool get defaultJvmArgs => _defaultJvmArgs.value;
   set defaultJvmArgs(bool newVal) => _defaultJvmArgs.value = newVal;
 
+  ValueNotifier<String> get jvmArgsNotifier => _jvmArgs;
   String get jvmArgs => _jvmArgs.value;
   set jvmArgs(String newVal) => _jvmArgs.value = newVal;
 
+  ValueNotifier<bool> get autoMemoryNotifier => _autoMemory;
   bool get autoMemory => _autoMemory.value;
   set autoMemory(bool newVal) => _autoMemory.value = newVal;
 
+  ValueNotifier<int> get maxMemoryNotifier => _maxMemory;
   int get maxMemory => _maxMemory.value;
   set maxMemory(int newVal) => _maxMemory.value = newVal;
 
+  ValueNotifier<bool> get fullScreenNotifier => _fullScreen;
   bool get fullScreen => _fullScreen.value;
   set fullScreen(bool newVal) => _fullScreen.value = newVal;
 
+  ValueNotifier<int> get widthNotifier => _width;
   int get width => _width.value;
   set width(int newVal) => _width.value = newVal;
 
+  ValueNotifier<int> get heightNotifier => _height;
   int get height => _height.value;
   set height(int newVal) => _height.value = newVal;
 
+  ValueNotifier<bool> get logNotifier => _log;
   bool get log => _log.value;
   set log(bool newVal) => _log.value = newVal;
 
+  ValueNotifier<String> get argsNotifier => _args;
   String get args => _args.value;
   set args(String newVal) => _args.value = newVal;
 
+  ValueNotifier<String> get serverAddressNotifier => _serverAddress;
   String get serverAddress => _serverAddress.value;
   set serverAddress(String newVal) => _serverAddress.value = newVal;
 

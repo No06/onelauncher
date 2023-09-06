@@ -1,9 +1,9 @@
 import 'package:beacon/models/app_config.dart';
+import 'package:beacon/utils/java_util.dart';
 import 'package:flutter/material.dart';
 
 import 'package:window_manager/window_manager.dart';
 
-import '/models/java.dart';
 import 'app.dart';
 
 void main() async {
@@ -13,7 +13,7 @@ void main() async {
 
 Future<void> init() async {
   await AppConfig.init();
-  Javas.init();
+  JavaUtil.init();
   // 初始化窗口
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();

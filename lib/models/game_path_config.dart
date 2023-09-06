@@ -23,9 +23,11 @@ class GamePath extends ChangeNotifier {
   ValueNotifier<String> _name;
   ValueNotifier<String> _path;
 
+  ValueNotifier<String> get nameNotifier => _name;
   String get name => _name.value;
   set name(String newVal) => _name.value = newVal;
 
+  ValueNotifier<String> get pathNotifier => _path;
   String get path => _path.value;
   set path(String newVal) => _path.value = newVal;
 
