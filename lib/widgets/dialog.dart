@@ -64,14 +64,8 @@ class DefaultDialog extends StatelessWidget {
       content: content,
       actions: [
         if (!onlyConfirm)
-          DialogCancelButton(
-            onPressed: onCanceled,
-            cancelText: cancelText,
-          ),
-        DialogConfirmButton(
-          onPressed: onConfirmed,
-          confirmText: confirmText,
-        ),
+          DialogCancelButton(onPressed: onCanceled, cancelText: cancelText),
+        DialogConfirmButton(onPressed: onConfirmed, confirmText: confirmText),
       ],
     );
   }
@@ -91,18 +85,55 @@ class ErrorDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme.headlineSmall;
     return AlertDialog(
-      title: title,
+      titleTextStyle: textTheme!.copyWith(fontWeight: FontWeight.bold),
+      title: title ?? const Text("错误"),
       content: Row(children: [
-        Icon(
-          Icons.error_outline,
-          size: 36,
-          color: Colors.red[400],
-        ),
+        const Icon(Icons.error, size: 36),
         const SizedBox(width: 10),
-        content ?? const SizedBox(),
+        DefaultTextStyle(
+          style: Theme.of(context).textTheme.bodyLarge!,
+          child: content ?? const SizedBox(),
+        )
       ]),
       actions: [
+        DialogConfirmButton(onPressed: onConfirmed ?? dialogPop),
+      ],
+    );
+  }
+}
+
+class WarningDialog extends StatelessWidget {
+  const WarningDialog({
+    super.key,
+    this.title,
+    this.content,
+    this.onConfirmed,
+    this.onCanceled,
+  });
+
+  final Widget? title;
+  final Widget? content;
+  final void Function()? onConfirmed;
+  final void Function()? onCanceled;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme.headlineSmall;
+    return AlertDialog(
+      titleTextStyle: textTheme!.copyWith(fontWeight: FontWeight.bold),
+      title: title ?? const Text("警告"),
+      content: Row(children: [
+        const Icon(Icons.warning, size: 36),
+        const SizedBox(width: 10),
+        DefaultTextStyle(
+          style: Theme.of(context).textTheme.bodyLarge!,
+          child: content ?? const SizedBox(),
+        )
+      ]),
+      actions: [
+        DialogCancelButton(onPressed: onCanceled ?? dialogPop),
         DialogConfirmButton(onPressed: onConfirmed),
       ],
     );

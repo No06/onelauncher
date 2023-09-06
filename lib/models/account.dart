@@ -28,6 +28,18 @@ abstract class Account {
   }
 
   Map<String, dynamic> toJson() => _$AccountToJson(this);
+
+  @override
+  int get hashCode {
+    return uuid.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! Account) return false;
+    if (other.type != _type) return false;
+    return uuid == other.uuid;
+  }
 }
 
 @JsonEnum()

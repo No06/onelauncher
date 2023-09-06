@@ -1,4 +1,5 @@
 import 'package:beacon/models/java.dart';
+import 'package:beacon/utils/java_util.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -18,7 +19,7 @@ class GameSettingConfig extends ChangeNotifier {
     bool? log,
     String? args,
     String? serverAddress,
-  })  : _java = ValueNotifier(java),
+  })  : _java = ValueNotifier(_javaFromJson(java)),
         _defaultJvmArgs = ValueNotifier(defaultJvmArgs ?? true),
         _jvmArgs = ValueNotifier(jvmArgs ?? ""),
         _autoMemory = ValueNotifier(autoMemory ?? true),
@@ -64,6 +65,13 @@ class GameSettingConfig extends ChangeNotifier {
   @JsonKey(includeIfNull: false)
   Java? get java => _java.value;
   set java(Java? newVal) => _java.value = newVal;
+  static Java? _javaFromJson(Java? item) {
+    if (item == null) return null;
+    if (JavaUtil.set.contains(item)) {
+      return item;
+    }
+    return null;
+  }
 
   ValueNotifier<bool> get defaultJvmArgsNotifier => _defaultJvmArgs;
   bool get defaultJvmArgs => _defaultJvmArgs.value;

@@ -35,9 +35,13 @@ class AccountPage extends RoutePage {
                 context: Get.context!,
                 builder: (context) => _AddAccountDialog(
                   onSubmit: (account) {
-                    appConfig.accounts.add(account);
-                    appConfig.selectedAccount ??= account;
-                    Get.showSnackbar(successSnackBar("添加成功！"));
+                    if (appConfig.accounts.add(account)) {
+                      appConfig.selectedAccount ??= account;
+                      dialogPop();
+                      Get.showSnackbar(successSnackBar("添加成功！"));
+                    } else {
+                      Get.showSnackbar(errorSnackBar("已有重复账号"));
+                    }
                   },
                 ),
               ),
@@ -263,8 +267,6 @@ class _AddAccountDialog extends StatelessWidget {
   _AddAccountDialog({this.onSubmit});
   final void Function(Account account)? onSubmit;
 
-  late final Account account;
-
   final _accountType = AccountType.offline.obs;
   final _username = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -276,6 +278,7 @@ class _AddAccountDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    late Account account;
     return DefaultDialog(
       title: const Text("添加用户"),
       content: SizedBox(
@@ -349,7 +352,6 @@ class _AddAccountDialog extends StatelessWidget {
         ),
       ),
       onConfirmed: () {
-        dialogPop();
         if (_formKey.currentState!.validate()) {
           switch (_accountType.value) {
             case AccountType.offline:

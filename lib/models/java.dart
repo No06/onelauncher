@@ -5,12 +5,12 @@ part 'java.g.dart';
 
 @JsonSerializable()
 class Java {
-  Java(this.path, {String? versionNumber, this.args})
+  Java(this.path, {String? versionNumber, this.args = ""})
       : versionNumber = versionNumber ?? JavaUtil.getVersion(path);
 
   final String path;
   final String versionNumber;
-  final String? args;
+  final String args;
 
   String get version {
     final regex1 = RegExp(r"(\d+)");
@@ -31,4 +31,15 @@ class Java {
   factory Java.fromJson(Map<String, dynamic> json) => _$JavaFromJson(json);
 
   Map<String, dynamic> toJson() => _$JavaToJson(this);
+
+  @override
+  int get hashCode {
+    return path.hashCode ^ versionNumber.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! Java) return false;
+    return path == other.path && versionNumber == other.versionNumber;
+  }
 }

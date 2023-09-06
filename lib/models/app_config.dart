@@ -17,20 +17,34 @@ part 'app_config.g.dart';
 
 final appConfig = AppConfig.instance;
 const kDelimiter = "@";
+final _kDefaultGamePaths = {
+  GamePath(
+    name: "启动器目录",
+    path: join(File(Platform.resolvedExecutable).parent.path, '.minecraft'),
+  ),
+  GamePath(
+    name: "官方启动器目录",
+    path: join(
+        Platform.environment['APPDATA'] ??
+            "C:\\Users\\${Platform.environment['USERNAME']}\\AppData",
+        'Roadming',
+        '.minecraft'),
+  ),
+};
 
 @JsonSerializable()
 final class AppConfig {
   AppConfig({
     AppThemeConfig? theme,
-    List<GamePath>? paths,
+    Set<GamePath>? paths,
     String? selectedAccount,
-    List<Account>? accounts,
+    Set<Account>? accounts,
     GameSettingConfig? gameSetting,
   })  : theme = theme ?? AppThemeConfig(),
-        _paths = RxList(paths ?? []),
+        _paths = RxSet(paths ?? _kDefaultGamePaths),
         _selectedAccount =
             ValueNotifier(_selectedAccountFromJson(selectedAccount, accounts)),
-        _accounts = RxList(accounts ?? []),
+        _accounts = RxSet(accounts ?? {}),
         gameSetting = gameSetting ?? GameSettingConfig(),
         super() {
     this.theme.addListener(save);
@@ -40,12 +54,13 @@ final class AppConfig {
   }
 
   AppThemeConfig theme;
-  RxList<GamePath> _paths;
+  RxSet<GamePath> _paths;
   ValueNotifier<Account?> _selectedAccount;
-  RxList<Account> _accounts;
+  RxSet<Account> _accounts;
   GameSettingConfig gameSetting;
 
-  List<GamePath> get paths => _paths;
+  Set<GamePath> get paths => _paths;
+  void resetPaths() => _paths.assignAll(_kDefaultGamePaths);
   ValueNotifier<Account?> get selectedAccountNotifier => _selectedAccount;
   @JsonKey(toJson: _selectedAccounttoString)
   Account? get selectedAccount => _selectedAccount.value;
@@ -58,7 +73,7 @@ final class AppConfig {
   }
 
   static Account? _selectedAccountFromJson(
-      String? str, List<Account>? accounts) {
+      String? str, Set<Account>? accounts) {
     if (str == null) return null;
 
     final parts = str.split(kDelimiter);
@@ -77,7 +92,7 @@ final class AppConfig {
     throw Exception("未知的账号类型");
   }
 
-  List<Account> get accounts => _accounts;
+  Set<Account> get accounts => _accounts;
 
   static AppConfig? _instance;
 

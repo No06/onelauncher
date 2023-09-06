@@ -93,4 +93,15 @@ class GamePath extends ChangeNotifier {
     }
     return _paths;
   }
+
+  @override
+  int get hashCode {
+    return path.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! GamePath) return false;
+    return path == other.path && other._name == _name;
+  }
 }

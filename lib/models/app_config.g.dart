@@ -12,11 +12,11 @@ AppConfig _$AppConfigFromJson(Map<String, dynamic> json) => AppConfig(
           : AppThemeConfig.fromJson(json['theme'] as Map<String, dynamic>),
       paths: (json['paths'] as List<dynamic>?)
           ?.map((e) => GamePath.fromJson(e as Map<String, dynamic>))
-          .toList(),
+          .toSet(),
       selectedAccount: json['selectedAccount'] as String?,
       accounts: (json['accounts'] as List<dynamic>?)
           ?.map((e) => Account.fromJson(e as Map<String, dynamic>))
-          .toList(),
+          .toSet(),
       gameSetting: json['gameSetting'] == null
           ? null
           : GameSettingConfig.fromJson(
@@ -26,8 +26,8 @@ AppConfig _$AppConfigFromJson(Map<String, dynamic> json) => AppConfig(
 Map<String, dynamic> _$AppConfigToJson(AppConfig instance) => <String, dynamic>{
       'theme': instance.theme,
       'gameSetting': instance.gameSetting,
-      'paths': instance.paths,
+      'paths': instance.paths.toList(),
       'selectedAccount':
           AppConfig._selectedAccounttoString(instance.selectedAccount),
-      'accounts': instance.accounts,
+      'accounts': instance.accounts.toList(),
     };

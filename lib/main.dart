@@ -12,8 +12,8 @@ void main() async {
 }
 
 Future<void> init() async {
+  await JavaUtil.init();
   await AppConfig.init();
-  JavaUtil.init();
   // 初始化窗口
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();

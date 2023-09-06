@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:beacon/models/java.dart';
 
 abstract final class JavaUtil {
-  static List<Java> list = [];
+  static Set<Java> set = {};
 
-  static void init() {
-    list.clear();
-    pathOnEnvironment()
-        .then((paths) => {for (final path in paths) list.add(Java(path))});
+  static Future<void> init() async {
+    set.clear();
+    await pathOnEnvironment()
+        .then((paths) => {for (final path in paths) set.add(Java(path))});
   }
 
   // static Java autoSelect(String version) {}

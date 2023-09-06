@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:beacon/consts.dart';
 import 'package:beacon/models/app_config.dart';
 import 'package:beacon/utils/java_util.dart';
+import 'package:beacon/widgets/snackbar.dart';
 import 'package:beacon/widgets/values_notifier.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:get/get.dart';
@@ -127,7 +128,7 @@ class _GlobalGameSettingPage extends StatelessWidget {
                                       gameSetting.java = value,
                                 ),
                               ] +
-                              JavaUtil.list
+                              JavaUtil.set
                                   .map(
                                     (e) => RadioListTile(
                                       value: e,
@@ -170,7 +171,6 @@ class _GlobalGameSettingPage extends StatelessWidget {
               onTap: () {
                 final jvmArgsController =
                     TextEditingController(text: gameSetting.jvmArgs);
-                RxBool isExpaned = false.obs;
                 showDialog(
                   context: Get.context!,
                   builder: (_) => DefaultDialog(
@@ -201,12 +201,12 @@ class _GlobalGameSettingPage extends StatelessWidget {
                           color: Colors.transparent,
                           borderRadius: kBorderRadius,
                           clipBehavior: Clip.antiAlias,
-                          child: Obx(
-                            () => ExpansionListTile(
-                              isExpaned: isExpaned.value,
+                          child: ObxValue(
+                            (p0) => ExpansionListTile(
+                              isExpaned: p0.value,
                               tile: ListTile(
                                 title: const Text("高级"),
-                                onTap: () => isExpaned(!isExpaned.value),
+                                onTap: () => p0(!p0.value),
                                 leading: const Icon(Icons.expand_more),
                               ),
                               expandTile: StatefulBuilder(
@@ -219,6 +219,7 @@ class _GlobalGameSettingPage extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            false.obs,
                           ),
                         ),
                       ],
@@ -408,7 +409,7 @@ class _GlobalGameSettingPage extends StatelessWidget {
                 children: [
                   FilledButton(
                     onPressed: () =>
-                        JavaUtil.list.forEach((java) => print(java)),
+                        JavaUtil.set.forEach((java) => print(java)),
                     child: const Text("测试"),
                   ),
                   FilledButton(
@@ -506,8 +507,22 @@ class _LauncherSettingPage extends _SettingBasePage {
                 title: Row(
                   children: [
                     const Text("游戏搜索目录"),
+                    IconButton(
+                      onPressed: () => showDialog(
+                        context: context,
+                        builder: (context) => WarningDialog(
+                          content: const Text("你确定要重置游戏目录吗？"),
+                          onConfirmed: () {
+                            appConfig.resetPaths();
+                            dialogPop();
+                          },
+                        ),
+                      ),
+                      icon: const Icon(Icons.refresh),
+                    ),
                     const Spacer(),
                     FloatingActionButton(
+                      mini: true,
                       child: const Icon(Icons.add),
                       onPressed: () => showDialog(
                         context: Get.context!,
@@ -518,10 +533,13 @@ class _LauncherSettingPage extends _SettingBasePage {
                             title: const Text("添加游戏搜索目录"),
                             onConfirmed: () {
                               if (formKey.currentState!.validate()) {
-                                GamePath.paths.add(
-                                  GamePath(name: name.text, path: path.text),
-                                );
-                                dialogPop();
+                                if (appConfig.paths.add(GamePath(
+                                    name: name.text, path: path.text))) {
+                                  dialogPop();
+                                  Get.showSnackbar(successSnackBar("添加成功！"));
+                                } else {
+                                  Get.showSnackbar(errorSnackBar("已有重复目录"));
+                                }
                               }
                             },
                             onCanceled: dialogPop,
@@ -595,30 +613,38 @@ class _LauncherSettingPage extends _SettingBasePage {
                   child: Obx(
                     () => ListView(
                       shrinkWrap: true,
-                      children: List.generate(GamePath.paths.length, (i) {
-                        final path = GamePath.paths[i];
-                        return Card(
-                          key: ValueKey(i),
-                          color: colorWithValue(theme.colorScheme.surface, .1),
-                          child: ListTile(
-                            title: Text(path.name),
-                            subtitle: Text(
-                              path.path,
-                              style: TextStyle(
-                                color: colorWithValue(
-                                    theme.colorScheme.onSurface, -.1),
+                      children: appConfig.paths
+                          .map(
+                            (path) => Card(
+                              color:
+                                  colorWithValue(theme.colorScheme.surface, .1),
+                              child: ListTile(
+                                title: Text(path.name),
+                                subtitle: Text(
+                                  path.path,
+                                  style: TextStyle(
+                                    color: colorWithValue(
+                                        theme.colorScheme.onSurface, -.1),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => showDialog(
+                                    context: context,
+                                    builder: (context) => WarningDialog(
+                                      content: const Text("你确定要删除这条数据吗？"),
+                                      onConfirmed: () {
+                                        appConfig.paths.remove(path);
+                                        dialogPop();
+                                      },
+                                    ),
+                                  ),
+                                ),
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                GamePath.paths.remove(path);
-                              },
-                            ),
-                          ),
-                        );
-                      }),
+                          )
+                          .toList(),
                     ),
                   ),
                 ),
