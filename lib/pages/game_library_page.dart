@@ -3,6 +3,8 @@ import 'dart:ui';
 
 import 'package:animations/animations.dart';
 import 'package:beacon/consts.dart';
+import 'package:beacon/models/app_config.dart';
+import 'package:beacon/models/game/game.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -43,7 +45,32 @@ class GameLibraryPage extends RoutePage {
             ],
           ),
           const SizedBox(height: 10),
-          gridView(),
+          FutureBuilder(
+            future: appConfig.getGamesOnPaths,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                // 如果有数据，显示数据
+                return GridView.extent(
+                  maxCrossAxisExtent: 150,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 1 / 1.333,
+                  shrinkWrap: true,
+                  children: snapshot.data!
+                      .map(
+                        (e) => _GameCard(game: e),
+                      )
+                      .toList(),
+                );
+              } else if (snapshot.hasError) {
+                // 如果有错误，显示错误信息
+                return Text(snapshot.error.toString());
+              } else {
+                // 如果没有数据也没有错误，显示加载中的提示
+                return const CircularProgressIndicator();
+              }
+            },
+          ),
         ],
       ),
     );
@@ -120,30 +147,6 @@ class GameLibraryPage extends RoutePage {
       ],
     );
   }
-
-  Widget gridView() {
-    const versions = ["1.8", "1.20"];
-    const assets = [
-      "assets/images/background/2020-04-11_20.37.54.png",
-      "assets/images/background/2018-12-15_10.01.04.jpg",
-    ];
-    final children = List.generate(
-      versions.length,
-      (i) => _Card(
-        key: ValueKey(i),
-        title: versions[i],
-        assetName: assets[i],
-      ),
-    );
-    return GridView.extent(
-      maxCrossAxisExtent: 150,
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 1 / 1.333,
-      shrinkWrap: true,
-      children: children,
-    );
-  }
 }
 
 class IconTextField extends StatelessWidget {
@@ -189,10 +192,10 @@ class IconTextField extends StatelessWidget {
   }
 }
 
-class _Card extends StatelessWidget {
-  const _Card({super.key, required this.title, this.assetName});
+class _GameCard extends StatelessWidget {
+  const _GameCard({required this.game, this.assetName});
 
-  final String title;
+  final Game game;
   final String? assetName;
 
   @override
@@ -236,7 +239,7 @@ class _Card extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       color: Colors.white.withOpacity(.1),
                       child: Text(
-                        title,
+                        game.version.id,
                         style: Theme.of(context)
                             .textTheme
                             .titleLarge!
@@ -287,7 +290,7 @@ class _Card extends StatelessWidget {
                     onEnter: (event) => hover(true),
                     onExit: (event) => hover(false),
                     child: FloatingActionButton.small(
-                      onPressed: () => {print("原神，启动！")},
+                      onPressed: () => print(game.version.libraries[0].name),
                       heroTag: null,
                       child: const Icon(Icons.play_arrow),
                     ),

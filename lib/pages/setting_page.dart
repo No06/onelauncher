@@ -401,43 +401,43 @@ class _GlobalGameSettingPage extends StatelessWidget {
             ),
           ],
         ),
-        TitleWidgetGroup(
-          "测试",
-          children: [
-            ListTile(
-              title: Row(
-                children: [
-                  FilledButton(
-                    onPressed: () =>
-                        JavaUtil.set.forEach((java) => print(java)),
-                    child: const Text("测试"),
-                  ),
-                  FilledButton(
-                    onPressed: () {
-                      for (final game in GamePath.paths) {
-                        game.searchOnVersions();
-                      }
-                    },
-                    child: const Text("搜索游戏"),
-                  ),
-                  FilledButton(
-                    onPressed: () {
-                      for (final path in GamePath.paths) {
-                        print(
-                            "游戏路径: ${path.path}, 可用游戏: ${path.availableGames}");
-                      }
-                    },
-                    child: const Text("打印搜索到的游戏"),
-                  ),
-                  FilledButton(
-                    onPressed: () => print(appConfig.accounts),
-                    child: const Text("打印存储的账号"),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        // TitleWidgetGroup(
+        //   "测试",
+        //   children: [
+        //     ListTile(
+        //       title: Row(
+        //         children: [
+        //           FilledButton(
+        //             onPressed: () =>
+        //                 JavaUtil.set.forEach((java) => print(java)),
+        //             child: const Text("测试"),
+        //           ),
+        //           FilledButton(
+        //             onPressed: () {
+        //               for (final game in GamePath.paths) {
+        //                 game.searchOnVersions();
+        //               }
+        //             },
+        //             child: const Text("搜索游戏"),
+        //           ),
+        //           FilledButton(
+        //             onPressed: () {
+        //               for (final path in GamePath.paths) {
+        //                 print(
+        //                     "游戏路径: ${path.path}, 可用游戏: ${path.availableGames}");
+        //               }
+        //             },
+        //             child: const Text("打印搜索到的游戏"),
+        //           ),
+        //           FilledButton(
+        //             onPressed: () => print(appConfig.accounts),
+        //             child: const Text("打印存储的账号"),
+        //           ),
+        //         ],
+        //       ),
+        //     ),
+        //   ],
+        // ),
       ],
     );
   }

@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:beacon/consts.dart';
+import 'package:beacon/models/game/game.dart';
 import 'package:beacon/models/game_setting_config.dart';
 import 'package:beacon/models/game_path_config.dart';
 import 'package:beacon/models/theme_config.dart';
-import 'package:beacon/models/account.dart';
+import 'package:beacon/models/account/account.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,7 +17,7 @@ import 'package:path/path.dart';
 part 'app_config.g.dart';
 
 final appConfig = AppConfig.instance;
-const kDelimiter = "@";
+const _kDelimiter = "@";
 final _kDefaultGamePaths = {
   GamePath(
     name: "启动器目录",
@@ -59,8 +60,20 @@ final class AppConfig {
   RxSet<Account> _accounts;
   GameSettingConfig gameSetting;
 
+  List<Game>? _games;
+  @JsonKey(includeFromJson: null, includeToJson: null)
+  Future<List<Game>> get getGamesOnPaths async {
+    if (_games != null) return _games!;
+    var games = <Game>[];
+    for (var path in _paths) {
+      games.addAll(await path.getGamesOnVersion);
+    }
+    return _games = games;
+  }
+
   Set<GamePath> get paths => _paths;
   void resetPaths() => _paths.assignAll(_kDefaultGamePaths);
+
   ValueNotifier<Account?> get selectedAccountNotifier => _selectedAccount;
   @JsonKey(toJson: _selectedAccounttoString)
   Account? get selectedAccount => _selectedAccount.value;
@@ -69,14 +82,14 @@ final class AppConfig {
     final selectedAccount = account;
     if (selectedAccount == null) return null;
 
-    return selectedAccount.type.name + kDelimiter + selectedAccount.uuid;
+    return selectedAccount.type.name + _kDelimiter + selectedAccount.uuid;
   }
 
   static Account? _selectedAccountFromJson(
       String? str, Set<Account>? accounts) {
     if (str == null) return null;
 
-    final parts = str.split(kDelimiter);
+    final parts = str.split(_kDelimiter);
     final sType = parts[0];
     final sUuid = parts[1];
     for (AccountType type in AccountType.values) {
@@ -108,16 +121,12 @@ final class AppConfig {
   }
 
   static Future<void> init() async {
-    try {
-      final config = File(await _getConfigPath());
-      if (!await config.exists() || (await config.length()) == 0) {
-        await save();
-      }
-      final content = utf8.decode(await config.readAsBytes());
-      _instance = AppConfig.fromJson(json.decode(content));
-    } catch (e) {
-      print(e);
+    final config = File(await _getConfigPath());
+    if (!await config.exists() || (await config.length()) == 0) {
+      await save();
     }
+    final content = await config.readAsString();
+    _instance = AppConfig.fromJson(json.decode(content));
   }
 
   static Future<void> save([AppConfig? appConfig]) async {

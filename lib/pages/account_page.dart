@@ -7,9 +7,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
 
 import '../models/theme_config.dart';
-import '../models/microsoft_account.dart';
-import '../models/offline_account.dart';
-import '../models/account.dart';
+import '../models/account/microsoft_account.dart';
+import '../models/account/offline_account.dart';
+import '../models/account/account.dart';
 import '../widgets/route_page.dart';
 import '/widgets/dialog.dart';
 import '../widgets/snackbar.dart';
@@ -91,7 +91,7 @@ class AccountPage extends RoutePage {
 }
 
 class _AccountItem extends HookWidget {
-  _AccountItem({
+  const _AccountItem({
     super.key,
     required this.account,
     this.isSelected = false,
@@ -103,9 +103,6 @@ class _AccountItem extends HookWidget {
   final bool isSelected;
   final void Function()? onTap;
   final void Function(Account account)? onRemoved;
-  final _isTapDown = false.obs;
-  bool get isTapDown => _isTapDown.value;
-  set isTapDown(bool newVal) => _isTapDown.value = newVal;
 
   @override
   Widget build(BuildContext context) {
@@ -116,12 +113,13 @@ class _AccountItem extends HookWidget {
     final fontColor = isSelected ? colors.onPrimary : colors.onSurface;
     final future = useMemoized(() => account.skin.drawAvatar());
     final snapshot = useFuture(future);
+    final isTapDown = false.obs;
 
     return GestureDetector(
       onTap: onTap,
-      onTapDown: (details) => isTapDown = true,
-      onTapCancel: () => isTapDown = false,
-      onTapUp: (details) => isTapDown = false,
+      onTapDown: (details) => isTapDown(true),
+      onTapCancel: () => isTapDown(false),
+      onTapUp: (details) => isTapDown(false),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: Container(
@@ -130,18 +128,18 @@ class _AccountItem extends HookWidget {
           child: Obx(
             () => AnimatedContainer(
               duration: const Duration(milliseconds: 100),
-              padding: isTapDown
+              padding: isTapDown.value
                   ? const EdgeInsets.symmetric(vertical: 1, horizontal: 5)
                   : EdgeInsets.zero,
               child: Material(
-                elevation: isTapDown ? 0 : 3,
+                elevation: isTapDown.value ? 0 : 3,
                 shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
                 clipBehavior: Clip.antiAlias,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 100),
                   color: isSelected
                       ? selectedColor
-                      : isTapDown
+                      : isTapDown.value
                           ? selectedColor.withOpacity(.7)
                           : unSelectedColor,
                   child: Padding(
@@ -233,17 +231,14 @@ class _AccountItem extends HookWidget {
                               onPressed: () {
                                 showDialog(
                                   context: Get.context!,
-                                  builder: (context) => DefaultDialog(
-                                    title: const Text("移除用户"),
-                                    content: Text(
-                                      "你确定要移除这个用户吗？此操作将无法撤销！",
-                                      style: theme.textTheme.titleMedium,
-                                    ),
+                                  builder: (context) => WarningDialog(
+                                    title: const Text("删除用户"),
+                                    content: const Text("你确定要删除这条数据吗？"),
                                     onConfirmed: () {
-                                      dialogPop();
                                       (onRemoved ?? () {})(account);
+                                      dialogPop();
                                     },
-                                    onCanceled: () => dialogPop(),
+                                    onCanceled: dialogPop,
                                   ),
                                 );
                               },

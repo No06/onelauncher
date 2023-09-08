@@ -6,7 +6,7 @@ part 'java.g.dart';
 @JsonSerializable()
 class Java {
   Java(this.path, {String? versionNumber, this.args = ""})
-      : versionNumber = versionNumber ?? JavaUtil.getVersion(path);
+      : versionNumber = versionNumber ?? JavaUtil.getVersionByRun(path);
 
   final String path;
   final String versionNumber;

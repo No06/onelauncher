@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 const kMegaByte = 1024 * 1024;
 
 const kConfigName = "beacon.json";
+const kGameConfigName = kConfigName;
 final kConfigPath = getApplicationDocumentsDirectory();
 
 const kDefaultThemeMode = ThemeMode.system;
