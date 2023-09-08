@@ -1,5 +1,5 @@
-import 'package:beacon/models/java.dart';
-import 'package:beacon/utils/java_util.dart';
+import 'package:one_launcher/models/java.dart';
+import 'package:one_launcher/utils/java_util.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 

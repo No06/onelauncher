@@ -1,4 +1,4 @@
-import 'package:beacon/utils/java_util.dart';
+import 'package:one_launcher/utils/java_util.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'java.g.dart';

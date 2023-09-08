@@ -1,17 +1,17 @@
 import 'dart:math';
 
-import 'package:beacon/consts.dart';
-import 'package:beacon/models/app_config.dart';
-import 'package:beacon/utils/java_util.dart';
-import 'package:beacon/widgets/snackbar.dart';
-import 'package:beacon/widgets/values_notifier.dart';
+import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/app_config.dart';
+import 'package:one_launcher/utils/java_util.dart';
+import 'package:one_launcher/widgets/snackbar.dart';
+import 'package:one_launcher/widgets/values_notifier.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:get/get.dart';
-import 'package:beacon/models/theme_config.dart';
-import 'package:beacon/utils/file_picker.dart';
-import 'package:beacon/widgets/dialog.dart';
-import 'package:beacon/widgets/textfield.dart';
-import 'package:beacon/widgets/widget_group.dart';
+import 'package:one_launcher/models/theme_config.dart';
+import 'package:one_launcher/utils/file_picker.dart';
+import 'package:one_launcher/widgets/dialog.dart';
+import 'package:one_launcher/widgets/textfield.dart';
+import 'package:one_launcher/widgets/widget_group.dart';
 
 import '../models/game_path_config.dart';
 import '/utils/sysinfo.dart';

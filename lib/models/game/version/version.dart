@@ -1,9 +1,9 @@
-import 'package:beacon/models/game/version/game_type.dart';
-import 'package:beacon/models/game/version/librarie/librarie.dart';
-import 'package:beacon/models/game/version/asset_index.dart';
-import 'package:beacon/models/game/version/game_downloads.dart';
-import 'package:beacon/models/game/version/java_version.dart';
-import 'package:beacon/models/game/version/logging/logging.dart';
+import 'package:one_launcher/models/game/version/game_type.dart';
+import 'package:one_launcher/models/game/version/librarie/librarie.dart';
+import 'package:one_launcher/models/game/version/asset_index.dart';
+import 'package:one_launcher/models/game/version/game_downloads.dart';
+import 'package:one_launcher/models/game/version/java_version.dart';
+import 'package:one_launcher/models/game/version/logging/logging.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'version.g.dart';

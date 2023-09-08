@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:beacon/models/java.dart';
+import 'package:one_launcher/models/java.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart';
 

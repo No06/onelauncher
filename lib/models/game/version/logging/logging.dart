@@ -1,4 +1,4 @@
-import 'package:beacon/models/game/version/logging/client_logging.dart';
+import 'package:one_launcher/models/game/version/logging/client_logging.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'logging.g.dart';

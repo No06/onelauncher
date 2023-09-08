@@ -1,5 +1,5 @@
-import 'package:beacon/consts.dart';
-import 'package:beacon/models/app_config.dart';
+import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/app_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:flutter/services.dart';

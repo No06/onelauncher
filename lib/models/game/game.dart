@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:beacon/consts.dart';
-import 'package:beacon/models/game/version/version.dart';
+import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/game/version/version.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart';

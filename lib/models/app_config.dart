@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:beacon/consts.dart';
-import 'package:beacon/models/game/game.dart';
-import 'package:beacon/models/game_setting_config.dart';
-import 'package:beacon/models/game_path_config.dart';
-import 'package:beacon/models/theme_config.dart';
-import 'package:beacon/models/account/account.dart';
+import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/game/game.dart';
+import 'package:one_launcher/models/game_setting_config.dart';
+import 'package:one_launcher/models/game_path_config.dart';
+import 'package:one_launcher/models/theme_config.dart';
+import 'package:one_launcher/models/account/account.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

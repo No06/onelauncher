@@ -1,4 +1,4 @@
-import 'package:beacon/models/app_config.dart';
+import 'package:one_launcher/models/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
@@ -31,7 +31,7 @@ class Home extends StatelessWidget {
         preferredSize: const Size.fromHeight(kWindowCaptionHeight),
         child: WindowCaption(
           brightness: Theme.of(context).brightness,
-          title: const Text('Beacon'),
+          title: const Text('One Launcher'),
           backgroundColor: Colors.transparent,
         ),
       ),

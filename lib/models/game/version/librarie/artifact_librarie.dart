@@ -1,8 +1,8 @@
-import 'package:beacon/models/game/version/librarie/downloads.dart';
-import 'package:beacon/models/game/version/librarie/extract.dart';
-import 'package:beacon/models/game/version/librarie/librarie.dart';
-import 'package:beacon/models/game/version/native.dart';
-import 'package:beacon/models/game/version/rule.dart';
+import 'package:one_launcher/models/game/version/librarie/downloads.dart';
+import 'package:one_launcher/models/game/version/librarie/extract.dart';
+import 'package:one_launcher/models/game/version/librarie/librarie.dart';
+import 'package:one_launcher/models/game/version/native.dart';
+import 'package:one_launcher/models/game/version/rule.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'artifact_librarie.g.dart';

@@ -1,4 +1,4 @@
-import 'package:beacon/models/game/version/librarie/artifact.dart';
+import 'package:one_launcher/models/game/version/librarie/artifact.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'classifiers.g.dart';

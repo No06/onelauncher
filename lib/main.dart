@@ -1,5 +1,5 @@
-import 'package:beacon/models/app_config.dart';
-import 'package:beacon/utils/java_util.dart';
+import 'package:one_launcher/models/app_config.dart';
+import 'package:one_launcher/utils/java_util.dart';
 import 'package:flutter/material.dart';
 
 import 'package:window_manager/window_manager.dart';

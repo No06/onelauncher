@@ -1,5 +1,5 @@
-import 'package:beacon/models/account/account.dart';
-import 'package:beacon/models/skin.dart';
+import 'package:one_launcher/models/account/account.dart';
+import 'package:one_launcher/models/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
 

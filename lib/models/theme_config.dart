@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:beacon/consts.dart';
+import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 

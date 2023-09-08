@@ -1,4 +1,4 @@
-import 'package:beacon/consts.dart';
+import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 
 ThemeData simpleInputDecorationTheme(BuildContext context) {

@@ -1,4 +1,4 @@
-import 'package:beacon/models/app_config.dart';
+import 'package:one_launcher/models/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

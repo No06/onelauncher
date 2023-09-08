@@ -1,6 +1,6 @@
-import 'package:beacon/models/account/microsoft_account.dart';
-import 'package:beacon/models/account/offline_account.dart';
-import 'package:beacon/models/skin.dart';
+import 'package:one_launcher/models/account/microsoft_account.dart';
+import 'package:one_launcher/models/account/offline_account.dart';
+import 'package:one_launcher/models/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'account.g.dart';

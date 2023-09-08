@@ -2,9 +2,9 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:animations/animations.dart';
-import 'package:beacon/consts.dart';
-import 'package:beacon/models/app_config.dart';
-import 'package:beacon/models/game/game.dart';
+import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/app_config.dart';
+import 'package:one_launcher/models/game/game.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

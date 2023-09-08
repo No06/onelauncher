@@ -1,5 +1,5 @@
 import 'package:animations/animations.dart';
-import 'package:beacon/consts.dart';
+import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
