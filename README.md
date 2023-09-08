@@ -1,4 +1,4 @@
-# beacon
+# OneLauncher
 
 A new Flutter project.
 
