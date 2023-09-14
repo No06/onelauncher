@@ -1,85 +1,104 @@
+import 'dart:ui';
+
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/models/game/game.dart';
 
 class GamePage extends StatelessWidget {
-  const GamePage({super.key, this.assetName});
-  final String? assetName;
+  const GamePage({super.key, required this.game});
+
+  final Game game;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage(assetName!),
-          fit: BoxFit.cover,
+    final currentPage = const _HomePage().obs;
+    return Column(
+      children: [
+        Expanded(
+          child: PageTransitionSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation, secondaryAnimation) {
+              return FadeThroughTransition(
+                fillColor: Colors.transparent,
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                child: child,
+              );
+            },
+            child: currentPage.value,
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      "1.8",
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(),
-                    ),
-                    const SizedBox(width: 10),
-                  ],
-                ),
-                SizedBox(
-                  height: 30,
-                  width: 180,
-                  child: GetBuilder<_TabController>(
-                    init: _TabController(),
-                    builder: (c) => TabBar(
-                      controller: c.tabController,
-                      dividerColor: Colors.transparent,
-                      tabs: c.tabs.map((e) => Tab(text: e)).toList(),
-                    ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white10,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black45,
+                    blurRadius: 10,
+                    blurStyle: BlurStyle.outer,
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15),
+                        child: SizedBox(
+                          height: 50,
+                          child: VerticalDivider(
+                            color: Colors.white54,
+                          ),
+                        ),
+                      ),
+                      Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: ColorScheme.fromSeed(
+                            brightness: Brightness.light,
+                            seedColor: Colors.green,
+                          ),
+                        ),
+                        child: Builder(
+                          builder: (context) => FloatingActionButton.extended(
+                            icon: Icon(
+                              Icons.play_arrow_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 32,
+                            ),
+                            label: Text(
+                              "开始游戏",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge!
+                                  .copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                            ),
+                            onPressed: () {},
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: GetBuilder(
-              init: _TabController(),
-              builder: (c) => TabBarView(
-                controller: c.tabController,
-                children: const [_HomePage(), _SetupPage()],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
-  }
-}
-
-class _TabController extends GetxController
-    with GetSingleTickerProviderStateMixin {
-  final tabs = ["开始游戏", "配置"];
-  late final TabController tabController;
-
-  @override
-  void onInit() {
-    super.onInit();
-    tabController = TabController(length: tabs.length, vsync: this);
-  }
-
-  @override
-  void onClose() {
-    tabController.dispose();
-    super.onClose();
   }
 }
 

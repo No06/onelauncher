@@ -1,14 +1,10 @@
 import 'dart:io';
-import 'dart:ui';
 
-import 'package:animations/animations.dart';
-import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/app_config.dart';
-import 'package:one_launcher/models/game/game.dart';
+import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/widgets/adap_window_sizedbox.dart';
 
-import 'game_page.dart';
 import '/utils/file_picker.dart';
 import '../widgets/route_page.dart';
 import '/widgets/dialog.dart';
@@ -17,59 +13,34 @@ class GameLibraryPage extends RoutePage {
   const GameLibraryPage({super.key});
 
   @override
-  String routeName() => "库";
+  String routeName() => "开始游戏";
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: ListView(
-        padding: const EdgeInsets.all(15),
+    const tabs = {
+      "主页": _HomePage(),
+      "配置": _ConfigurationPage(),
+    };
+    return DefaultTabController(
+      length: tabs.length,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              title(),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.more_horiz),
-                onPressed: () {},
-              )
-            ],
+          Padding(
+            padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
+            child: title(),
           ),
-          const SizedBox(height: 10),
-          FutureBuilder(
-            future: appConfig.getGamesOnPaths,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                // 如果有数据，显示数据
-                return GridView.extent(
-                  maxCrossAxisExtent: 150,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 1 / 1.333,
-                  shrinkWrap: true,
-                  children: snapshot.data!
-                      .map(
-                        (e) => _GameCard(game: e),
-                      )
-                      .toList(),
-                );
-              } else if (snapshot.hasError) {
-                // 如果有错误，显示错误信息
-                return Text(snapshot.error.toString());
-              } else {
-                // 如果没有数据也没有错误，显示加载中的提示
-                return const CircularProgressIndicator();
-              }
-            },
+          SizedBox(
+            height: 35,
+            child: TabBar(
+              isScrollable: true,
+              tabs: tabs.keys.map((text) => Tab(text: text)).toList(),
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: tabs.values.toList(),
+            ),
           ),
         ],
       ),
@@ -192,145 +163,143 @@ class IconTextField extends StatelessWidget {
   }
 }
 
-class _GameCard extends StatelessWidget {
-  const _GameCard({required this.game, this.assetName});
-
-  final Game game;
-  final String? assetName;
+class _HomePage extends StatelessWidget {
+  const _HomePage();
 
   @override
   Widget build(BuildContext context) {
-    var hover = false.obs;
-    return _OpenContainerWrapper(
-      openPage: GamePage(assetName: assetName),
-      closedBuilder: (_, openContainer) => Stack(
-        children: [
-          Container(
-            decoration: assetName == null
-                ? null
-                : BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(assetName!),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-          ),
-          Flex(
-            direction: Axis.vertical,
+    return Column(
+      children: [
+        Expanded(
+          child: ListView(
             children: [
-              const Expanded(child: SizedBox()),
-              Expanded(
-                flex: 0,
-                child: Container(
-                  clipBehavior: Clip.hardEdge,
-                  decoration: const BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black38,
-                        blurRadius: 15,
-                        blurStyle: BlurStyle.outer,
-                      ),
-                    ],
-                  ),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 7.5, sigmaY: 7.5),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      alignment: Alignment.centerLeft,
-                      color: Colors.white.withOpacity(.1),
-                      child: Text(
-                        game.version.id,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge!
-                            .copyWith(color: Colors.white),
-                      ),
+              AdaptiveWindowSizedBox(
+                hScale: 0.6,
+                child: ClipRect(
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: Image.asset(
+                      "assets/images/background/minecraft-java-edition-wallpaper.png",
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              splashColor: Colors.black.withOpacity(.1),
-              onTap: () {
-                openContainer();
-                hover(false);
-              },
-              onHover: (value) => hover(value),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(5),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.more_horiz, color: Colors.white),
-              ),
-            ),
-          ),
-          Obx(
-            () => TweenAnimationBuilder(
-              tween: Tween<Offset>(
-                begin: const Offset(0, 51),
-                end: hover.value ? const Offset(0, 0) : const Offset(0, 51),
-              ),
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.linearToEaseOut,
-              builder: (context, offset, child) =>
-                  Transform.translate(offset: offset, child: child),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 10, right: 10),
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: MouseRegion(
-                    onEnter: (event) => hover(true),
-                    onExit: (event) => hover(false),
-                    child: FloatingActionButton.small(
-                      onPressed: () => print(game.version.libraries[0].name),
-                      heroTag: null,
-                      child: const Icon(Icons.play_arrow),
-                    ),
+        ),
+        const Divider(height: 0),
+        SizedBox(
+          height: 55,
+          child: Row(
+            children: [
+              const _GameSwitch(),
+              const Spacer(),
+              Theme(
+                data: ThemeData(
+                  colorScheme: ColorScheme.fromSeed(
+                    seedColor: Colors.green,
+                    brightness: Theme.of(context).brightness,
                   ),
-                ),
+                ).useSystemChineseFont(),
+                child: Builder(builder: (context) {
+                  final theme = Theme.of(context);
+                  final colors = theme.colorScheme;
+                  return Material(
+                    color: colors.primaryContainer,
+                    child: InkWell(
+                      splashColor: colors.primary.withOpacity(.1),
+                      onTap: () {},
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.play_arrow,
+                                size: 32,
+                                color: colors.primary,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                "开始游戏",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall!
+                                    .copyWith(
+                                      height: 1,
+                                      letterSpacing: 1,
+                                      color: colors.primary,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GameSwitch extends StatelessWidget {
+  const _GameSwitch();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 180,
+      child: Material(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.symmetric(horizontal: 5),
+              child: Row(
+                children: [
+                  const FlutterLogo(size: 36),
+                  const SizedBox(width: 5),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("最新版本"),
+                      Builder(builder: (context) {
+                        final style = Theme.of(context).textTheme.bodySmall!;
+                        return Text(
+                          "1.20.1",
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall!
+                              .copyWith(color: style.color!.withOpacity(.5)),
+                        );
+                      }),
+                    ],
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.expand_more),
+                ],
               ),
             ),
-          ),
-        ],
+            InkWell(onTap: () {}),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _OpenContainerWrapper extends StatelessWidget {
-  const _OpenContainerWrapper({
-    this.transitionType = ContainerTransitionType.fade,
-    this.onClosed,
-    required this.openPage,
-    required this.closedBuilder,
-  });
-
-  final ContainerTransitionType transitionType;
-  final ClosedCallback<bool?>? onClosed;
-  final Widget openPage;
-  final CloseContainerBuilder closedBuilder;
+class _ConfigurationPage extends StatelessWidget {
+  const _ConfigurationPage();
 
   @override
   Widget build(BuildContext context) {
-    return OpenContainer(
-      useRootNavigator: true,
-      clipBehavior: Clip.antiAliasWithSaveLayer,
-      closedShape: RoundedRectangleBorder(borderRadius: kLagerBorderRadius),
-      openColor: Colors.transparent,
-      closedColor: Colors.transparent,
-      transitionType: transitionType,
-      openBuilder: (BuildContext context, VoidCallback _) => openPage,
-      onClosed: onClosed,
-      tappable: false,
-      closedBuilder: closedBuilder,
-    );
+    return const Placeholder();
   }
 }

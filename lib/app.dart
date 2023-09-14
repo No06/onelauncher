@@ -16,36 +16,43 @@ class MyApp extends StatelessWidget {
       darkTheme: theme.darkTheme(),
       themeMode: theme.mode,
       debugShowCheckedModeBanner: false,
-      home: const Home(),
+      home: const HomePage(),
     );
   }
 }
 
-class Home extends StatelessWidget {
-  const Home({super.key});
+class AppPage extends StatelessWidget {
+  const AppPage({super.key, this.body, this.background});
+
+  final Widget? body;
+  final Widget? background;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kWindowCaptionHeight),
-        child: WindowCaption(
-          brightness: Theme.of(context).brightness,
-          title: const Text('One Launcher'),
-          backgroundColor: Colors.transparent,
+    return Stack(
+      children: [
+        background ?? const SizedBox(),
+        Scaffold(
+          backgroundColor: background == null ? null : Colors.transparent,
+          appBar: appBar(context),
+          body: SizedBox(
+            child: Column(
+              children: [
+                Expanded(child: body ?? const SizedBox()),
+              ],
+            ),
+          ),
         ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-        ),
-        child: const Column(
-          children: [
-            Divider(height: 1),
-            Expanded(child: HomePage()),
-          ],
-        ),
-      ),
+      ],
     );
   }
 }
+
+PreferredSizeWidget appBar(BuildContext context) => PreferredSize(
+      preferredSize: const Size.fromHeight(kWindowCaptionHeight),
+      child: WindowCaption(
+        brightness: Theme.of(context).brightness,
+        title: const Text('OneLauncher'),
+        backgroundColor: Colors.transparent,
+      ),
+    );

@@ -6,6 +6,9 @@ import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
 
+const kDefaultWindowWidth = 960.0;
+const kDefaultWindowHeight = 593.0;
+
 void main() async {
   await init();
   runApp(const MyApp());
@@ -17,7 +20,7 @@ Future<void> init() async {
   // 初始化窗口
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
-  const windowSize = Size(960, 593);
+  const windowSize = Size(kDefaultWindowWidth, kDefaultWindowHeight);
   WindowOptions windowOptions = const WindowOptions(
     size: windowSize,
     minimumSize: windowSize,

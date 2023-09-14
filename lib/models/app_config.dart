@@ -49,6 +49,9 @@ final class AppConfig {
         gameSetting = gameSetting ?? GameSettingConfig(),
         super() {
     this.theme.addListener(save);
+    for (var e in _paths) {
+      e.addListener(save);
+    }
     _selectedAccount.addListener(save);
     this.gameSetting.addListener(save);
     everAll([_paths, _accounts], (_) => save());
@@ -60,15 +63,13 @@ final class AppConfig {
   RxSet<Account> _accounts;
   GameSettingConfig gameSetting;
 
-  List<Game>? _games;
   @JsonKey(includeFromJson: null, includeToJson: null)
   Future<List<Game>> get getGamesOnPaths async {
-    if (_games != null) return _games!;
     var games = <Game>[];
     for (var path in _paths) {
       games.addAll(await path.getGamesOnVersion);
     }
-    return _games = games;
+    return games;
   }
 
   Set<GamePath> get paths => _paths;

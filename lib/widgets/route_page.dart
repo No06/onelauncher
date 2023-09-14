@@ -11,7 +11,7 @@ abstract class RoutePage extends StatelessWidget {
     return Text(
       routeName(),
       style: TextStyle(
-        fontSize: Theme.of(Get.context!).textTheme.headlineLarge!.fontSize,
+        fontSize: Theme.of(Get.context!).textTheme.headlineSmall!.fontSize,
       ),
     );
   }

@@ -25,34 +25,34 @@ class SettingPage extends RoutePage {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
-          child: title(),
-        ),
-        SizedBox(
-          height: 30,
-          child: GetBuilder(
-            init: _TabController(),
-            builder: (c) => TabBar(
+    final tabs = {
+      "全局游戏设置": const _GlobalGameSettingPage(),
+      "启动器": _LauncherSettingPage(),
+    };
+    return DefaultTabController(
+      length: tabs.length,
+      animationDuration: const Duration(milliseconds: 350),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
+            child: title(),
+          ),
+          SizedBox(
+            height: 35,
+            child: TabBar(
               isScrollable: true,
-              controller: c.tabController,
-              tabs: c.tabs.keys.map((text) => Tab(text: text)).toList(),
+              tabs: tabs.keys.map((text) => Tab(text: text)).toList(),
             ),
           ),
-        ),
-        Expanded(
-          child: GetBuilder(
-            init: _TabController(),
-            builder: (c) => TabBarView(
-              controller: c.tabController,
-              children: c.tabs.values.toList(),
+          Expanded(
+            child: TabBarView(
+              children: tabs.values.toList(),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -207,7 +207,10 @@ class _GlobalGameSettingPage extends StatelessWidget {
                               tile: ListTile(
                                 title: const Text("高级"),
                                 onTap: () => p0(!p0.value),
-                                leading: const Icon(Icons.expand_more),
+                                leading: Transform.rotate(
+                                  angle: p0.value ? pi : 0,
+                                  child: const Icon(Icons.expand_more),
+                                ),
                               ),
                               expandTile: StatefulBuilder(
                                 builder: (context, setState) => SwitchListTile(
@@ -401,43 +404,6 @@ class _GlobalGameSettingPage extends StatelessWidget {
             ),
           ],
         ),
-        // TitleWidgetGroup(
-        //   "测试",
-        //   children: [
-        //     ListTile(
-        //       title: Row(
-        //         children: [
-        //           FilledButton(
-        //             onPressed: () =>
-        //                 JavaUtil.set.forEach((java) => print(java)),
-        //             child: const Text("测试"),
-        //           ),
-        //           FilledButton(
-        //             onPressed: () {
-        //               for (final game in GamePath.paths) {
-        //                 game.searchOnVersions();
-        //               }
-        //             },
-        //             child: const Text("搜索游戏"),
-        //           ),
-        //           FilledButton(
-        //             onPressed: () {
-        //               for (final path in GamePath.paths) {
-        //                 print(
-        //                     "游戏路径: ${path.path}, 可用游戏: ${path.availableGames}");
-        //               }
-        //             },
-        //             child: const Text("打印搜索到的游戏"),
-        //           ),
-        //           FilledButton(
-        //             onPressed: () => print(appConfig.accounts),
-        //             child: const Text("打印存储的账号"),
-        //           ),
-        //         ],
-        //       ),
-        //     ),
-        //   ],
-        // ),
       ],
     );
   }
@@ -654,27 +620,6 @@ class _LauncherSettingPage extends _SettingBasePage {
         ],
       ),
     ];
-  }
-}
-
-class _TabController extends GetxController
-    with GetSingleTickerProviderStateMixin {
-  late final TabController tabController;
-  final tabs = {
-    "全局游戏设置": const _GlobalGameSettingPage(),
-    "启动器": _LauncherSettingPage(),
-  };
-
-  @override
-  void onInit() {
-    super.onInit();
-    tabController = TabController(length: tabs.length, vsync: this);
-  }
-
-  @override
-  void onClose() {
-    tabController.dispose();
-    super.onClose();
   }
 }
 

@@ -90,9 +90,9 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "one" "\0"
+            VALUE "FileDescription", "OneLauncher" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "one" "\0"
+            VALUE "InternalName", "OneLauncher" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "one.exe" "\0"
             VALUE "ProductName", "OneLauncher" "\0"

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -33,25 +34,35 @@ final class AppThemeConfig extends ChangeNotifier {
 
   ThemeData lightTheme() {
     return ThemeData(
-      fontFamily: 'MiSans',
       colorScheme: ColorScheme.fromSeed(
         seedColor: color.color,
         brightness: Brightness.light,
       ),
+      textTheme: textTheme,
       useMaterial3: true,
-    );
+    ).useSystemChineseFont();
   }
 
   ThemeData darkTheme() {
     return ThemeData(
-      fontFamily: 'MiSans',
       colorScheme: ColorScheme.fromSeed(
         seedColor: color.color,
         brightness: Brightness.dark,
       ),
+      listTileTheme: const ListTileThemeData(),
+      textTheme: textTheme,
       useMaterial3: true,
-    );
+    ).useSystemChineseFont();
   }
+
+  TextTheme textTheme = const TextTheme(
+    labelLarge: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+  );
+
+  ListTileThemeData listTileTheme = const ListTileThemeData(
+    titleTextStyle: TextStyle(fontSize: 10),
+    subtitleTextStyle: TextStyle(fontSize: 10),
+  );
 
   factory AppThemeConfig.fromJson(Map<String, dynamic> json) =>
       _$AppThemeConfigFromJson(json);

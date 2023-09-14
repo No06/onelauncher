@@ -46,6 +46,7 @@ dependencies:
   window_manager: ^0.3.6
   flutter_hooks: ^0.20.1
   code_builder: ^4.6.0
+  chinese_font_library: ^1.0.1
 
 dev_dependencies:
 
@@ -64,8 +65,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/background/2018-12-15_10.01.04.jpg
-    - assets/images/background/2020-04-11_20.37.54.png
+    - assets/images/background/minecraft-java-edition-wallpaper.png
     - assets/images/skins/steve.png
     - assets/images/skins/alex.png
   #   - images/a_dot_ham.jpeg
@@ -95,7 +95,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-  fonts:
-    - family: MiSans
-      fonts:
-        - asset: assets/fonts/MiSans-Normal.ttf

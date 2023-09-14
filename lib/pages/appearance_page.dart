@@ -36,7 +36,7 @@ class AppearancePage extends RoutePage {
         ),
         Padding(
           padding: const EdgeInsets.only(left: 5),
-          child: Text(text),
+          child: Text(text, style: const TextStyle(height: 1)),
         )
       ],
     );
@@ -56,6 +56,7 @@ class AppearancePage extends RoutePage {
           "主题",
           style: TextStyle(
             fontSize: Theme.of(Get.context!).textTheme.titleLarge!.fontSize,
+            height: 1.5,
           ),
         ),
         const SizedBox(height: 5),

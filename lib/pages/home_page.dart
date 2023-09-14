@@ -1,24 +1,39 @@
 import 'package:animations/animations.dart';
+import 'package:one_launcher/app.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/models/game/game.dart';
+import 'package:one_launcher/pages/game_page.dart';
 
 import 'account_page.dart';
 import 'game_library_page.dart';
 import 'appearance_page.dart';
 import 'setting_page.dart';
 
+const _kDefaultRouteName = "/home";
+final _currentRouteName = _kDefaultRouteName.obs;
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _Navigation(),
-        const VerticalDivider(width: 1),
-        const _NavigationView(),
-      ],
+    return AppPage(
+      body: Column(
+        children: [
+          const Divider(height: 1),
+          Expanded(
+            child: Row(
+              children: [
+                _Navigation(),
+                const VerticalDivider(width: 1),
+                const _NavigationView(),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -61,12 +76,12 @@ class _NavigationButton extends StatelessWidget {
           onTap: isSelected ? () {} : onTap,
           child: Row(
             children: [
-              const SizedBox(width: 10),
+              const SizedBox(width: 15),
               isSelected ? selectedIcon : icon,
-              const SizedBox(width: 5),
+              const SizedBox(width: 8),
               Text(
                 name,
-                style: theme.textTheme.titleSmall!.copyWith(
+                style: theme.textTheme.labelLarge!.copyWith(
                   color: isSelected ? colors.onPrimary : null,
                 ),
               ),
@@ -80,6 +95,7 @@ class _NavigationButton extends StatelessWidget {
 
 class _Navigation extends StatelessWidget {
   _Navigation();
+
   final routes = <Map<String, dynamic>>[
     {
       "name": "用户",
@@ -88,10 +104,10 @@ class _Navigation extends StatelessWidget {
       "selectedIcon": Icons.people
     },
     {
-      "name": "库",
+      "name": "开始游戏",
       "path": "/home",
-      "icon": Icons.apps_outlined,
-      "selectedIcon": Icons.apps
+      "icon": Icons.sports_esports_outlined,
+      "selectedIcon": Icons.sports_esports
     },
     {
       "name": "外观",
@@ -106,7 +122,6 @@ class _Navigation extends StatelessWidget {
       "selectedIcon": Icons.settings
     }
   ];
-  final index = 1.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -114,27 +129,29 @@ class _Navigation extends StatelessWidget {
       width: 200,
       color: Colors.transparent,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-      child: Obx(
-        () => Column(
-          children: [
-            ...routes.asMap().entries.map((entry) {
-              final item = entry.value;
-              final isSelected = index.value == entry.key;
-              final selectedColor = Theme.of(context).colorScheme.onPrimary;
+      child: Column(
+        children: [
+          ...routes.map((route) {
+            final routePath = route['path'];
+            final selectedColor = Theme.of(context).colorScheme.onPrimary;
+            return Obx(() {
+              final isSelected = routePath == _currentRouteName.value;
               return _NavigationButton(
-                name: item["name"],
-                icon: Icon(item["icon"]),
-                selectedIcon: Icon(item["selectedIcon"], color: selectedColor),
+                name: route["name"],
+                icon: Icon(route["icon"]),
+                selectedIcon: Icon(route["selectedIcon"], color: selectedColor),
                 elevation: isSelected ? 3 : 0,
                 isSelected: isSelected,
                 onTap: () {
-                  Get.offNamed(id: 1, item["path"]);
-                  index(entry.key);
+                  _currentRouteName(route["path"]);
+                  Get.offNamed(id: 1, route["path"]);
                 },
               );
-            })
-          ]..insert(routes.length - 1, const Spacer()),
-        ),
+            });
+          })
+        ]
+          ..insert(routes.length - 1, const Spacer())
+          ..insert(1, const SizedBox(height: 10)),
       ),
     );
   }
@@ -176,7 +193,7 @@ class _NavigationView extends StatelessWidget {
         clipBehavior: Clip.hardEdge,
         child: Navigator(
           key: Get.nestedKey(1),
-          initialRoute: '/home',
+          initialRoute: _kDefaultRouteName,
           onGenerateRoute: (settings) {
             switch (settings.name) {
               case '/account':
@@ -187,6 +204,8 @@ class _NavigationView extends StatelessWidget {
                 return createRoute(const AppearancePage());
               case '/setting':
                 return createRoute(const SettingPage());
+              case '/game':
+                return createRoute(GamePage(game: settings.arguments as Game));
             }
             return null;
           },

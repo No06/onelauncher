@@ -94,11 +94,11 @@ class TitleWidgetGroup extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 5),
-          child: Text(title, style: Get.textTheme.titleLarge),
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 15),
-          child: WidgetGroup(divider: defaultDivider(), children: children),
+          child: WidgetGroup(divider: _defaultDivider(), children: children),
         ),
       ],
     );
@@ -260,12 +260,12 @@ class _AnimationController extends GetxController
   }
 }
 
-Widget defaultDivider() {
+Widget _defaultDivider() {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 15),
     child: Divider(
       height: 1,
-      color: Get.theme.colorScheme.onSecondaryContainer.withOpacity(.2),
+      color: Get.theme.colorScheme.onPrimaryContainer.withOpacity(.2),
     ),
   );
 }
