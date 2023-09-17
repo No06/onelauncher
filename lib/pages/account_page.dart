@@ -5,60 +5,59 @@ import 'package:flutter/material.dart' hide Dialog;
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/widgets/route_page.dart';
 
 import '../models/theme_config.dart';
 import '../models/account/microsoft_account.dart';
 import '../models/account/offline_account.dart';
 import '../models/account/account.dart';
-import '../widgets/route_page.dart';
 import '/widgets/dialog.dart';
 import '../widgets/snackbar.dart';
 
 class AccountPage extends RoutePage {
-  const AccountPage({super.key});
+  const AccountPage({super.key, required super.pageName});
 
   @override
-  String routeName() => "用户";
+  PreferredSizeWidget appbar() {
+    return AppBar(
+      title: Text(pageName),
+      actions: [
+        FilledButton(
+          onPressed: () => showDialog(
+            context: Get.context!,
+            builder: (context) => _AddAccountDialog(
+              onSubmit: (account) {
+                if (appConfig.accounts.add(account)) {
+                  appConfig.selectedAccount ??= account;
+                  dialogPop();
+                  Get.showSnackbar(successSnackBar("添加成功！"));
+                } else {
+                  Get.showSnackbar(errorSnackBar("已有重复账号"));
+                }
+              },
+            ),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              children: [
+                Icon(Icons.add),
+                Text("添加用户"),
+                SizedBox(width: 7),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget body() {
     return ListView(
       shrinkWrap: true,
       padding: const EdgeInsets.all(15),
       children: [
-        Row(
-          children: [
-            title(),
-            const Spacer(),
-            FilledButton(
-              onPressed: () => showDialog(
-                context: Get.context!,
-                builder: (context) => _AddAccountDialog(
-                  onSubmit: (account) {
-                    if (appConfig.accounts.add(account)) {
-                      appConfig.selectedAccount ??= account;
-                      dialogPop();
-                      Get.showSnackbar(successSnackBar("添加成功！"));
-                    } else {
-                      Get.showSnackbar(errorSnackBar("已有重复账号"));
-                    }
-                  },
-                ),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  children: [
-                    Icon(Icons.add),
-                    Text("添加用户"),
-                    SizedBox(width: 7),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
         Obx(
           () => Column(
             children: appConfig.accounts
@@ -90,6 +89,7 @@ class AccountPage extends RoutePage {
   }
 }
 
+// TODO: 加载卡顿
 class _AccountItem extends HookWidget {
   const _AccountItem({
     super.key,
@@ -114,6 +114,7 @@ class _AccountItem extends HookWidget {
     final future = useMemoized(() => account.skin.drawAvatar());
     final snapshot = useFuture(future);
     final isTapDown = false.obs;
+    final isHover = false.obs;
 
     return GestureDetector(
       onTap: onTap,
@@ -122,6 +123,8 @@ class _AccountItem extends HookWidget {
       onTapUp: (details) => isTapDown(false),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
+        onEnter: (event) => isHover(true),
+        onExit: (event) => isHover(false),
         child: Container(
           height: 58,
           margin: const EdgeInsets.only(bottom: 8),
@@ -141,7 +144,10 @@ class _AccountItem extends HookWidget {
                       ? selectedColor
                       : isTapDown.value
                           ? selectedColor.withOpacity(.7)
-                          : unSelectedColor,
+                          : isHover.value
+                              ? dynamicColorWithValue(
+                                  unSelectedColor, -0.1, 0.1, theme.brightness)
+                              : unSelectedColor,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15),
                     child: Row(

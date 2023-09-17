@@ -1,121 +1,37 @@
-import 'dart:io';
-
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:one_launcher/widgets/adap_window_sizedbox.dart';
-
-import '/utils/file_picker.dart';
-import '../widgets/route_page.dart';
-import '/widgets/dialog.dart';
+import 'package:one_launcher/widgets/route_page.dart';
 
 class GameLibraryPage extends RoutePage {
-  const GameLibraryPage({super.key});
+  const GameLibraryPage({super.key, required super.pageName});
+
+  final tabs = const {
+    "主页": _HomePage(),
+    "配置": _ConfigurationPage(),
+  };
 
   @override
-  String routeName() => "开始游戏";
-
-  @override
-  Widget build(BuildContext context) {
-    const tabs = {
-      "主页": _HomePage(),
-      "配置": _ConfigurationPage(),
-    };
+  Widget body() {
     return DefaultTabController(
       length: tabs.length,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
-            child: title(),
-          ),
-          SizedBox(
-            height: 35,
-            child: TabBar(
-              isScrollable: true,
-              tabs: tabs.keys.map((text) => Tab(text: text)).toList(),
-            ),
-          ),
-          Expanded(
-            child: TabBarView(
-              children: tabs.values.toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget toolBar() {
-    return SizedBox(
-      height: 65,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: Row(
-          children: [
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () => showDialog(
-                context: Get.context!,
-                builder: (context) => addGameDialog(),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  children: [
-                    Icon(Icons.add),
-                    Text("添加游戏"),
-                    SizedBox(width: 7),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget addGameDialog() {
-    final javaDirController = TextEditingController();
-    final gameDirController = TextEditingController();
-
-    return AlertDialog(
-      title: const Text("添加游戏"),
-      content: SizedBox(
-        width: 600,
+      child: Expanded(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IconTextField(
-              icon: Icons.file_open,
-              label: "Java路径",
-              hintText: "java.exe",
-              controller: javaDirController,
-              onPressed: () async {
-                final File? file = await filePicker(['exe']);
-                javaDirController.text = file!.path;
-              },
+            SizedBox(
+              height: 35,
+              child: TabBar(
+                isScrollable: true,
+                tabs: tabs.keys.map((text) => Tab(text: text)).toList(),
+              ),
             ),
-            const SizedBox(height: 10),
-            IconTextField(
-              icon: Icons.folder_open,
-              label: "Minecraft路径",
-              hintText: ".minecraft",
-              controller: gameDirController,
-              onPressed: () async {
-                final File? file = await folderPicker();
-                gameDirController.text = file!.path;
-              },
-            ),
+            Expanded(
+              child: TabBarView(children: tabs.values.toList()),
+            )
           ],
         ),
       ),
-      actions: [
-        DialogConfirmButton(onPressed: () {}),
-        DialogCancelButton(onPressed: () {}),
-      ],
     );
   }
 }
@@ -192,7 +108,7 @@ class _HomePage extends StatelessWidget {
           height: 55,
           child: Row(
             children: [
-              const _GameSwitch(),
+              _GameSwitcher(),
               const Spacer(),
               Theme(
                 data: ThemeData(
@@ -248,11 +164,43 @@ class _HomePage extends StatelessWidget {
   }
 }
 
-class _GameSwitch extends StatelessWidget {
-  const _GameSwitch();
+class _GameSwitcher extends StatelessWidget {
+  _GameSwitcher();
+
+  final MenuController _controller = MenuController();
 
   @override
   Widget build(BuildContext context) {
+    // TODO: 动画
+    return MenuAnchor(
+      controller: _controller,
+      menuChildren: [
+        MenuItemButton(
+          child: buildMenuItem(
+            icon: const FlutterLogo(size: 36),
+            title: "1.20.2rc",
+          ),
+        ),
+      ],
+      builder: (context, controller, child) {
+        return buildMenuItem(
+          icon: const FlutterLogo(size: 36),
+          title: "最新版本",
+          lable: "1.20.1",
+          suffixIcon: const Icon(Icons.expand_more),
+          onTap: _controller.isOpen ? _controller.close : _controller.open,
+        );
+      },
+    );
+  }
+
+  Widget buildMenuItem({
+    required Widget icon,
+    required String title,
+    String? lable,
+    Widget? suffixIcon,
+    VoidCallback? onTap,
+  }) {
     return SizedBox(
       width: 180,
       child: Material(
@@ -263,31 +211,32 @@ class _GameSwitch extends StatelessWidget {
               padding: const EdgeInsetsDirectional.symmetric(horizontal: 5),
               child: Row(
                 children: [
-                  const FlutterLogo(size: 36),
+                  icon,
                   const SizedBox(width: 5),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("最新版本"),
-                      Builder(builder: (context) {
-                        final style = Theme.of(context).textTheme.bodySmall!;
-                        return Text(
-                          "1.20.1",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall!
-                              .copyWith(color: style.color!.withOpacity(.5)),
-                        );
-                      }),
+                      Text(title),
+                      if (lable != null)
+                        Builder(builder: (context) {
+                          final style = Theme.of(context).textTheme.bodySmall!;
+                          return Text(
+                            lable,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall!
+                                .copyWith(color: style.color!.withOpacity(.5)),
+                          );
+                        }),
                     ],
                   ),
                   const Spacer(),
-                  const Icon(Icons.expand_more),
+                  if (suffixIcon != null) suffixIcon,
                 ],
               ),
             ),
-            InkWell(onTap: () {}),
+            InkWell(onTap: onTap),
           ],
         ),
       ),

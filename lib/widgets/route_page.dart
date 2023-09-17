@@ -1,18 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
 
 abstract class RoutePage extends StatelessWidget {
-  const RoutePage({super.key});
+  const RoutePage({super.key, required this.pageName});
 
-  String routeName();
+  final String pageName;
 
-  Widget title() {
-    return Text(
-      routeName(),
-      style: TextStyle(
-        fontSize: Theme.of(Get.context!).textTheme.headlineSmall!.fontSize,
-      ),
+  PreferredSizeWidget appbar() => AppBar(title: Text(pageName));
+  Widget body();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Theme(
+          data: theme.copyWith(
+            appBarTheme: AppBarTheme(
+              titleTextStyle: theme.textTheme.headlineSmall!.copyWith(
+                fontSize: 28,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          child: appbar(),
+        ),
+        body(),
+      ],
     );
   }
 }

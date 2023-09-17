@@ -93,11 +93,11 @@ class TitleWidgetGroup extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 5),
+          padding: const EdgeInsets.only(bottom: 8),
           child: Text(title, style: Theme.of(context).textTheme.titleLarge),
         ),
         Padding(
-          padding: const EdgeInsets.only(bottom: 15),
+          padding: const EdgeInsets.only(bottom: 16),
           child: WidgetGroup(divider: _defaultDivider(), children: children),
         ),
       ],
@@ -105,18 +105,19 @@ class TitleWidgetGroup extends StatelessWidget {
   }
 }
 
-class WidgetGroupBlock extends StatelessWidget {
-  const WidgetGroupBlock({
+class WidgetGroupBox extends StatelessWidget {
+  const WidgetGroupBox({
     super.key,
     required this.title,
     required this.divider,
     required this.children,
     this.width,
     this.height,
+    this.elevation,
+    this.shape,
     this.alignment,
     this.padding,
     this.margin,
-    this.borderRadius,
     this.color,
     this.clipBehavior,
     this.mainAxisAlignment = MainAxisAlignment.start,
@@ -125,6 +126,7 @@ class WidgetGroupBlock extends StatelessWidget {
     this.verticalDirection = VerticalDirection.down,
     this.textDirection,
     this.textBaseline,
+    this.enableShadow = false,
   });
 
   final Widget title;
@@ -132,10 +134,11 @@ class WidgetGroupBlock extends StatelessWidget {
   final List<Widget> children;
   final double? width;
   final double? height;
+  final double? elevation;
+  final ShapeBorder? shape;
   final AlignmentGeometry? alignment;
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
-  final BorderRadiusGeometry? borderRadius;
   final Color? color;
   final Clip? clipBehavior;
   final MainAxisAlignment mainAxisAlignment;
@@ -144,15 +147,17 @@ class WidgetGroupBlock extends StatelessWidget {
   final TextDirection? textDirection;
   final VerticalDirection verticalDirection;
   final TextBaseline? textBaseline;
+  final bool enableShadow;
 
   Widget surface(Widget widget, ColorScheme colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: Material(
+      child: Card(
         clipBehavior: Clip.antiAlias,
-        borderRadius: borderRadius ?? kBorderRadius,
+        shape: shape,
         color: color ?? colorWithValue(colors.secondaryContainer, .1),
-        elevation: 2,
+        elevation: elevation ?? 2,
+        shadowColor: enableShadow ? null : Colors.transparent,
         child: widget,
       ),
     );
@@ -175,10 +180,6 @@ class WidgetGroupBlock extends StatelessWidget {
       alignment: alignment,
       margin: margin,
       padding: padding ?? const EdgeInsets.symmetric(vertical: 5),
-      decoration: BoxDecoration(
-        borderRadius: borderRadius ?? kBorderRadius,
-        color: colors.secondaryContainer,
-      ),
       child: Column(
         mainAxisAlignment: mainAxisAlignment,
         mainAxisSize: mainAxisSize,
@@ -261,11 +262,8 @@ class _AnimationController extends GetxController
 }
 
 Widget _defaultDivider() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 15),
-    child: Divider(
-      height: 1,
-      color: Get.theme.colorScheme.onPrimaryContainer.withOpacity(.2),
-    ),
+  return Divider(
+    height: 1,
+    color: Get.theme.colorScheme.onPrimaryContainer.withOpacity(.2),
   );
 }

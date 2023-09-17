@@ -15,13 +15,15 @@ void main() async {
 }
 
 Future<void> init() async {
-  await JavaUtil.init();
-  await AppConfig.init();
+  await Future.wait([
+    JavaUtil.init(),
+    AppConfig.init(),
+  ]);
   // 初始化窗口
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
   const windowSize = Size(kDefaultWindowWidth, kDefaultWindowHeight);
-  WindowOptions windowOptions = const WindowOptions(
+  const windowOptions = WindowOptions(
     size: windowSize,
     minimumSize: windowSize,
     center: true,
@@ -29,7 +31,7 @@ Future<void> init() async {
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
+  await windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
   });

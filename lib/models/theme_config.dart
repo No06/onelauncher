@@ -12,6 +12,18 @@ Color colorWithValue(Color color, double value) {
   return hsvColor.withValue(min(max(hsvColor.value + value, -1), 1)).toColor();
 }
 
+Color dynamicColorWithValue(
+  Color color,
+  double value,
+  double opposite,
+  Brightness brightness,
+) {
+  return colorWithValue(
+    color,
+    brightness == Brightness.light ? value : opposite,
+  );
+}
+
 @JsonSerializable()
 final class AppThemeConfig extends ChangeNotifier {
   AppThemeConfig({ThemeMode? mode, SeedColor? color})
@@ -38,7 +50,6 @@ final class AppThemeConfig extends ChangeNotifier {
         seedColor: color.color,
         brightness: Brightness.light,
       ),
-      textTheme: textTheme,
       useMaterial3: true,
     ).useSystemChineseFont();
   }
@@ -49,20 +60,9 @@ final class AppThemeConfig extends ChangeNotifier {
         seedColor: color.color,
         brightness: Brightness.dark,
       ),
-      listTileTheme: const ListTileThemeData(),
-      textTheme: textTheme,
       useMaterial3: true,
     ).useSystemChineseFont();
   }
-
-  TextTheme textTheme = const TextTheme(
-    labelLarge: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-  );
-
-  ListTileThemeData listTileTheme = const ListTileThemeData(
-    titleTextStyle: TextStyle(fontSize: 10),
-    subtitleTextStyle: TextStyle(fontSize: 10),
-  );
 
   factory AppThemeConfig.fromJson(Map<String, dynamic> json) =>
       _$AppThemeConfigFromJson(json);

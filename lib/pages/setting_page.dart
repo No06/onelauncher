@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/app_config.dart';
 import 'package:one_launcher/utils/java_util.dart';
+import 'package:one_launcher/widgets/route_page.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
 import 'package:one_launcher/widgets/values_notifier.dart';
 import 'package:flutter/material.dart' hide Dialog;
@@ -15,43 +16,37 @@ import 'package:one_launcher/widgets/widget_group.dart';
 
 import '../models/game_path_config.dart';
 import '/utils/sysinfo.dart';
-import '../widgets/route_page.dart';
 
 class SettingPage extends RoutePage {
-  const SettingPage({super.key});
+  const SettingPage({super.key, required super.pageName});
+
+  final tabs = const {
+    "全局游戏设置": _GlobalGameSettingPage(),
+    "启动器": _LauncherSettingPage(),
+  };
 
   @override
-  String routeName() => "设置";
-
-  @override
-  Widget build(BuildContext context) {
-    final tabs = {
-      "全局游戏设置": const _GlobalGameSettingPage(),
-      "启动器": _LauncherSettingPage(),
-    };
-    return DefaultTabController(
-      length: tabs.length,
-      animationDuration: const Duration(milliseconds: 350),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
-            child: title(),
-          ),
-          SizedBox(
-            height: 35,
-            child: TabBar(
-              isScrollable: true,
-              tabs: tabs.keys.map((text) => Tab(text: text)).toList(),
+  Widget body() {
+    return Expanded(
+      child: DefaultTabController(
+        length: tabs.length,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 35,
+              child: TabBar(
+                isScrollable: true,
+                tabs: tabs.keys.map((text) => Tab(text: text)).toList(),
+              ),
             ),
-          ),
-          Expanded(
-            child: TabBarView(
-              children: tabs.values.toList(),
+            Expanded(
+              child: TabBarView(
+                children: tabs.values.toList(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -60,28 +55,72 @@ class SettingPage extends RoutePage {
 abstract class _SettingBasePage extends StatelessWidget {
   const _SettingBasePage();
 
-  List<Widget> children(BuildContext context);
+  Widget body(BuildContext context);
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(15),
-      children: children(context),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      children: [body(context)],
     );
   }
 }
 
-class _GlobalGameSettingPage extends StatelessWidget {
+class _GlobalGameSettingPage extends _SettingBasePage {
   const _GlobalGameSettingPage();
 
+  Widget resolutionTextField(
+    int value, {
+    void Function(String value)? onSubmitted,
+  }) {
+    final controller = TextEditingController(text: value.toString());
+    final focusNode = FocusNode();
+    focusNode.addListener(() {
+      if (!focusNode.hasFocus && onSubmitted != null) {
+        onSubmitted(controller.text);
+      }
+      return;
+    });
+    return TextField(
+      controller: controller,
+      focusNode: focusNode,
+      keyboardType: TextInputType.number,
+      maxLength: 4,
+      decoration: const InputDecoration(
+        counterText: "",
+      ),
+      onSubmitted: onSubmitted,
+    );
+  }
+
+  Widget textField(
+    String text, {
+    void Function(String value)? onSubmitted,
+    void Function(String)? onChanged,
+  }) {
+    final controller = TextEditingController(text: text);
+    final focusNode = FocusNode();
+    focusNode.addListener(() {
+      if (!focusNode.hasFocus && onSubmitted != null) {
+        onSubmitted(controller.text);
+      }
+      return;
+    });
+    return TextField(
+      controller: controller,
+      focusNode: focusNode,
+      onSubmitted: onSubmitted,
+      onChanged: onChanged,
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget body(BuildContext context) {
     final gameSetting = appConfig.gameSetting;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final totalMemSize = SysInfo.totalPhyMem / kMegaByte;
-    return ListView(
-      padding: const EdgeInsets.all(15),
+    return Column(
       children: [
         TitleWidgetGroup(
           "Java",
@@ -407,219 +446,172 @@ class _GlobalGameSettingPage extends StatelessWidget {
       ],
     );
   }
-
-  Widget resolutionTextField(
-    int value, {
-    void Function(String value)? onSubmitted,
-  }) {
-    final controller = TextEditingController(text: value.toString());
-    final focusNode = FocusNode();
-    focusNode.addListener(() {
-      if (!focusNode.hasFocus && onSubmitted != null) {
-        onSubmitted(controller.text);
-      }
-      return;
-    });
-    return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      keyboardType: TextInputType.number,
-      maxLength: 4,
-      decoration: const InputDecoration(
-        counterText: "",
-      ),
-      onSubmitted: onSubmitted,
-    );
-  }
-
-  Widget textField(
-    String text, {
-    void Function(String value)? onSubmitted,
-    void Function(String)? onChanged,
-  }) {
-    final controller = TextEditingController(text: text);
-    final focusNode = FocusNode();
-    focusNode.addListener(() {
-      if (!focusNode.hasFocus && onSubmitted != null) {
-        onSubmitted(controller.text);
-      }
-      return;
-    });
-    return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      onSubmitted: onSubmitted,
-      onChanged: onChanged,
-    );
-  }
 }
 
 class _LauncherSettingPage extends _SettingBasePage {
-  _LauncherSettingPage();
-  final formKey = GlobalKey<FormState>();
-  final theme = Get.theme;
+  const _LauncherSettingPage();
 
   @override
-  List<Widget> children(context) {
-    return [
-      TitleWidgetGroup(
-        "游戏目录",
-        children: [
-          ListTile(
-            title: const Text("游戏搜索目录"),
-            onTap: () => showDialog(
-              context: Get.context!,
-              builder: (_) => DefaultDialog(
-                title: Row(
-                  children: [
-                    const Text("游戏搜索目录"),
-                    IconButton(
-                      onPressed: () => showDialog(
-                        context: context,
-                        builder: (context) => WarningDialog(
-                          content: const Text("你确定要重置游戏目录吗？"),
-                          onConfirmed: () {
-                            appConfig.resetPaths();
-                            dialogPop();
-                          },
-                        ),
-                      ),
-                      icon: const Icon(Icons.refresh),
-                    ),
-                    const Spacer(),
-                    FloatingActionButton(
-                      mini: true,
-                      child: const Icon(Icons.add),
-                      onPressed: () => showDialog(
-                        context: Get.context!,
-                        builder: (_) {
-                          final name = TextEditingController();
-                          final path = TextEditingController();
-                          return DefaultDialog(
-                            title: const Text("添加游戏搜索目录"),
-                            onConfirmed: () {
-                              if (formKey.currentState!.validate()) {
-                                if (appConfig.paths.add(GamePath(
-                                    name: name.text, path: path.text))) {
-                                  dialogPop();
-                                  Get.showSnackbar(successSnackBar("添加成功！"));
-                                } else {
-                                  Get.showSnackbar(errorSnackBar("已有重复目录"));
-                                }
-                              }
-                            },
-                            onCanceled: dialogPop,
-                            confirmText: const Text("添加"),
-                            content: SizedBox(
-                              width: 450,
-                              child: Form(
-                                key: formKey,
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextFormField(
-                                      controller: name,
-                                      maxLength: 20,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return '不能为空';
-                                        }
-                                        return null;
-                                      },
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                            borderRadius: kBorderRadius),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: kBorderRadius,
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey),
-                                        ),
-                                        labelText: "别名",
-                                      ),
-                                    ),
-                                    const SizedBox(height: 0),
-                                    TextFormField(
-                                      readOnly: true,
-                                      controller: path,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return '不能为空';
-                                        }
-                                        return null;
-                                      },
-                                      decoration: InputDecoration(
-                                        hintText: "请选择一个目录",
-                                        icon: IconButton(
-                                          onPressed: () async {
-                                            final folder = await folderPicker();
-                                            if (folder != null) {
-                                              path.text = folder.path;
-                                            }
-                                          },
-                                          icon: const Icon(Icons.folder_open),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
+  Widget body(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    final theme = Get.theme;
+    return TitleWidgetGroup(
+      "游戏目录",
+      children: [
+        ListTile(
+          title: const Text("游戏搜索目录"),
+          onTap: () => showDialog(
+            context: Get.context!,
+            builder: (_) => DefaultDialog(
+              title: Row(
+                children: [
+                  const Text("游戏搜索目录"),
+                  IconButton(
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (context) => WarningDialog(
+                        content: const Text("你确定要重置游戏目录吗？"),
+                        onConfirmed: () {
+                          appConfig.resetPaths();
+                          dialogPop();
                         },
                       ),
                     ),
-                  ],
-                ),
-                onlyConfirm: true,
-                onConfirmed: dialogPop,
-                content: SizedBox(
-                  width: 500,
-                  child: Obx(
-                    () => ListView(
-                      shrinkWrap: true,
-                      children: appConfig.paths
-                          .map(
-                            (path) => Card(
-                              color:
-                                  colorWithValue(theme.colorScheme.surface, .1),
-                              child: ListTile(
-                                title: Text(path.name),
-                                subtitle: Text(
-                                  path.path,
-                                  style: TextStyle(
-                                    color: colorWithValue(
-                                        theme.colorScheme.onSurface, -.1),
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () => showDialog(
-                                    context: context,
-                                    builder: (context) => WarningDialog(
-                                      content: const Text("你确定要删除这条数据吗？"),
-                                      onConfirmed: () {
-                                        appConfig.paths.remove(path);
-                                        dialogPop();
-                                      },
+                    icon: const Icon(Icons.refresh),
+                  ),
+                  const Spacer(),
+                  FloatingActionButton(
+                    mini: true,
+                    child: const Icon(Icons.add),
+                    onPressed: () => showDialog(
+                      context: Get.context!,
+                      builder: (_) {
+                        final name = TextEditingController();
+                        final path = TextEditingController();
+                        return DefaultDialog(
+                          title: const Text("添加游戏搜索目录"),
+                          onConfirmed: () {
+                            if (formKey.currentState!.validate()) {
+                              if (appConfig.paths.add(
+                                  GamePath(name: name.text, path: path.text))) {
+                                dialogPop();
+                                Get.showSnackbar(successSnackBar("添加成功！"));
+                              } else {
+                                Get.showSnackbar(errorSnackBar("已有重复目录"));
+                              }
+                            }
+                          },
+                          onCanceled: dialogPop,
+                          confirmText: const Text("添加"),
+                          content: SizedBox(
+                            width: 450,
+                            child: Form(
+                              key: formKey,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextFormField(
+                                    controller: name,
+                                    maxLength: 20,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return '不能为空';
+                                      }
+                                      return null;
+                                    },
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(
+                                          borderRadius: kBorderRadius),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: kBorderRadius,
+                                        borderSide: const BorderSide(
+                                            color: Colors.grey),
+                                      ),
+                                      labelText: "别名",
                                     ),
+                                  ),
+                                  const SizedBox(height: 0),
+                                  TextFormField(
+                                    readOnly: true,
+                                    controller: path,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return '不能为空';
+                                      }
+                                      return null;
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: "请选择一个目录",
+                                      icon: IconButton(
+                                        onPressed: () async {
+                                          final folder = await folderPicker();
+                                          if (folder != null) {
+                                            path.text = folder.path;
+                                          }
+                                        },
+                                        icon: const Icon(Icons.folder_open),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              onlyConfirm: true,
+              onConfirmed: dialogPop,
+              content: SizedBox(
+                width: 500,
+                child: Obx(
+                  () => ListView(
+                    shrinkWrap: true,
+                    children: appConfig.paths
+                        .map(
+                          (path) => Card(
+                            color:
+                                colorWithValue(theme.colorScheme.surface, .1),
+                            child: ListTile(
+                              title: Text(path.name),
+                              subtitle: Text(
+                                path.path,
+                                style: TextStyle(
+                                  color: colorWithValue(
+                                      theme.colorScheme.onSurface, -.1),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => showDialog(
+                                  context: context,
+                                  builder: (context) => WarningDialog(
+                                    content: const Text("你确定要删除这条数据吗？"),
+                                    onConfirmed: () {
+                                      appConfig.paths.remove(path);
+                                      dialogPop();
+                                    },
                                   ),
                                 ),
                               ),
                             ),
-                          )
-                          .toList(),
-                    ),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
               ),
             ),
           ),
-        ],
-      ),
-    ];
+        ),
+      ],
+    );
   }
 }
 

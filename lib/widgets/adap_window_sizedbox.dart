@@ -32,6 +32,16 @@ class _AdaptiveWindowStateSizedBox extends State<AdaptiveWindowSizedBox>
   }
 
   @override
+  void onWindowMaximize() {
+    setState(() {});
+  }
+
+  @override
+  void onWindowUnmaximize() {
+    setState(() {});
+  }
+
+  @override
   void onWindowResize() {
     setState(() {});
   }

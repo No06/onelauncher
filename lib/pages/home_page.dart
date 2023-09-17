@@ -3,19 +3,40 @@ import 'package:one_launcher/app.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_launcher/models/game/game.dart';
-import 'package:one_launcher/pages/game_page.dart';
 
 import 'account_page.dart';
 import 'game_library_page.dart';
 import 'appearance_page.dart';
 import 'setting_page.dart';
 
-const _kDefaultRouteName = "/home";
-final _currentRouteName = _kDefaultRouteName.obs;
+const _kDefaultRoutePath = "/home";
+final _currentRoutePath = _kDefaultRoutePath.obs;
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  HomePage({super.key});
+
+  final routes = <String, Map<String, dynamic>>{
+    "/account": {
+      "name": "账户",
+      "icon": Icons.people_outline,
+      "selectedIcon": Icons.people
+    },
+    "/home": {
+      "name": "开始游戏",
+      "icon": Icons.sports_esports_outlined,
+      "selectedIcon": Icons.sports_esports
+    },
+    "/appearance": {
+      "name": "外观",
+      "icon": Icons.palette_outlined,
+      "selectedIcon": Icons.palette
+    },
+    "/setting": {
+      "name": "设置",
+      "icon": Icons.settings_outlined,
+      "selectedIcon": Icons.settings
+    }
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +47,9 @@ class HomePage extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                _Navigation(),
+                _Navigation(routes: routes),
                 const VerticalDivider(width: 1),
-                const _NavigationView(),
+                _NavigationView(routes: routes),
               ],
             ),
           ),
@@ -94,34 +115,9 @@ class _NavigationButton extends StatelessWidget {
 }
 
 class _Navigation extends StatelessWidget {
-  _Navigation();
+  const _Navigation({required this.routes});
 
-  final routes = <Map<String, dynamic>>[
-    {
-      "name": "用户",
-      "path": "/account",
-      "icon": Icons.people_outline,
-      "selectedIcon": Icons.people
-    },
-    {
-      "name": "开始游戏",
-      "path": "/home",
-      "icon": Icons.sports_esports_outlined,
-      "selectedIcon": Icons.sports_esports
-    },
-    {
-      "name": "外观",
-      "path": "/appearance",
-      "icon": Icons.palette_outlined,
-      "selectedIcon": Icons.palette
-    },
-    {
-      "name": "设置",
-      "path": "/setting",
-      "icon": Icons.settings_outlined,
-      "selectedIcon": Icons.settings
-    }
-  ];
+  final Map<String, Map> routes;
 
   @override
   Widget build(BuildContext context) {
@@ -131,20 +127,23 @@ class _Navigation extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
       child: Column(
         children: [
-          ...routes.map((route) {
-            final routePath = route['path'];
+          ...routes.entries.map((route) {
+            final routePath = route.key;
             final selectedColor = Theme.of(context).colorScheme.onPrimary;
             return Obx(() {
-              final isSelected = routePath == _currentRouteName.value;
+              final isSelected = routePath == _currentRoutePath.value;
               return _NavigationButton(
-                name: route["name"],
-                icon: Icon(route["icon"]),
-                selectedIcon: Icon(route["selectedIcon"], color: selectedColor),
+                name: route.value["name"],
+                icon: Icon(route.value["icon"]),
+                selectedIcon: Icon(
+                  route.value["selectedIcon"],
+                  color: selectedColor,
+                ),
                 elevation: isSelected ? 3 : 0,
                 isSelected: isSelected,
                 onTap: () {
-                  _currentRouteName(route["path"]);
-                  Get.offNamed(id: 1, route["path"]);
+                  _currentRoutePath(route.key);
+                  Get.offNamed(id: 1, route.key);
                 },
               );
             });
@@ -158,7 +157,9 @@ class _Navigation extends StatelessWidget {
 }
 
 class _NavigationView extends StatelessWidget {
-  const _NavigationView();
+  const _NavigationView({required this.routes});
+
+  final Map<String, Map> routes;
 
   Route createRoute(final Widget widget) {
     return PageRouteBuilder(
@@ -193,19 +194,25 @@ class _NavigationView extends StatelessWidget {
         clipBehavior: Clip.hardEdge,
         child: Navigator(
           key: Get.nestedKey(1),
-          initialRoute: _kDefaultRouteName,
+          initialRoute: _kDefaultRoutePath,
           onGenerateRoute: (settings) {
             switch (settings.name) {
               case '/account':
-                return createRoute(const AccountPage());
+                return createRoute(AccountPage(
+                  pageName: routes['/account']!['name'],
+                ));
               case '/home':
-                return createRoute(const GameLibraryPage());
+                return createRoute(GameLibraryPage(
+                  pageName: routes['/home']!['name'],
+                ));
               case '/appearance':
-                return createRoute(const AppearancePage());
+                return createRoute(AppearancePage(
+                  pageName: routes['/appearance']!['name'],
+                ));
               case '/setting':
-                return createRoute(const SettingPage());
-              case '/game':
-                return createRoute(GamePage(game: settings.arguments as Game));
+                return createRoute(SettingPage(
+                  pageName: routes['/setting']!['name'],
+                ));
             }
             return null;
           },
