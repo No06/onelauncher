@@ -9,7 +9,7 @@ part of 'version.dart';
 Version _$VersionFromJson(Map<String, dynamic> json) => Version(
       json['id'] as String,
       json['mainClass'] as String,
-      json['jar'] as String,
+      json['jar'] as String?,
       AssetIndex.fromJson(json['assetIndex'] as Map<String, dynamic>),
       JavaVersion.fromJson(json['javaVersion'] as Map<String, dynamic>),
       (json['libraries'] as List<dynamic>)

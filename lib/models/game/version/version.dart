@@ -24,7 +24,7 @@ class Version {
 
   final String id;
   final String mainClass;
-  final String jar;
+  final String? jar;
   final AssetIndex assetIndex;
   final JavaVersion javaVersion;
   final List<Librarie> libraries;

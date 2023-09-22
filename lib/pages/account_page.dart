@@ -15,42 +15,29 @@ import '/widgets/dialog.dart';
 import '../widgets/snackbar.dart';
 
 class AccountPage extends RoutePage {
-  const AccountPage({super.key, required super.pageName});
-
-  @override
-  PreferredSizeWidget appbar() {
-    return AppBar(
-      title: Text(pageName),
-      actions: [
-        FilledButton(
-          onPressed: () => showDialog(
-            context: Get.context!,
-            builder: (context) => _AddAccountDialog(
-              onSubmit: (account) {
-                if (appConfig.accounts.add(account)) {
-                  appConfig.selectedAccount ??= account;
-                  dialogPop();
-                  Get.showSnackbar(successSnackBar("添加成功！"));
-                } else {
-                  Get.showSnackbar(errorSnackBar("已有重复账号"));
-                }
-              },
+  AccountPage({super.key, required super.pageName})
+      : super(
+          actions: [
+            FloatingActionButton.small(
+              onPressed: () => showDialog(
+                context: Get.context!,
+                builder: (context) => _AddAccountDialog(
+                  onSubmit: (account) {
+                    if (appConfig.accounts.add(account)) {
+                      appConfig.selectedAccount ??= account;
+                      dialogPop();
+                      Get.showSnackbar(successSnackBar("添加成功！"));
+                    } else {
+                      Get.showSnackbar(errorSnackBar("已有重复账号"));
+                    }
+                  },
+                ),
+              ),
+              child: const Icon(Icons.add),
             ),
-          ),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              children: [
-                Icon(Icons.add),
-                Text("添加用户"),
-                SizedBox(width: 7),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+            const SizedBox(width: 16),
+          ],
+        );
 
   @override
   Widget body() {
@@ -127,7 +114,7 @@ class _AccountItem extends HookWidget {
         onExit: (event) => isHover(false),
         child: Container(
           height: 58,
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: 12),
           child: Obx(
             () => AnimatedContainer(
               duration: const Duration(milliseconds: 100),
@@ -149,7 +136,10 @@ class _AccountItem extends HookWidget {
                                   unSelectedColor, -0.1, 0.1, theme.brightness)
                               : unSelectedColor,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: Row(
                       children: [
                         Wrap(

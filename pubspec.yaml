@@ -47,6 +47,7 @@ dependencies:
   flutter_hooks: ^0.20.1
   code_builder: ^4.6.0
   chinese_font_library: ^1.0.1
+  dropdown_button2: ^2.3.9
 
 dev_dependencies:
 

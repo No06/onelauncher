@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 
 abstract class RoutePage extends StatelessWidget {
-  const RoutePage({super.key, required this.pageName});
+  const RoutePage({
+    super.key,
+    required this.pageName,
+    this.actions,
+  });
 
   final String pageName;
+  final List<Widget>? actions;
 
-  PreferredSizeWidget appbar() => AppBar(title: Text(pageName));
+  Widget appbar() => AppBar(
+        title: Text(pageName),
+        actions: actions,
+      );
   Widget body();
 
   @override
