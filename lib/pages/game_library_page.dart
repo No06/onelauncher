@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/app_config.dart';
+import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game_path_config.dart';
 import 'package:one_launcher/utils/build_widgets_with_divider.dart';
 import 'package:one_launcher/utils/file_picker.dart';
@@ -236,10 +239,13 @@ class _HomePage extends StatelessWidget {
     );
   }
 
-  // TODO: 优化搜索存储结果
+  final _completer = Completer<List<Game>>();
   Widget _buildSliverList() {
+    if (!_completer.isCompleted) {
+      _completer.complete(appConfig.getGamesOnPaths);
+    }
     return FutureBuilder(
-      future: appConfig.getGamesOnPaths,
+      future: _completer.future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SliverFillRemaining(
