@@ -16,9 +16,9 @@ ArtifactLibrarie _$ArtifactLibrarieFromJson(Map<String, dynamic> json) =>
       extract: json['extract'] == null
           ? null
           : Extract.fromJson(json['extract'] as Map<String, dynamic>),
-      natives: (json['natives'] as List<dynamic>?)
-          ?.map((e) => $enumDecode(_$NativeEnumMap, e))
-          .toSet(),
+      natives: (json['natives'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry($enumDecode(_$OsNameEnumMap, k), e as String),
+      ),
     );
 
 Map<String, dynamic> _$ArtifactLibrarieToJson(ArtifactLibrarie instance) =>
@@ -27,11 +27,12 @@ Map<String, dynamic> _$ArtifactLibrarieToJson(ArtifactLibrarie instance) =>
       'downloads': instance.downloads,
       'rules': instance.rules,
       'extract': instance.extract,
-      'natives': instance.natives?.map((e) => _$NativeEnumMap[e]!).toList(),
+      'natives':
+          instance.natives?.map((k, e) => MapEntry(_$OsNameEnumMap[k]!, e)),
     };
 
-const _$NativeEnumMap = {
-  Native.osx: 'osx',
-  Native.linux: 'linux',
-  Native.windows: 'windows',
+const _$OsNameEnumMap = {
+  OsName.windows: 'windows',
+  OsName.linux: 'linux',
+  OsName.osx: 'osx',
 };

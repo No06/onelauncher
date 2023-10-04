@@ -1,7 +1,7 @@
 import 'package:one_launcher/models/game/version/librarie/downloads.dart';
 import 'package:one_launcher/models/game/version/librarie/extract.dart';
 import 'package:one_launcher/models/game/version/librarie/librarie.dart';
-import 'package:one_launcher/models/game/version/native.dart';
+import 'package:one_launcher/models/game/version/os.dart';
 import 'package:one_launcher/models/game/version/rule.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -20,7 +20,7 @@ class ArtifactLibrarie extends Librarie {
   final Downloads downloads;
   final List<Rule>? rules;
   final Extract? extract;
-  final Set<Native>? natives;
+  final Map<OsName, String>? natives;
 
   factory ArtifactLibrarie.fromJson(Map<String, dynamic> json) =>
       _$ArtifactLibrarieFromJson(json);

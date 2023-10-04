@@ -48,6 +48,7 @@ dependencies:
   code_builder: ^4.6.0
   chinese_font_library: ^1.0.1
   dropdown_button2: ^2.3.9
+  async: ^2.11.0
 
 dev_dependencies:
 

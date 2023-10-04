@@ -17,19 +17,37 @@ import 'package:path/path.dart';
 part 'app_config.g.dart';
 
 final appConfig = AppConfig.instance;
-const _kDelimiter = "@";
+const kGameDirectoryName = '.minecraft';
+const _kAccountDelimiter = "@";
 final _kDefaultGamePaths = {
   GamePath(
     name: "启动器目录",
-    path: join(File(Platform.resolvedExecutable).parent.path, '.minecraft'),
+    path:
+        join(File(Platform.resolvedExecutable).parent.path, kGameDirectoryName),
   ),
   GamePath(
     name: "官方启动器目录",
-    path: join(
-        Platform.environment['APPDATA'] ??
-            "C:\\Users\\${Platform.environment['USERNAME']}\\AppData",
-        'Roadming',
-        '.minecraft'),
+    path: () {
+      if (Platform.isWindows) {
+        if (Platform.environment['APPDATA'] == null) {
+          throw Exception("未找到环境变量 'APPDATE'");
+        }
+        return join(Platform.environment['APPDATA']!, kGameDirectoryName);
+      }
+      if (Platform.isLinux || Platform.isMacOS) {
+        if (Platform.environment['HOME'] == null) {
+          throw Exception("未找到环境变量 'HOME'");
+        }
+        if (Platform.isLinux) {
+          return join(Platform.environment['HOME']!, kGameDirectoryName);
+        }
+        if (Platform.isMacOS) {
+          return join(Platform.environment['HOME']!, "Library",
+              "Application Support", "minecraft");
+        }
+      }
+      throw Exception("不支持的系统类型");
+    }(),
   ),
 };
 
@@ -83,14 +101,16 @@ final class AppConfig {
     final selectedAccount = account;
     if (selectedAccount == null) return null;
 
-    return selectedAccount.type.name + _kDelimiter + selectedAccount.uuid;
+    return selectedAccount.type.name +
+        _kAccountDelimiter +
+        selectedAccount.uuid;
   }
 
   static Account? _selectedAccountFromJson(
       String? str, Set<Account>? accounts) {
     if (str == null) return null;
 
-    final parts = str.split(_kDelimiter);
+    final parts = str.split(_kAccountDelimiter);
     final sType = parts[0];
     final sUuid = parts[1];
     for (AccountType type in AccountType.values) {

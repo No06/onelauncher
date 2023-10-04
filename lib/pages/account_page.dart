@@ -40,7 +40,7 @@ class AccountPage extends RoutePage {
         );
 
   @override
-  Widget body() {
+  Widget body(BuildContext context) {
     return ListView(
       shrinkWrap: true,
       padding: const EdgeInsets.all(15),
@@ -77,7 +77,7 @@ class AccountPage extends RoutePage {
 }
 
 // TODO: 加载卡顿
-class _AccountItem extends HookWidget {
+class _AccountItem extends StatelessWidget {
   const _AccountItem({
     super.key,
     required this.account,
@@ -98,8 +98,6 @@ class _AccountItem extends HookWidget {
     final selectedColor = colors.primary;
     final unSelectedColor = colorWithValue(colors.surface, .1);
     final fontColor = isSelected ? colors.onPrimary : colors.onSurface;
-    final future = useMemoized(() => account.skin.drawAvatar());
-    final snapshot = useFuture(future);
     final isTapDown = false.obs;
     final isHover = false.obs;
 
@@ -163,25 +161,30 @@ class _AccountItem extends HookWidget {
                                       ],
                                     ),
                                   ),
-                                  () {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.done) {
-                                      if (snapshot.hasError) {
-                                        return const Icon(Icons.error);
+                                  HookBuilder(
+                                    builder: (_) {
+                                      final future = useMemoized(
+                                          () => account.skin.drawAvatar());
+                                      final snapshot = useFuture(future);
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.done) {
+                                        if (snapshot.hasError) {
+                                          return const Icon(Icons.error);
+                                        } else {
+                                          return Image.memory(
+                                            snapshot.data!,
+                                            fit: BoxFit.contain,
+                                          );
+                                        }
                                       } else {
-                                        return Image.memory(
-                                          snapshot.data!,
-                                          fit: BoxFit.contain,
+                                        return CircularProgressIndicator(
+                                          color: isSelected
+                                              ? colors.onPrimary
+                                              : null,
                                         );
                                       }
-                                    } else {
-                                      return CircularProgressIndicator(
-                                        color: isSelected
-                                            ? colors.onPrimary
-                                            : null,
-                                      );
-                                    }
-                                  }(),
+                                    },
+                                  ),
                                 ],
                               ),
                             ),

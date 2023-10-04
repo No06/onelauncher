@@ -8,15 +8,15 @@ part of 'os_rule.dart';
 
 OsRule _$OsRuleFromJson(Map<String, dynamic> json) => OsRule(
       Os.fromJson(json['os'] as Map<String, dynamic>),
-      action: $enumDecode(_$ActionEnumMap, json['action']),
+      action: $enumDecode(_$RuleActionEnumMap, json['action']),
     );
 
 Map<String, dynamic> _$OsRuleToJson(OsRule instance) => <String, dynamic>{
-      'action': _$ActionEnumMap[instance.action]!,
+      'action': _$RuleActionEnumMap[instance.action]!,
       'os': instance.os,
     };
 
-const _$ActionEnumMap = {
-  Action.allow: 'allow',
-  Action.disallow: 'disallow',
+const _$RuleActionEnumMap = {
+  RuleAction.allow: 'allow',
+  RuleAction.disallow: 'disallow',
 };

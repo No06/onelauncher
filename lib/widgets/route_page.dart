@@ -14,7 +14,7 @@ abstract class RoutePage extends StatelessWidget {
         title: Text(pageName),
         actions: actions,
       );
-  Widget body();
+  Widget body(BuildContext context);
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ abstract class RoutePage extends StatelessWidget {
           ),
           child: appbar(),
         ),
-        body(),
+        body(context),
       ],
     );
   }

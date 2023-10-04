@@ -28,7 +28,7 @@ class AppearancePage extends RoutePage {
   }
 
   @override
-  Widget body() {
+  Widget body(BuildContext context) {
     const radioValues = {
       ThemeMode.system: "跟随系统",
       ThemeMode.light: "浅色",

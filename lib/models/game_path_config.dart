@@ -45,10 +45,16 @@ class GamePath extends ChangeNotifier {
           await File(json).exists()) {
         var gameConfig = File(join(dir.path, kGameConfigName));
         if (gameConfig.existsSync()) {
-          results.add(Game.fromJson(
-              dir.path, jsonDecode(gameConfig.readAsStringSync())));
+          results.add(
+            Game.fromJson(
+              _path.value,
+              dir.path.substring(_path.value.length),
+              jsonDecode(gameConfig.readAsStringSync()),
+            ),
+          );
         } else {
-          results.add(Game(dir.path));
+          results.add(
+              Game(_path.value, dir.path.substring(_path.value.length + 1)));
         }
       }
     }

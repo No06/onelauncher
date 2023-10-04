@@ -19,4 +19,6 @@ enum OsName {
 
   const OsName(this.name);
   final String name;
+
+  factory OsName.fromName(String name) => $enumDecode(_$OsNameEnumMap, name);
 }

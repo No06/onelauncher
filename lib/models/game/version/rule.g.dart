@@ -7,14 +7,14 @@ part of 'rule.dart';
 // **************************************************************************
 
 Rule _$RuleFromJson(Map<String, dynamic> json) => Rule(
-      action: $enumDecode(_$ActionEnumMap, json['action']),
+      action: $enumDecode(_$RuleActionEnumMap, json['action']),
     );
 
 Map<String, dynamic> _$RuleToJson(Rule instance) => <String, dynamic>{
-      'action': _$ActionEnumMap[instance.action]!,
+      'action': _$RuleActionEnumMap[instance.action]!,
     };
 
-const _$ActionEnumMap = {
-  Action.allow: 'allow',
-  Action.disallow: 'disallow',
+const _$RuleActionEnumMap = {
+  RuleAction.allow: 'allow',
+  RuleAction.disallow: 'disallow',
 };

@@ -1,12 +1,10 @@
-import 'dart:async';
-
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/app_config.dart';
-import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game_path_config.dart';
+import 'package:one_launcher/pages/game_startup_page.dart';
 import 'package:one_launcher/utils/build_widgets_with_divider.dart';
 import 'package:one_launcher/utils/file_picker.dart';
 import 'package:one_launcher/widgets/dialog.dart';
@@ -22,7 +20,7 @@ class GameLibraryPage extends RoutePage {
   };
 
   @override
-  Widget body() {
+  Widget body(BuildContext context) {
     return DefaultTabController(
       length: tabs.length,
       child: Expanded(
@@ -239,14 +237,13 @@ class _HomePage extends StatelessWidget {
     );
   }
 
-  final _completer = Completer<List<Game>>();
   Widget _buildSliverList() {
-    if (!_completer.isCompleted) {
-      _completer.complete(appConfig.getGamesOnPaths);
-    }
     return FutureBuilder(
-      future: _completer.future,
+      future: appConfig.getGamesOnPaths,
       builder: (context, snapshot) {
+        final theme = Theme.of(context);
+        final textTheme = theme.textTheme;
+        final colors = theme.colorScheme;
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SliverFillRemaining(
             child: Center(child: CircularProgressIndicator()),
@@ -259,20 +256,67 @@ class _HomePage extends StatelessWidget {
         } else {
           return SliverList.list(
             children: buildWidgetsWithDivider(
-              snapshot.data!
-                  .map<Widget>(
-                    (game) => ListTile(
-                      leading: const FlutterLogo(size: 36),
-                      title: Text(game.version.id),
-                      subtitle: Text(game.path),
-                      subtitleTextStyle:
-                          Theme.of(context).textTheme.bodySmall!.copyWith(
-                                color: Theme.of(context).colorScheme.outline,
-                              ),
-                      onTap: () {},
+              snapshot.data!.map<Widget>((game) {
+                final isHover = false.obs;
+                return MouseRegion(
+                  onEnter: (_) => isHover(true),
+                  onExit: (_) => isHover(false),
+                  child: ListTile(
+                    leading: const FlutterLogo(size: 36),
+                    title: Text(game.version.id),
+                    subtitle: Text(game.path),
+                    subtitleTextStyle: textTheme.bodySmall!.copyWith(
+                      color: colors.outline,
                     ),
-                  )
-                  .toList(),
+                    trailing: Obx(() {
+                      if (isHover.value) {
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: FloatingActionButton.extended(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: kBorderRadius,
+                                ),
+                                backgroundColor: colors.primary,
+                                onPressed: () => Navigator.push(
+                                  Get.context!,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        GameStartupPage(game: game),
+                                  ),
+                                ),
+                                heroTag: null,
+                                icon: Icon(
+                                  Icons.play_arrow,
+                                  color: colors.onPrimary,
+                                ),
+                                label: Text(
+                                  "开始游戏",
+                                  style: TextStyle(color: colors.onPrimary),
+                                ),
+                              ),
+                            ),
+                            // TODO: 打开游戏目录
+                            IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.folder),
+                            ),
+                            // TODO: 更多操作
+                            IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.more_horiz),
+                            ),
+                          ],
+                        );
+                      }
+                      return const SizedBox();
+                    }),
+                    onTap: () {},
+                  ),
+                );
+              }).toList(),
               const Divider(height: 1, indent: 64, endIndent: 32),
             ),
           );
@@ -343,7 +387,7 @@ class _ConfigurationPage extends StatelessWidget {
                 builder: (context) {
                   var isHover = false.obs;
                   return MouseRegion(
-                    onHover: (_) => isHover(true),
+                    onEnter: (_) => isHover(true),
                     onExit: (_) => isHover(false),
                     child: ListTile(
                       title: Text(path.name),
@@ -390,7 +434,7 @@ class _ConfigurationPage extends StatelessWidget {
                       final name = TextEditingController();
                       final path = TextEditingController();
                       return DefaultDialog(
-                        title: const Text("添加游戏搜索目录"),
+                        title: const Text("添加游戏目录"),
                         onConfirmed: () {
                           if (formKey.currentState!.validate()) {
                             if (appConfig.paths.add(

@@ -23,7 +23,7 @@ class SettingPage extends RoutePage {
   };
 
   @override
-  Widget body() {
+  Widget body(BuildContext context) {
     return Expanded(
       child: DefaultTabController(
         length: tabs.length,
@@ -151,31 +151,32 @@ class _GlobalGameSettingPage extends _SettingBasePage {
                       color: Colors.transparent,
                       borderRadius: kBorderRadius,
                       clipBehavior: Clip.antiAlias,
-                      child: ValueListenableBuilder(
-                        valueListenable: gameSetting.javaNotifier,
-                        builder: (_, java, __) => Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                                RadioListTile(
-                                  value: null,
-                                  groupValue: java,
-                                  title: const Text("自动选择最佳版本"),
-                                  onChanged: (value) =>
-                                      gameSetting.java = value,
-                                ),
-                              ] +
-                              JavaUtil.set
-                                  .map(
-                                    (e) => RadioListTile(
-                                      value: e,
-                                      groupValue: java,
-                                      title: Text(e.versionNumber),
-                                      subtitle: Text(e.path),
-                                      onChanged: (value) =>
-                                          gameSetting.java = value,
-                                    ),
-                                  )
-                                  .toList(),
+                      child: SingleChildScrollView(
+                        child: ValueListenableBuilder(
+                          valueListenable: gameSetting.javaNotifier,
+                          builder: (_, java, __) => Column(
+                            children: [
+                                  RadioListTile(
+                                    value: null,
+                                    groupValue: java,
+                                    title: const Text("自动选择最佳版本"),
+                                    onChanged: (value) =>
+                                        gameSetting.java = value,
+                                  ),
+                                ] +
+                                JavaUtil.set
+                                    .map(
+                                      (e) => RadioListTile(
+                                        value: e,
+                                        groupValue: java,
+                                        title: Text(e.versionNumber),
+                                        subtitle: Text(e.path),
+                                        onChanged: (value) =>
+                                            gameSetting.java = value,
+                                      ),
+                                    )
+                                    .toList(),
+                          ),
                         ),
                       ),
                     ),

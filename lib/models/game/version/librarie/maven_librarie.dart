@@ -1,12 +1,14 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/game/version/librarie/librarie.dart';
 
 part 'maven_librarie.g.dart';
 
 @JsonSerializable()
-class MavenLibrarie {
-  MavenLibrarie(this.name, this.url) : _nameSplit = name.split(":");
+class MavenLibrarie extends Librarie {
+  MavenLibrarie(String name, this.url)
+      : _nameSplit = name.split(":"),
+        super(name: name);
 
-  final String name;
   final String url;
 
   final List<String> _nameSplit;

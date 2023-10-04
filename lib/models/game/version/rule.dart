@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/game/version/os_rule.dart';
 
 part 'rule.g.dart';
 
@@ -6,16 +7,21 @@ part 'rule.g.dart';
 class Rule {
   Rule({required this.action});
 
-  final Action action;
+  final RuleAction action;
 
-  factory Rule.fromJson(Map<String, dynamic> json) => _$RuleFromJson(json);
+  factory Rule.fromJson(Map<String, dynamic> json) {
+    if (json['os'] != null) {
+      return OsRule.fromJson(json);
+    }
+    return _$RuleFromJson(json);
+  }
 }
 
 @JsonEnum()
-enum Action {
+enum RuleAction {
   allow("allow"),
   disallow("disallow");
 
-  const Action(this.action);
+  const RuleAction(this.action);
   final String action;
 }
