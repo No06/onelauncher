@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:one_launcher/app.dart';
 import 'package:one_launcher/models/game/game.dart';
-import 'package:one_launcher/models/game/version/librarie/librarie.dart';
+import 'package:one_launcher/pages/simple_app_page.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 
 class GameStartupPage extends StatelessWidget {
@@ -12,95 +11,100 @@ class GameStartupPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var startupFinished = false;
-    return AppPage(
-      body: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: true,
-          title: Text(game.version.id),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            padding: const EdgeInsets.all(16),
-            onPressed: () {
-              if (startupFinished) {
+    return SimpleMaterialAppPage(
+      leadOnPressed: () {
+        if (startupFinished) {
+          Navigator.pop(context);
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) => WarningDialog(
+              content: const Text("启动还未完成，你确定要强制退出吗？"),
+              onConfirmed: () {
                 Navigator.pop(context);
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) => WarningDialog(
-                    content: const Text("启动还未完成，你确定要强制退出吗？"),
-                    onConfirmed: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                    },
-                  ),
-                );
-              }
-            },
-          ),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _StepTask(
-                    stream: game.retrieveNonExitedLibraries,
-                    name: "检索游戏资源",
-                  ),
-                ],
-              ),
-            ],
-          ),
+                Navigator.pop(context);
+              },
+            ),
+          );
+        }
+      },
+      title: Text(game.version.id),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FutureBuilder(
+                  future: game.retrieveNonExitedLibraries.toList(),
+                  builder: (context, snapshot) {
+                    final state = snapshot.connectionState;
+                    if (state == ConnectionState.done) {
+                      for (var i in snapshot.data!) {
+                        print(i.name);
+                      }
+                    }
+                    return _StepTask(
+                      name: "检索游戏资源",
+                      isWatting: state == ConnectionState.waiting,
+                      hasError: snapshot.hasError ||
+                          state == ConnectionState.done &&
+                              snapshot.data!.isNotEmpty,
+                      isDone: state == ConnectionState.done,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _StepTask<T> extends StatelessWidget {
+class _StepTask extends StatelessWidget {
   const _StepTask({
-    this.isWatting,
-    this.hasError,
-    this.isDone,
+    this.isWatting = true,
+    this.hasError = false,
+    this.isDone = false,
     required this.name,
-    this.stream,
+    this.child,
   });
 
-  final VoidCallback? isWatting;
-  final VoidCallback? hasError;
-  final VoidCallback? isDone;
+  final bool isWatting;
+  final bool hasError;
+  final bool isDone;
   final String name;
-  final Stream<T>? stream;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        StreamBuilder(
-          stream: stream,
-          builder: (_, snapshot) {
-            if (snapshot.hasError) {
-              return const Icon(Icons.error);
-            }
-            if (snapshot.connectionState == ConnectionState.done) {
-              return const Row(
-                children: [Icon(Icons.done)],
-              );
-            }
-            return const CircularProgressIndicator();
-          },
+    final theme = Theme.of(context);
+    return Theme(
+      data: theme.copyWith(iconTheme: const IconThemeData(size: 32)),
+      child: DefaultTextStyle(
+        style: theme.textTheme.titleLarge!,
+        child: Column(
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isWatting)
+                  const CircularProgressIndicator()
+                else if (hasError)
+                  const Icon(Icons.error)
+                else if (isDone)
+                  const Icon(Icons.done),
+                const SizedBox(width: 8),
+                Text(name),
+              ],
+            ),
+            if (child != null) child!,
+          ],
         ),
-        Text(name),
-      ],
+      ),
     );
   }
-}
-
-enum StepState {
-  waitting,
-  running,
-  finished;
 }

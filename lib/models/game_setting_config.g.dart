@@ -11,7 +11,6 @@ GameSettingConfig _$GameSettingConfigFromJson(Map<String, dynamic> json) =>
       java: json['java'] == null
           ? null
           : Java.fromJson(json['java'] as Map<String, dynamic>),
-      defaultJvmArgs: json['defaultJvmArgs'] as bool?,
       jvmArgs: json['jvmArgs'] as String?,
       autoMemory: json['autoMemory'] as bool?,
       maxMemory: json['maxMemory'] as int?,
@@ -33,7 +32,6 @@ Map<String, dynamic> _$GameSettingConfigToJson(GameSettingConfig instance) {
   }
 
   writeNotNull('java', instance.java);
-  val['defaultJvmArgs'] = instance.defaultJvmArgs;
   val['jvmArgs'] = instance.jvmArgs;
   val['autoMemory'] = instance.autoMemory;
   val['maxMemory'] = instance.maxMemory;

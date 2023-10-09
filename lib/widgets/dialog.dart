@@ -59,7 +59,10 @@ class DefaultDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme.headlineSmall;
     return AlertDialog(
-      titleTextStyle: textTheme!.copyWith(fontWeight: FontWeight.bold),
+      titleTextStyle: textTheme!.copyWith(
+        fontWeight: FontWeight.bold,
+        height: 1,
+      ),
       title: title,
       content: content,
       actions: [

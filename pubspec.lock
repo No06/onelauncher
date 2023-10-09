@@ -278,6 +278,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_downloader:
+    dependency: "direct main"
+    description:
+      name: flutter_downloader
+      sha256: bc13eb52ce81822a94f107b2ea0541b0e28be350f0c064dfbb5c66e95d7791f4
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.11.3"
   flutter_hooks:
     dependency: "direct main"
     description:

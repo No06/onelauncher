@@ -15,63 +15,72 @@ import '/widgets/dialog.dart';
 import '../widgets/snackbar.dart';
 
 class AccountPage extends RoutePage {
-  AccountPage({super.key, required super.pageName})
-      : super(
-          actions: [
-            FloatingActionButton.small(
-              onPressed: () => showDialog(
-                context: Get.context!,
-                builder: (context) => _AddAccountDialog(
-                  onSubmit: (account) {
-                    if (appConfig.accounts.add(account)) {
-                      appConfig.selectedAccount ??= account;
-                      dialogPop();
-                      Get.showSnackbar(successSnackBar("添加成功！"));
-                    } else {
-                      Get.showSnackbar(errorSnackBar("已有重复账号"));
-                    }
-                  },
-                ),
-              ),
-              child: const Icon(Icons.add),
-            ),
-            const SizedBox(width: 16),
-          ],
-        );
+  const AccountPage({super.key, required super.pageName});
 
   @override
   Widget body(BuildContext context) {
-    return ListView(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(15),
-      children: [
-        Obx(
-          () => Column(
-            children: appConfig.accounts
-                .map(
-                  (account) => ValueListenableBuilder(
-                    valueListenable: appConfig.selectedAccountNotifier,
-                    builder: (_, selectedAccount, __) => _AccountItem(
-                      key: ObjectKey(account),
-                      account: account,
-                      isSelected: appConfig.selectedAccount == account,
-                      onTap: () => appConfig.selectedAccount = account,
-                      onRemoved: (account) {
-                        appConfig.accounts.remove(account);
-                        try {
-                          appConfig.selectedAccount = appConfig.accounts.first;
-                        } catch (e) {
-                          appConfig.selectedAccount = null;
-                        }
-                        Get.showSnackbar(successSnackBar("删除成功"));
-                      },
-                    ),
-                  ),
-                )
-                .toList(),
+    return Expanded(
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Obx(
+              () => Column(
+                children: () {
+                  final results = <Widget>[];
+                  for (var account in appConfig.accounts) {
+                    results.add(
+                      ValueListenableBuilder(
+                        key: UniqueKey(),
+                        valueListenable: appConfig.selectedAccountNotifier,
+                        builder: (_, selectedAccount, __) => _AccountItem(
+                          account: account,
+                          isSelected: appConfig.selectedAccount == account,
+                          onTap: () => appConfig.selectedAccount = account,
+                          onRemoved: (account) {
+                            appConfig.accounts.remove(account);
+                            try {
+                              appConfig.selectedAccount =
+                                  appConfig.accounts.first;
+                            } catch (e) {
+                              appConfig.selectedAccount = null;
+                            }
+                            Get.showSnackbar(successSnackBar("删除成功"));
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                  return results;
+                }(),
+              ),
+            ),
           ),
-        ),
-      ],
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: FloatingActionButton(
+                onPressed: () => showDialog(
+                  context: Get.context!,
+                  builder: (context) => _AddAccountDialog(
+                    onSubmit: (account) {
+                      if (appConfig.accounts.add(account)) {
+                        appConfig.selectedAccount ??= account;
+                        dialogPop();
+                        Get.showSnackbar(successSnackBar("添加成功！"));
+                      } else {
+                        Get.showSnackbar(errorSnackBar("已有重复账号"));
+                      }
+                    },
+                  ),
+                ),
+                child: const Icon(Icons.add),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -155,7 +164,7 @@ class _AccountItem extends StatelessWidget {
                                       color: Colors.transparent,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black45,
+                                          color: Colors.black38,
                                           blurRadius: 5,
                                         ),
                                       ],
@@ -257,12 +266,11 @@ class _AccountItem extends StatelessWidget {
   }
 }
 
-class _AddAccountDialog extends StatelessWidget {
+class _AddAccountDialog extends HookWidget {
   _AddAccountDialog({this.onSubmit});
   final void Function(Account account)? onSubmit;
 
   final _accountType = AccountType.offline.obs;
-  final _username = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _dropdownBtns = {
     AccountType.offline: "离线账户",
@@ -272,6 +280,7 @@ class _AddAccountDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final usernameTextCtl = useTextEditingController();
     late Account account;
     return DefaultDialog(
       title: const Text("添加用户"),
@@ -325,7 +334,7 @@ class _AddAccountDialog extends StatelessWidget {
                           obscureText: false,
                           readOnly: false,
                           maxLength: 20,
-                          controller: _username,
+                          controller: usernameTextCtl,
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                               RegExp("[\u4e00-\u9fa5_a-zA-Z0-9]"),
@@ -349,7 +358,7 @@ class _AddAccountDialog extends StatelessWidget {
         if (_formKey.currentState!.validate()) {
           switch (_accountType.value) {
             case AccountType.offline:
-              account = OfflineAccount(_username.text);
+              account = OfflineAccount(usernameTextCtl.text);
             case AccountType.microsoft:
             // TODO: Handle this case.
             case AccountType.custom:
@@ -358,7 +367,7 @@ class _AddAccountDialog extends StatelessWidget {
           (onSubmit ?? () {})(account);
         }
       },
-      onCanceled: () => dialogPop(),
+      onCanceled: dialogPop,
     );
   }
 

@@ -16,7 +16,7 @@ import 'package:path/path.dart';
 
 part 'app_config.g.dart';
 
-final appConfig = AppConfig.instance;
+AppConfig get appConfig => AppConfig.instance;
 const kGameDirectoryName = '.minecraft';
 const _kAccountDelimiter = "@";
 final _kDefaultGamePaths = {

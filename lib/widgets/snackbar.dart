@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-GetSnackBar defaultSnackBar(String messages,
-    [Color? borderColor, Widget? icon]) {
-  final theme = Get.theme.colorScheme;
+GetSnackBar defaultSnackBar(String title, {Color? borderColor, Widget? icon}) {
+  final colors = Get.theme.colorScheme;
   // FIXME: 阴影会影响到边框
   return GetSnackBar(
-    messageText: Text(messages, style: TextStyle(color: theme.onSurface)),
-    backgroundColor: theme.surface,
+    messageText: Text(title, style: TextStyle(color: colors.onSurface)),
+    backgroundColor: colors.surface,
     snackStyle: SnackStyle.FLOATING,
     animationDuration: const Duration(milliseconds: 300),
     duration: const Duration(milliseconds: 1500),
@@ -29,15 +28,26 @@ GetSnackBar defaultSnackBar(String messages,
   );
 }
 
-GetSnackBar successSnackBar(String messages) {
-  return defaultSnackBar(messages, Colors.lightGreen, const Icon(Icons.check));
-}
-
-GetSnackBar warningSnackBar(String messages) {
+GetSnackBar successSnackBar(String title) {
   return defaultSnackBar(
-      messages, Colors.orangeAccent, const Icon(Icons.warning_amber_rounded));
+    title,
+    borderColor: Colors.lightGreen,
+    icon: const Icon(Icons.check),
+  );
 }
 
-GetSnackBar errorSnackBar(String messages) {
-  return defaultSnackBar(messages, Colors.red, const Icon(Icons.error_outline));
+GetSnackBar warningSnackBar(String title) {
+  return defaultSnackBar(
+    title,
+    borderColor: Colors.orangeAccent,
+    icon: const Icon(Icons.warning_amber_rounded),
+  );
+}
+
+GetSnackBar errorSnackBar(String title) {
+  return defaultSnackBar(
+    title,
+    borderColor: Colors.red,
+    icon: const Icon(Icons.error_outline),
+  );
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/app_config.dart';
 import 'package:one_launcher/models/game/version/librarie/artifact_librarie.dart';
 import 'package:one_launcher/models/game/version/librarie/librarie.dart';
 import 'package:one_launcher/models/game/version/os.dart';
@@ -50,6 +51,12 @@ class Game {
 
   ValueNotifier<bool> _useGlobalSetting;
   GameSettingConfig _setting;
+  GameSettingConfig get setting {
+    if (_useGlobalSetting.value) {
+      return appConfig.gameSetting;
+    }
+    return _setting;
+  }
 
   void freshVersion() => _version = _getVersionFromPath(path);
 

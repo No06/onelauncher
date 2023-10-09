@@ -5,11 +5,13 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'game_setting_config.g.dart';
 
+const kDefaultJvmArgs =
+    "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M";
+
 @JsonSerializable()
 class GameSettingConfig extends ChangeNotifier {
   GameSettingConfig({
     Java? java,
-    bool? defaultJvmArgs,
     String? jvmArgs,
     bool? autoMemory,
     int? maxMemory,
@@ -20,8 +22,7 @@ class GameSettingConfig extends ChangeNotifier {
     String? args,
     String? serverAddress,
   })  : _java = ValueNotifier(_javaFromJson(java)),
-        _defaultJvmArgs = ValueNotifier(defaultJvmArgs ?? true),
-        _jvmArgs = ValueNotifier(jvmArgs ?? ""),
+        _jvmArgs = ValueNotifier(jvmArgs ?? kDefaultJvmArgs),
         _autoMemory = ValueNotifier(autoMemory ?? true),
         _maxMemory = ValueNotifier(maxMemory ?? 2048),
         _fullScreen = ValueNotifier(fullScreen ?? false),
@@ -33,7 +34,6 @@ class GameSettingConfig extends ChangeNotifier {
         super() {
     final notifiers = [
       _java,
-      _defaultJvmArgs,
       _jvmArgs,
       _autoMemory,
       _maxMemory,
@@ -50,7 +50,6 @@ class GameSettingConfig extends ChangeNotifier {
   }
 
   ValueNotifier<Java?> _java;
-  ValueNotifier<bool> _defaultJvmArgs;
   ValueNotifier<String> _jvmArgs;
   ValueNotifier<bool> _autoMemory;
   ValueNotifier<int> _maxMemory;
@@ -73,13 +72,10 @@ class GameSettingConfig extends ChangeNotifier {
     return null;
   }
 
-  ValueNotifier<bool> get defaultJvmArgsNotifier => _defaultJvmArgs;
-  bool get defaultJvmArgs => _defaultJvmArgs.value;
-  set defaultJvmArgs(bool newVal) => _defaultJvmArgs.value = newVal;
-
   ValueNotifier<String> get jvmArgsNotifier => _jvmArgs;
   String get jvmArgs => _jvmArgs.value;
   set jvmArgs(String newVal) => _jvmArgs.value = newVal;
+  void restoreJvmArgs() => jvmArgs = kDefaultJvmArgs;
 
   ValueNotifier<bool> get autoMemoryNotifier => _autoMemory;
   bool get autoMemory => _autoMemory.value;
