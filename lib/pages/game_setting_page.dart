@@ -118,7 +118,8 @@ class GameSettingPage extends SettingBasePage {
                 context: Get.context!,
                 builder: (_) => HookBuilder(
                   builder: (context) {
-                    final controller = useTextEditingController();
+                    final controller =
+                        useTextEditingController(text: config.jvmArgs);
                     return DefaultDialog(
                       title: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -140,10 +141,7 @@ class GameSettingPage extends SettingBasePage {
                         ],
                       ),
                       confirmText: const Text("保存"),
-                      onCanceled: () {
-                        dialogPop();
-                        controller.text = config.jvmArgs;
-                      },
+                      onCanceled: dialogPop,
                       onConfirmed: () {
                         dialogPop();
                         config.jvmArgs = controller.text;
