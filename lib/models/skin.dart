@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'skin.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(includeIfNull: false)
 class Skin {
   Skin({
     this.type = SkinType.steve,

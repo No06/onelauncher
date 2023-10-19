@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/version/librarie/artifact_librarie.dart';
+import 'package:one_launcher/models/game/version/librarie/common_librarie.dart';
 import 'package:one_launcher/models/game/version/librarie/maven_librarie.dart';
+import 'package:one_launcher/models/game/version/librarie/natives_librarie.dart';
 import 'package:path/path.dart';
 
 part 'librarie.g.dart';
@@ -50,12 +51,15 @@ class Librarie {
   }
 
   factory Librarie.fromJson(Map<String, dynamic> json) {
+    if (json['natives'] != null) {
+      return NativesLibrarie.fromJson(json);
+    }
     if (json['downloads'] != null) {
-      return ArtifactLibrarie.fromJson(json);
+      return CommonLibrarie.fromJson(json);
     }
     if (json['url'] != null) {
       return MavenLibrarie.fromJson(json);
     }
-    return _$LibrarieFromJson(json);
+    throw Exception("未知资源类型");
   }
 }

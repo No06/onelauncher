@@ -16,12 +16,22 @@ Skin _$SkinFromJson(Map<String, dynamic> json) => Skin(
       localCapePath: json['localCapePath'] as String?,
     );
 
-Map<String, dynamic> _$SkinToJson(Skin instance) => <String, dynamic>{
-      'type': _$SkinTypeEnumMap[instance.type]!,
-      'textureModel': _$TextureModelEnumMap[instance.textureModel]!,
-      'localSkinPath': instance.localSkinPath,
-      'localCapePath': instance.localCapePath,
-    };
+Map<String, dynamic> _$SkinToJson(Skin instance) {
+  final val = <String, dynamic>{
+    'type': _$SkinTypeEnumMap[instance.type]!,
+    'textureModel': _$TextureModelEnumMap[instance.textureModel]!,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('localSkinPath', instance.localSkinPath);
+  writeNotNull('localCapePath', instance.localCapePath);
+  return val;
+}
 
 const _$SkinTypeEnumMap = {
   SkinType.steve: 'steve',

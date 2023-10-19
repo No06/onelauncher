@@ -4,9 +4,9 @@ part 'extract.g.dart';
 
 @JsonSerializable()
 class Extract {
-  Extract({required this.exclude});
+  Extract({this.exclude});
 
-  final List<String> exclude;
+  final List<String>? exclude;
 
   factory Extract.fromJson(Map<String, dynamic> json) =>
       _$ExtractFromJson(json);

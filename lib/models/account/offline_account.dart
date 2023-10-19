@@ -13,23 +13,20 @@ class OfflineAccount extends Account {
     String? uuid,
     Skin? skin,
   })  : _displayName = displayName,
-        _uuid = uuid ?? const Uuid().v5(Uuid.NAMESPACE_OID, displayName),
-        _skin = skin ??
-            Skin(
-              type: const Uuid().v5(Uuid.NAMESPACE_OID, displayName).hashCode &
-                          1 ==
-                      1
-                  ? SkinType.alex
-                  : SkinType.steve,
-            ),
-        super(type);
+        super(type) {
+    _uuid = uuid ?? const Uuid().v4();
+    _skin = skin ??
+        Skin(type: _uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve);
+  }
 
   String _displayName;
-  String _uuid;
-  Skin _skin;
+  late String _uuid;
+  late Skin _skin;
 
-  set uuid(String newVal) => _uuid = uuid;
-  set displayName(String newVal) => displayName = newVal;
+  set displayName(String newVal) {
+    displayName = newVal;
+    _uuid = const Uuid().v4();
+  }
 
   factory OfflineAccount.fromJson(Map<String, dynamic> json) =>
       _$OfflineAccountFromJson(json);

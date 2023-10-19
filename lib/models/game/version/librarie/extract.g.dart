@@ -8,7 +8,7 @@ part of 'extract.dart';
 
 Extract _$ExtractFromJson(Map<String, dynamic> json) => Extract(
       exclude:
-          (json['exclude'] as List<dynamic>).map((e) => e as String).toList(),
+          (json['exclude'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
 
 Map<String, dynamic> _$ExtractToJson(Extract instance) => <String, dynamic>{
