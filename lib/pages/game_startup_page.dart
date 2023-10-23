@@ -70,38 +70,34 @@ class _StepTask extends StatelessWidget {
     this.hasError = false,
     this.isDone = false,
     required this.name,
-    this.child,
   });
 
   final bool isWatting;
   final bool hasError;
   final bool isDone;
   final String name;
-  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final errorIconColor = colors.onSurface;
+    final doneIconColor = colors.onSurface;
     return Theme(
       data: theme.copyWith(iconTheme: const IconThemeData(size: 32)),
       child: DefaultTextStyle(
         style: theme.textTheme.titleLarge!,
-        child: Column(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isWatting)
-                  const CircularProgressIndicator()
-                else if (hasError)
-                  const Icon(Icons.error)
-                else if (isDone)
-                  const Icon(Icons.done),
-                const SizedBox(width: 8),
-                Text(name),
-              ],
-            ),
-            if (child != null) child!,
+            if (isWatting)
+              const CircularProgressIndicator()
+            else if (hasError)
+              Icon(Icons.error, color: errorIconColor)
+            else if (isDone)
+              Icon(Icons.done, color: doneIconColor),
+            const SizedBox(width: 8),
+            Text(name),
           ],
         ),
       ),

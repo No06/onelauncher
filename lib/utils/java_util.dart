@@ -1,70 +1,52 @@
 import 'dart:io';
 
-import 'package:one_launcher/models/java.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/models/java.dart';
 import 'package:path/path.dart';
 
-const _kJavaVersionLine = "JAVA_VERSION=";
+final kJavaBinName = Platform.isWindows ? "java.exe" : "java";
 const _kJavaVariables = ["JAVA_HOME", "JRE_HOME"];
 final _kPlatformSearchCommand = Platform.isWindows ? "where" : "which";
-final _kPlatformSearchVariableArgs =
-    Platform.isWindows ? ["\$PATH:java"] : ["-a", "\$PATH", "java"];
 
 abstract final class JavaUtil {
-  static Set<Java> set = {};
+  static final Set<Java> _set = {};
+  static Set<Java> get set => _set;
 
   static Future<void> init() async {
-    set.clear();
-    set.assignAll(await getByEnvironment());
+    _set.assignAll(await getOnEnvPath());
+    _set.addAll(await getOnEnvJava());
   }
 
-  // static Java autoSelect(String version) {}
-
-  static String getVersionByRun(String path) {
-    final regExp = RegExp(r'\\bin\\java\.exe$');
-    final javaPath = path.replaceAll(regExp, '');
-    final releaseFile = File('$javaPath/release');
-
-    if (!releaseFile.existsSync()) {
-      ProcessResult result = Process.runSync(path, ["-version"]);
-      String version = result.stderr.split("\n")[0].split('"')[1];
-      if (version.isEmpty) {
-        return "Unknown";
-      }
-      return version;
-    }
-
-    var versionLine = releaseFile
-        .readAsLinesSync()
-        .firstWhere((line) => line.startsWith(_kJavaVersionLine));
-    versionLine = versionLine.substring(_kJavaVersionLine.length);
-
-    return versionLine.substring(1, versionLine.length - 1);
+  static Future<Iterable<Java>> getOnEnvPath() async {
+    final args =
+        Platform.isWindows ? ["\$PATH:java"] : ["-a", "\$PATH", "java"];
+    final processResult =
+        await Process.run(_kPlatformSearchCommand, args, runInShell: true);
+    final stdout = (processResult.stdout as String).trim();
+    return stdout.split("\r\n").map((path) => Java(_resolveSymbolicLink(path)));
   }
 
-  static Future<Set<Java>> getByEnvironment() async {
+  static Future<Set<Java>> getOnEnvJava() async {
     final results = <Java>{};
-    final processResult = await Process.run(
-      _kPlatformSearchCommand,
-      _kPlatformSearchVariableArgs,
-      runInShell: true,
-    );
-    results.addAll((processResult.stdout as String)
-        .trim()
-        .split("\r\n")
-        .map((e) => Java(e)));
-
-    await Future.forEach(_kJavaVariables, (element) async {
-      final variable = Platform.environment[element];
-      if (variable == null) return;
+    for (var env in _kJavaVariables) {
+      final variable = Platform.environment[env] ?? "";
+      if (variable == "") continue;
 
       final path = join(variable, "bin");
       final args = Platform.isWindows ? ['/R', path, "java"] : [path, "java"];
       final processResult =
           await Process.run(_kPlatformSearchCommand, args, runInShell: true);
-      if (processResult.stdout == "") return;
-      results.add(Java(processResult.stdout.trim()));
-    });
+      final stdout = processResult.stdout;
+      if (stdout == "") continue;
+
+      final javaPath = _resolveSymbolicLink(stdout.trim());
+      results.add(Java(javaPath));
+    }
     return results;
   }
+
+  static String _resolveSymbolicLink(String path) =>
+      FileSystemEntity.isLinkSync(path)
+          ? Link(path).resolveSymbolicLinksSync()
+          : path;
 }
