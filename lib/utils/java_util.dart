@@ -13,17 +13,22 @@ abstract final class JavaUtil {
   static Set<Java> get set => _set;
 
   static Future<void> init() async {
-    _set.assignAll(await getOnEnvPath());
+    final envPath = await getOnEnvPath();
+    if (envPath != null) _set.assignAll(envPath);
     _set.addAll(await getOnEnvJava());
   }
 
-  static Future<Iterable<Java>> getOnEnvPath() async {
+  static Future<Iterable<Java>?> getOnEnvPath() async {
     final args =
         Platform.isWindows ? ["\$PATH:java"] : ["-a", "\$PATH", "java"];
     final processResult =
         await Process.run(_kPlatformSearchCommand, args, runInShell: true);
     final stdout = (processResult.stdout as String).trim();
-    return stdout.split("\r\n").map((path) => Java(_resolveSymbolicLink(path)));
+    final splitStr = stdout.split("\r\n");
+    if (splitStr.length == 1 && splitStr[0].isEmpty) {
+      return null;
+    }
+    return splitStr.map((path) => Java(_resolveSymbolicLink(path)));
   }
 
   static Future<Set<Java>> getOnEnvJava() async {

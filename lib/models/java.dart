@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:get/utils.dart';
 import 'package:one_launcher/utils/exceptions/java_release_file_not_found.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -41,9 +42,14 @@ class Java {
     try {
       return _getVersionByReleaseFile();
     } catch (e) {
-      if (e.runtimeType != JavaReleaseFileNotFound) rethrow;
-      return _getVersionByRun();
+      e.printError();
     }
+    try {
+      return _getVersionByRun();
+    } catch (e) {
+      e.printError();
+    }
+    return "unknown";
   }
 
   String _getVersionByReleaseFile() {
