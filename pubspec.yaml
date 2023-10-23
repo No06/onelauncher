@@ -29,18 +29,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  dart_minecraft: ^0.5.2
   get: ^4.6.5
-  file_picker: ^5.5.0
+  file_picker: ^6.0.0
   image: ^4.0.17
   animations: ^2.0.8
   archive: ^3.3.7
-  uuid:  ^3.0.7
+  uuid: ^4.1.0
   ffi: ^2.1.0
-  animated_fractionally_sized_box: ^2.0.1
-  path_provider: ^2.1.1
   path: ^1.8.3
-  enum_to_string: ^2.0.1
   dynamic_color: ^1.6.5
   json_annotation: ^4.8.1
   window_manager: ^0.3.6
@@ -51,6 +47,7 @@ dependencies:
   async: ^2.11.0
   flutter_downloader: ^1.11.3
   get_storage: ^2.1.1
+  nil: ^1.1.1
 
 dev_dependencies:
 

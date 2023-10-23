@@ -31,17 +31,11 @@ class AppPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        background ?? const SizedBox(),
+        if (background != null) background!,
         Scaffold(
           backgroundColor: background == null ? null : Colors.transparent,
           appBar: appBar(context),
-          body: SizedBox(
-            child: Column(
-              children: [
-                Expanded(child: body ?? const SizedBox()),
-              ],
-            ),
-          ),
+          body: body,
         ),
       ],
     );

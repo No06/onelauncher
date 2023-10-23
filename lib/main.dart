@@ -1,3 +1,4 @@
+import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/models/app_config.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:flutter/material.dart';
@@ -15,13 +16,14 @@ void main() async {
 }
 
 Future<void> init() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Future.wait([
     JavaUtil.init(),
     AppConfig.init(),
+    GetStorage.init(),
+    windowManager.ensureInitialized(),
   ]);
   // 初始化窗口
-  WidgetsFlutterBinding.ensureInitialized();
-  await windowManager.ensureInitialized();
   const windowSize = Size(kDefaultWindowWidth, kDefaultWindowHeight);
   const windowOptions = WindowOptions(
     size: windowSize,

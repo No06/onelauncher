@@ -65,7 +65,6 @@ class Blurred extends StatelessWidget {
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: blurValue, sigmaY: blurValue),
-              child: const SizedBox(),
             ),
           ),
           if (child != null) child!,
