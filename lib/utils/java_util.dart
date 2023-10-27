@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:get/get.dart';
 import 'package:one_launcher/models/java.dart';
 import 'package:path/path.dart';
 
@@ -13,8 +12,9 @@ abstract final class JavaUtil {
   static Set<Java> get set => _set;
 
   static Future<void> init() async {
+    _set.clear();
     final envPath = await getOnEnvPath();
-    if (envPath != null) _set.assignAll(envPath);
+    if (envPath != null) _set.addAll(envPath);
     _set.addAll(await getOnEnvJava());
   }
 
