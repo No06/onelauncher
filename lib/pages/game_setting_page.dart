@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -6,7 +7,10 @@ import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/game_setting_config.dart';
 import 'package:one_launcher/models/theme_config.dart';
 import 'package:one_launcher/utils/java_util.dart';
-import 'package:one_launcher/utils/sysinfo.dart';
+import 'package:one_launcher/utils/sys_info/sys_info.dart';
+import 'package:one_launcher/utils/sys_info/sys_info_linux.dart';
+import 'package:one_launcher/utils/sys_info/sys_info_macos.dart';
+import 'package:one_launcher/utils/sys_info/sys_info_windows.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/textfield.dart';
 import 'package:one_launcher/widgets/widget_group.dart';
@@ -26,15 +30,23 @@ abstract class SettingBasePage extends StatelessWidget {
 }
 
 class GameSettingPage extends SettingBasePage {
-  const GameSettingPage({super.key, required this.config});
+  GameSettingPage({super.key, required this.config});
 
+  static const _megaByte = 1024 * 1024;
   final GameSettingConfig config;
+  final SysInfo sysinfo = Platform.isWindows
+      ? WindowsSysInfo()
+      : Platform.isLinux
+          ? LinuxSysInfo()
+          : Platform.isMacOS
+              ? MacOSSysInfo()
+              : throw Exception("Unknown Platform System");
 
   @override
   Widget body(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final totalMemSize = SysInfo.totalPhyMem / kMegaByte;
+    final totalMemSize = sysinfo.totalPhyMem / _megaByte;
     return Column(
       children: [
         TitleWidgetGroup(
@@ -223,7 +235,7 @@ class GameSettingPage extends SettingBasePage {
                           valueListenable: config.maxMemoryNotifier,
                           builder: (_, maxMemory, __) => _MemoryAllocationBar(
                             totalMemSize,
-                            SysInfo.freePhyMem / kMegaByte,
+                            sysinfo.freePhyMem / _megaByte,
                             config.maxMemory.toDouble(),
                           ),
                         ),

@@ -20,11 +20,13 @@ class SimpleMaterialAppPage extends StatelessWidget {
         appBar: AppBar(
           automaticallyImplyLeading: true,
           title: title,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            padding: const EdgeInsets.all(16),
-            onPressed: leadOnPressed,
-          ),
+          leading: leadOnPressed == null
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  padding: const EdgeInsets.all(16),
+                  onPressed: leadOnPressed,
+                ),
         ),
         body: body,
       ),

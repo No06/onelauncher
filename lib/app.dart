@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:one_launcher/models/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -34,7 +36,8 @@ class AppPage extends StatelessWidget {
         if (background != null) background!,
         Scaffold(
           backgroundColor: background == null ? null : Colors.transparent,
-          appBar: appBar(context),
+          // TODO: 为 Linux 或 MacOS 定制窗口栏
+          appBar: Platform.isWindows ? appBar(context) : null,
           body: body,
         ),
       ],

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/models/app_config.dart';
 import 'package:one_launcher/utils/java_util.dart';
@@ -25,13 +27,14 @@ Future<void> init() async {
   ]);
   // 初始化窗口
   const windowSize = Size(kDefaultWindowWidth, kDefaultWindowHeight);
-  const windowOptions = WindowOptions(
+  final windowOptions = WindowOptions(
     size: windowSize,
     minimumSize: windowSize,
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
-    titleBarStyle: TitleBarStyle.hidden,
+    titleBarStyle:
+        Platform.isWindows ? TitleBarStyle.hidden : TitleBarStyle.normal,
   );
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();

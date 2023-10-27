@@ -2,8 +2,6 @@ import 'package:one_launcher/models/theme_config.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
-const kMegaByte = 1024 * 1024;
-
 const kConfigName = "one.json";
 const kGameConfigName = kConfigName;
 final kConfigPath = getApplicationDocumentsDirectory();
