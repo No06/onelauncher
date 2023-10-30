@@ -50,7 +50,7 @@ final class AppThemeConfig extends ChangeNotifier {
         brightness: Brightness.light,
       ),
       useMaterial3: true,
-    ).useSystemChineseFont();
+    ).useSystemChineseFont(Brightness.light);
   }
 
   ThemeData darkTheme() {
@@ -60,7 +60,7 @@ final class AppThemeConfig extends ChangeNotifier {
         brightness: Brightness.dark,
       ),
       useMaterial3: true,
-    ).useSystemChineseFont();
+    ).useSystemChineseFont(Brightness.dark);
   }
 
   factory AppThemeConfig.fromJson(Map<String, dynamic> json) =>

@@ -29,7 +29,6 @@ Future<void> init() async {
     AppConfig.init(),
     windowManager.ensureInitialized(),
   ]);
-  print(GetStorage("filterRule").read<List>("gameTypes"));
   // 初始化窗口
   const windowSize = Size(kDefaultWindowWidth, kDefaultWindowHeight);
   final windowOptions = WindowOptions(
