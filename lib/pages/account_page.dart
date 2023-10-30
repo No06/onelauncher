@@ -130,7 +130,8 @@ class _AccountItem extends StatelessWidget {
                   : EdgeInsets.zero,
               child: Material(
                 elevation: isTapDown.value ? 0 : 3,
-                shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+                shape:
+                    RoundedRectangleBorder(borderRadius: kDefaultBorderRadius),
                 clipBehavior: Clip.antiAlias,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 100),

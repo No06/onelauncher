@@ -79,7 +79,7 @@ class GameSettingPage extends SettingBasePage {
                     onConfirmed: dialogPop,
                     content: Material(
                       color: Colors.transparent,
-                      borderRadius: kBorderRadius,
+                      borderRadius: kDefaultBorderRadius,
                       clipBehavior: Clip.antiAlias,
                       child: SingleChildScrollView(
                         child: ValueListenableBuilder(
@@ -440,13 +440,13 @@ class _MemoryAllocationBar extends StatelessWidget {
           height: 5,
           child: ClipRRect(
             clipBehavior: Clip.antiAlias,
-            borderRadius: kBorderRadius,
+            borderRadius: kDefaultBorderRadius,
             child: Stack(
               children: [
                 Container(
                   decoration: BoxDecoration(
                     color: colors.primary.withOpacity(.2),
-                    borderRadius: kBorderRadius,
+                    borderRadius: kDefaultBorderRadius,
                   ),
                 ),
                 AnimatedFractionallySizedBox(

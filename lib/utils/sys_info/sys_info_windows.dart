@@ -60,7 +60,7 @@ final class WindowsSysInfo implements SysInfo {
         Int32 Function(Pointer<NativeType>),
         int Function(Pointer<NativeType>)>(_functionName);
 
-    if (memoryStatus(_arg) != 0) {
+    if (memoryStatus(_arg) == 0) {
       final getLastError = DynamicLibrary.process()
           .lookupFunction<GetLastErrorFunc, GetLastError>('GetLastError');
       throw Exception("$runtimeType: Get sysinfo error: $getLastError");

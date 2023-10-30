@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game_setting_config.dart';
@@ -19,40 +20,9 @@ part 'app_config.g.dart';
 AppConfig get appConfig => AppConfig.instance;
 const kGameDirectoryName = '.minecraft';
 const _kAccountDelimiter = "@";
-final _kDefaultGamePaths = {
-  GamePath(
-    name: "启动器目录",
-    path:
-        join(File(Platform.resolvedExecutable).parent.path, kGameDirectoryName),
-  ),
-  GamePath(
-    name: "官方启动器目录",
-    path: () {
-      if (Platform.isWindows) {
-        if (Platform.environment['APPDATA'] == null) {
-          throw Exception("未找到环境变量 'APPDATE'");
-        }
-        return join(Platform.environment['APPDATA']!, kGameDirectoryName);
-      }
-      if (Platform.isLinux || Platform.isMacOS) {
-        if (Platform.environment['HOME'] == null) {
-          throw Exception("未找到环境变量 'HOME'");
-        }
-        if (Platform.isLinux) {
-          return join(Platform.environment['HOME']!, kGameDirectoryName);
-        }
-        if (Platform.isMacOS) {
-          return join(Platform.environment['HOME']!, "Library",
-              "Application Support", "minecraft");
-        }
-      }
-      throw Exception("不支持的系统类型");
-    }(),
-  ),
-};
 
 @JsonSerializable()
-final class AppConfig {
+final class AppConfig extends ChangeNotifier {
   AppConfig({
     AppThemeConfig? theme,
     Set<GamePath>? paths,
@@ -60,38 +30,93 @@ final class AppConfig {
     Set<Account>? accounts,
     GameSettingConfig? gameSetting,
   })  : theme = theme ?? AppThemeConfig(),
-        _paths = RxSet(paths ?? _kDefaultGamePaths),
+        _launcherGamePathIndexes = RxList.from(GetStorage()
+                .read<List>(_launcherGamePathBoxKey)
+                ?.map((e) => e as int) ??
+            []),
+        _paths = RxSet(paths ?? {}),
         _selectedAccount =
             ValueNotifier(_selectedAccountFromJson(selectedAccount, accounts)),
         _accounts = RxSet(accounts ?? {}),
         gameSetting = gameSetting ?? GameSettingConfig(),
         super() {
-    this.theme.addListener(save);
-    for (var e in _paths) {
-      e.addListener(save);
-    }
-    _selectedAccount.addListener(save);
-    this.gameSetting.addListener(save);
-    everAll([_paths, _accounts], (_) => save());
-  }
-
-  AppThemeConfig theme;
-  RxSet<GamePath> _paths;
-  ValueNotifier<Account?> _selectedAccount;
-  RxSet<Account> _accounts;
-  GameSettingConfig gameSetting;
-
-  @JsonKey(includeFromJson: null, includeToJson: null)
-  Future<List<Game>> get getGamesOnPaths async {
-    var games = <Game>[];
+    this.theme.addListener(notifyListeners);
+    ever(
+      _launcherGamePathIndexes,
+      (callback) => GetStorage().write(
+        _launcherGamePathBoxKey,
+        _launcherGamePathIndexes,
+      ),
+    );
     for (var path in _paths) {
-      games.addAll(await path.getGamesOnVersion);
+      path.addListener(notifyListeners);
     }
-    return games;
+    _selectedAccount.addListener(notifyListeners);
+    this.gameSetting.addListener(notifyListeners);
+    everAll([_paths, _accounts], (_) => notifyListeners());
+  }
+  static const _launcherGamePathBoxKey = "launcherGamePath";
+  static late final String _configPath;
+
+  final AppThemeConfig theme;
+  // 持久化存储索引
+  final RxList<int> _launcherGamePathIndexes;
+  final RxSet<GamePath> _paths;
+  final ValueNotifier<Account?> _selectedAccount;
+  final RxSet<Account> _accounts;
+  final GameSettingConfig gameSetting;
+
+  final _currentGamePath = GamePath(
+    name: "启动器目录",
+    path:
+        join(File(Platform.resolvedExecutable).parent.path, kGameDirectoryName),
+  );
+  late final _officialGamePath = GamePath(
+    name: "官方启动器目录",
+    path: _getOfficialPath,
+  );
+  late final launcherGamePaths = [_currentGamePath, _officialGamePath];
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  RxList<int> get launcherGamePathIndexes => _launcherGamePathIndexes;
+
+  List<GamePath> get availableLauncherGamePaths => List.generate(
+        _launcherGamePathIndexes.length,
+        (index) => launcherGamePaths[_launcherGamePathIndexes[index]],
+      );
+
+  String get _getOfficialPath {
+    try {
+      final String env = Platform.isWindows ? 'APPDATA' : 'HOME';
+      final String? value = Platform.environment[env];
+      if (value == null) {
+        throw Exception("未找到环境变量 $env");
+      }
+      if (Platform.isWindows || Platform.isLinux) {
+        return join(value, kGameDirectoryName);
+      }
+      if (Platform.isMacOS) {
+        return join(value, "Library", "Application Support", "minecraft");
+      }
+      throw Exception("不支持的系统类型 ${Platform.operatingSystem}");
+    } catch (e) {
+      return "unknown";
+    }
   }
 
-  Set<GamePath> get paths => _paths;
-  void resetPaths() => _paths.assignAll(_kDefaultGamePaths);
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  Future<List<Game>> get gamesOnPaths async {
+    final gameList = await Future.wait(
+      availableLauncherGamePaths
+          .map((path) => path.gamesOnVersion)
+          .followedBy(_paths.map((path) => path.gamesOnVersion)),
+    );
+    return List.from(gameList.expand((list) => list));
+  }
+
+  RxSet<GamePath> get paths => _paths;
+
+  RxSet<Account> get accounts => _accounts;
 
   ValueNotifier<Account?> get selectedAccountNotifier => _selectedAccount;
   @JsonKey(toJson: _selectedAccounttoString)
@@ -126,8 +151,6 @@ final class AppConfig {
     throw Exception("未知的账号类型");
   }
 
-  Set<Account> get accounts => _accounts;
-
   static AppConfig? _instance;
 
   static AppConfig get instance {
@@ -137,25 +160,35 @@ final class AppConfig {
     return _instance!;
   }
 
-  static Future<String> _getConfigPath() async {
-    return join((await kConfigPath).path, kConfigName);
+  static Future<void> _initConfigPath() async {
+    final configDirectory = Directory(await kConfigPath);
+    await configDirectory.create();
+    _configPath = join(configDirectory.path, kConfigName);
   }
 
   static Future<void> init() async {
-    final config = File(await _getConfigPath());
+    await _initConfigPath();
+    final config = File(_configPath);
     if (!await config.exists() || (await config.length()) == 0) {
-      await save();
+      _instance = AppConfig();
+      return;
     }
     final content = await config.readAsString();
     _instance = AppConfig.fromJson(json.decode(content));
   }
 
-  static Future<void> save([AppConfig? appConfig]) async {
-    final config = File(await _getConfigPath());
+  Future<void> save([AppConfig? appConfig]) async {
+    final config = File(_configPath);
     final json = const JsonEncoder.withIndent('  ').convert(
       appConfig ?? _instance ?? AppConfig().toJson(),
     );
     await config.writeAsString(json);
+  }
+
+  @override
+  void notifyListeners() {
+    save();
+    super.notifyListeners();
   }
 
   factory AppConfig.fromJson(Map<String, dynamic> json) =>

@@ -1,14 +1,14 @@
-import 'package:one_launcher/models/theme_config.dart';
+import 'package:one_launcher/main.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
-const kConfigName = "one.json";
-const kGameConfigName = kConfigName;
-final kConfigPath = getApplicationDocumentsDirectory();
+final kConfigName = "${appInfo.appName}.json";
+final kGameConfigName = kConfigName;
+final kConfigDirectoryName = appInfo.appName;
+final kConfigPath = Future(() async => join(
+    (await getApplicationDocumentsDirectory()).path, kConfigDirectoryName));
 
-const kDefaultThemeMode = ThemeMode.system;
-const kDefaultSeedColor = SeedColor.blue;
-
-final kBorderRadius = BorderRadius.circular(7.5);
+final kDefaultBorderRadius = BorderRadius.circular(7.5);
 final kMediaBorderRadius = BorderRadius.circular(10);
 final kLagerBorderRadius = BorderRadius.circular(12.5);

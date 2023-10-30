@@ -54,7 +54,7 @@ class WidgetGroup extends StatelessWidget {
       ),
       child: Material(
         color: backgroundColor ?? colors.secondaryContainer,
-        borderRadius: kBorderRadius,
+        borderRadius: kDefaultBorderRadius,
         clipBehavior: Clip.antiAlias,
         child: Container(
           width: width,

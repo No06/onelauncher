@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:chinese_font_library/chinese_font_library.dart';
-import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -27,8 +26,8 @@ Color dynamicColorWithValue(
 @JsonSerializable()
 final class AppThemeConfig extends ChangeNotifier {
   AppThemeConfig({ThemeMode? mode, SeedColor? color})
-      : _mode = ValueNotifier(mode ?? kDefaultThemeMode),
-        _color = ValueNotifier(color ?? kDefaultSeedColor),
+      : _mode = ValueNotifier(mode ?? ThemeMode.system),
+        _color = ValueNotifier(color ?? SeedColor.blue),
         super() {
     _mode.addListener(notifyListeners);
     _color.addListener(notifyListeners);

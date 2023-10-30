@@ -34,7 +34,7 @@ class GamePath extends ChangeNotifier {
   final _availableGames = <Game>[];
   List<Game> get availableGames => _availableGames;
 
-  Future<List<Game>> get getGamesOnVersion async {
+  Future<List<Game>> get gamesOnVersion async {
     var results = <Game>[];
     var directory = Directory(join(path, "versions"));
     if (!directory.existsSync()) return results;

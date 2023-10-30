@@ -5,9 +5,9 @@ ThemeData simpleInputDecorationTheme(BuildContext context) {
   return Theme.of(context).copyWith(
     inputDecorationTheme: InputDecorationTheme(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-      border: OutlineInputBorder(borderRadius: kBorderRadius),
+      border: OutlineInputBorder(borderRadius: kDefaultBorderRadius),
       enabledBorder: OutlineInputBorder(
-        borderRadius: kBorderRadius,
+        borderRadius: kDefaultBorderRadius,
         borderSide: const BorderSide(color: Colors.grey),
       ),
     ),

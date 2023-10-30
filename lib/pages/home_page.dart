@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'account_page.dart';
-import 'game_library_page.dart';
+import 'game_library_page/game_library_page.dart';
 import 'appearance_page.dart';
 import 'setting_page.dart';
 
@@ -86,7 +86,7 @@ class _NavigationButton extends StatelessWidget {
       duration: Duration(milliseconds: isSelected ? 200 : 0),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        borderRadius: kBorderRadius,
+        borderRadius: kDefaultBorderRadius,
         color: isSelected ? seletedColor : seletedColor.withOpacity(0),
         boxShadow: kElevationToShadow[elevation.toInt()],
       ),
