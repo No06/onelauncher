@@ -75,7 +75,7 @@ final class LinuxSysInfo implements SysInfo {
     Future.delayed(const Duration(milliseconds: _debounce))
         .then((_) => _allowChange = true);
 
-    if (sysinfo(info) == 0) {
+    if (sysinfo(info) == 1) {
       final getLastError = DynamicLibrary.process()
           .lookupFunction<GetLastErrorFunc, GetLastError>('GetLastError');
       throw Exception("$runtimeType: Get sysinfo error: $getLastError");
