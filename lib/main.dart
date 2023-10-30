@@ -24,9 +24,10 @@ Future<void> init() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Future.wait([
     Future(() async => appInfo = await PackageInfo.fromPlatform()),
-    GetStorage.init(),
     JavaUtil.init(),
-    AppConfig.init(),
+    GetStorage.init().then(
+      (value) => AppConfig.init(),
+    ),
     windowManager.ensureInitialized(),
   ]);
   // 初始化窗口

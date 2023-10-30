@@ -11,7 +11,7 @@ class _FilterRule {
   }
 
   static final instance = _FilterRule();
-  static GetStorage get _box => GetStorage("filterRule");
+  static GetStorage get _box => GetStorage();
   static const _gameTypesBoxKey = "gameTypes";
 
   var searchValue = "";
