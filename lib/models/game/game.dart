@@ -112,6 +112,8 @@ class Game {
     return true;
   }
 
+  bool isModVersion() => _version.mainClass != "net.minecraft.client.main.Main";
+
   // TODO: 解压Native jar
   Future<void> extractLibrarie(NativesLibrarie librarie) async {
     final random = generateRandomString(8);

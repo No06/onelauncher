@@ -9,8 +9,8 @@ class _HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        const CustomScrollView(
-          slivers: [_SliverTitle(), _SliverList()],
+        CustomScrollView(
+          slivers: [const _SliverTitle(), _SliverList()],
         ),
         Align(
           alignment: Alignment.bottomRight,
@@ -149,6 +149,40 @@ class _SliverTitle extends StatelessWidget {
 class _SliverList extends StatelessWidget {
   const _SliverList();
 
+  static int compare(Game a, Game b) => a.version.id.compareTo(b.version.id);
+  static bool where(element) {
+    final gameTypes = _filterRule.gameTypes;
+    return gameTypes.isEmpty
+        ? true
+        : gameTypes.contains(_GameType.fromGame(element));
+  }
+
+  List<Widget> buildWidgetList(List<Game> gameList) {
+    switch (_filterRule.collation) {
+      // TODO: 最近游玩排序
+      case GameCollation.recentlyPlayed:
+        return List.generate(
+          gameList.length,
+          (index) => _GameItem(gameList[index]),
+        );
+      case GameCollation.byName:
+        return [
+          for (var game
+              in gameList.where(where).toList(growable: false)..sort(compare))
+            _GameItem(game)
+        ];
+    }
+  }
+
+  Widget _buildSliverList(List<Game> gameList) {
+    return SliverList.list(
+      children: buildWidgetsWithDivider(
+        buildWidgetList(gameList),
+        const Divider(height: 1, indent: 64, endIndent: 32),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -169,31 +203,10 @@ class _SliverList extends StatelessWidget {
         } else {
           return ListenableBuilder(
             listenable: _filterRule.collationIndex,
-            builder: (_, __) {
-              return SliverList.list(
-                children: buildWidgetsWithDivider(
-                  () {
-                    var data = snapshot.data!;
-                    late final List<Widget> children;
-                    switch (_filterRule.collation) {
-                      // TODO: 最近游玩排序
-                      case GameCollation.recentlyPlayed:
-                        children = List.generate(
-                            data.length, (index) => _GameItem(data[index]));
-                      case GameCollation.byName:
-                        compare(Game a, Game b) =>
-                            a.version.id.compareTo(b.version.id);
-                        children = [
-                          for (var game in (data.toList()..sort(compare)))
-                            _GameItem(game)
-                        ];
-                    }
-                    return children;
-                  }(),
-                  const Divider(height: 1, indent: 64, endIndent: 32),
-                ),
-              );
-            },
+            builder: (context, child) => ObxValue(
+              (types) => _buildSliverList(snapshot.data!.toList()),
+              _filterRule.gameTypes,
+            ),
           );
         }
       },

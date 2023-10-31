@@ -34,7 +34,13 @@ class _FilterRule {
 enum _GameType {
   release,
   snapshot,
-  mod,
+  mod;
+
+  const _GameType();
+  factory _GameType.fromGame(Game game) =>
+      game.isModVersion() ? mod : _GameType.fromGameType(game.version.type);
+  factory _GameType.fromGameType(GameType type) =>
+      type == GameType.release ? release : snapshot;
 }
 
 enum GameCollation {

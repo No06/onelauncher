@@ -23,7 +23,7 @@ void main() async {
 Future<void> init() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Future.wait([
-    Future(() async => appInfo = await PackageInfo.fromPlatform()),
+    PackageInfo.fromPlatform().then((value) => appInfo = value),
     JavaUtil.init(),
     GetStorage.init().then(
       (value) => AppConfig.init(),
