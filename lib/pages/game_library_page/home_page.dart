@@ -9,8 +9,8 @@ class _HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        CustomScrollView(
-          slivers: [const _SliverTitle(), _SliverList()],
+        const CustomScrollView(
+          slivers: [_SliverTitle(), _SliverList()],
         ),
         Align(
           alignment: Alignment.bottomRight,
@@ -150,14 +150,13 @@ class _SliverList extends StatelessWidget {
   const _SliverList();
 
   static int compare(Game a, Game b) => a.version.id.compareTo(b.version.id);
-  static bool where(element) {
-    final gameTypes = _filterRule.gameTypes;
-    return gameTypes.isEmpty
-        ? true
-        : gameTypes.contains(_GameType.fromGame(element));
-  }
+  static const _divider = Divider(height: 1, indent: 64, endIndent: 32);
 
-  List<Widget> buildWidgetList(List<Game> gameList) {
+  List<Widget> buildWidgetList(List<Game> gameList, Set<_GameType> types) {
+    bool where(Game game) {
+      return types.whereType<_GameType>().contains(_GameType.fromGame(game));
+    }
+
     switch (_filterRule.collation) {
       // TODO: 最近游玩排序
       case GameCollation.recentlyPlayed:
@@ -167,18 +166,24 @@ class _SliverList extends StatelessWidget {
         );
       case GameCollation.byName:
         return [
-          for (var game
+          for (final game
               in gameList.where(where).toList(growable: false)..sort(compare))
             _GameItem(game)
         ];
     }
   }
 
-  Widget _buildSliverList(List<Game> gameList) {
-    return SliverList.list(
-      children: buildWidgetsWithDivider(
-        buildWidgetList(gameList),
-        const Divider(height: 1, indent: 64, endIndent: 32),
+  Widget _buildSliverList(List<Game> gameList, Set<_GameType> types) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          if (index.isEven) {
+            return _GameItem(gameList[index ~/ 2]);
+          } else {
+            return _divider;
+          }
+        },
+        childCount: gameList.length * 2 - 1,
       ),
     );
   }
@@ -204,7 +209,7 @@ class _SliverList extends StatelessWidget {
           return ListenableBuilder(
             listenable: _filterRule.collationIndex,
             builder: (context, child) => ObxValue(
-              (types) => _buildSliverList(snapshot.data!.toList()),
+              (types) => _buildSliverList(snapshot.data!.toList(), types),
               _filterRule.gameTypes,
             ),
           );
