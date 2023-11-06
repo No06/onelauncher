@@ -12,6 +12,7 @@ abstract class Account {
   String get uuid;
   String get displayName;
   Skin get skin;
+  String get accessToken;
 
   final AccountType _type;
   AccountType get type => _type;

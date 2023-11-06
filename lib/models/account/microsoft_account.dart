@@ -29,4 +29,8 @@ class MicrosoftAccount extends Account {
 
   @override
   Map<String, dynamic> toJson() => _$MicrosoftAccountToJson(this);
+
+  @override
+  // TODO: implement token
+  String get accessToken => throw UnimplementedError();
 }

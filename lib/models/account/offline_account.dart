@@ -45,4 +45,8 @@ class OfflineAccount extends Account {
 
   @override
   Skin get skin => _skin;
+
+  @override
+  // TODO: implement token
+  String get accessToken => throw UnimplementedError();
 }
