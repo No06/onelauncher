@@ -156,14 +156,11 @@ class _SliverList extends StatelessWidget {
       ? true
       : _filterRule.gameTypes.contains(_GameType.fromGame(game));
 
-  List<Widget> _buildGameItems(GameCollation collation, List<Game> gameList) {
+  List<Widget> _buildGameItems(List<Game> gameList) {
     switch (_filterRule.collation) {
       // TODO: 最近游玩排序
       case GameCollation.recentlyPlayed:
-        return List.generate(
-          gameList.length,
-          (index) => _GameItem(gameList[index]),
-        );
+        return [for (final game in gameList.where(_where)) _GameItem(game)];
       case GameCollation.byName:
         return [
           for (final game
@@ -192,19 +189,16 @@ class _SliverList extends StatelessWidget {
           );
         } else {
           return ListenableBuilder(
-            listenable: _filterRule.collationIndex,
-            builder: (context, child) => ObxValue(
-              (types) => SliverList.list(
+            listenable: _filterRule,
+            builder: (context, child) {
+              final gameList = snapshot.data!.toList();
+              return SliverList.list(
                 children: buildWidgetsWithDivider(
-                  _buildGameItems(
-                    _filterRule.collation,
-                    snapshot.data!.toList(),
-                  ),
+                  _buildGameItems(gameList),
                   _divider,
                 ),
-              ),
-              _filterRule.gameTypes,
-            ),
+              );
+            },
           );
         }
       },
@@ -283,7 +277,7 @@ class _GameTypeCheckbox extends StatelessWidget {
 }
 
 class _GameItem extends StatelessWidget {
-  const _GameItem(this.game);
+  const _GameItem(this.game, {super.key});
 
   final Game game;
 

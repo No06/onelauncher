@@ -1,11 +1,13 @@
 part of 'game_library_page.dart';
 
-class _FilterRule {
+class _FilterRule extends ChangeNotifier {
   _FilterRule() {
+    _collationIndex.addListener(notifyListeners);
     ever(_gameTypes, (callback) {
+      notifyListeners();
       _box.write(
         _gameTypesBoxKey,
-        List.from(_gameTypes.map((type) => type.index)),
+        List.from(callback.map((type) => type.index)),
       );
     });
   }

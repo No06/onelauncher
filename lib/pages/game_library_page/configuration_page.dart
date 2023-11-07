@@ -4,7 +4,7 @@ class _ConfigurationPage extends StatelessWidget {
   _ConfigurationPage();
 
   final formKey = GlobalKey<FormState>();
-  final paths = appConfig.launcherGamePaths;
+  final paths = AppConfig.launcherGamePaths;
   final indexes = appConfig.launcherGamePathIndexes;
 
   @override
