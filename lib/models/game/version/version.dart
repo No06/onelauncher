@@ -1,3 +1,4 @@
+import 'package:one_launcher/models/game/version/arguments.dart';
 import 'package:one_launcher/models/game/version/game_type.dart';
 import 'package:one_launcher/models/game/version/librarie/librarie.dart';
 import 'package:one_launcher/models/game/version/asset_index.dart';
@@ -10,8 +11,10 @@ part 'version.g.dart';
 
 @JsonSerializable()
 class Version {
-  Version(
+  const Version(
     this.id,
+    this.arguments,
+    this.minecraftArguments,
     this.mainClass,
     this.jar,
     this.assetIndex,
@@ -20,9 +23,12 @@ class Version {
     this.downloads,
     this.logging,
     this.type,
+    this.minimumLauncherVersion,
   );
 
   final String id;
+  final Arguments? arguments;
+  final String? minecraftArguments;
   final String mainClass;
   final String? jar;
   final AssetIndex assetIndex;
@@ -31,6 +37,7 @@ class Version {
   final GameDownloads downloads;
   final Logging logging;
   final GameType type;
+  final int minimumLauncherVersion;
 
   factory Version.fromJson(Map<String, dynamic> json) =>
       _$VersionFromJson(json);

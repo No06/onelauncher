@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/models/app_config.dart';
 import 'package:one_launcher/utils/java_util.dart';
@@ -22,6 +23,9 @@ void main() async {
 
 Future<void> init() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (kDebugMode) {
+    await GetStorage().erase();
+  }
   await Future.wait([
     PackageInfo.fromPlatform().then((value) => appInfo = value),
     JavaUtil.init(),

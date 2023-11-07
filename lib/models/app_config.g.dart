@@ -23,11 +23,21 @@ AppConfig _$AppConfigFromJson(Map<String, dynamic> json) => AppConfig(
               json['gameSetting'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$AppConfigToJson(AppConfig instance) => <String, dynamic>{
-      'theme': instance.theme,
-      'gameSetting': instance.gameSetting,
-      'paths': instance.paths.toList(),
-      'selectedAccount':
-          AppConfig._selectedAccounttoString(instance.selectedAccount),
-      'accounts': instance.accounts.toList(),
-    };
+Map<String, dynamic> _$AppConfigToJson(AppConfig instance) {
+  final val = <String, dynamic>{
+    'theme': instance.theme,
+    'gameSetting': instance.gameSetting,
+    'paths': AppConfig._setToList(instance.paths),
+    'accounts': AppConfig._setToList(instance.accounts),
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('selectedAccount',
+      AppConfig._selectedAccounttoString(instance.selectedAccount));
+  return val;
+}

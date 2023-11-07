@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/version/librarie/common_librarie.dart';
 import 'package:one_launcher/models/game/version/librarie/maven_librarie.dart';
@@ -10,7 +12,7 @@ part 'librarie.g.dart';
 @JsonSerializable()
 class Librarie {
   Librarie({required this.name}) {
-    var result = _splitPackageName(name);
+    final result = _splitPackageName(name);
     _groupId = result[0];
     _artifactId = result[1];
     _version = result[2];
@@ -40,6 +42,10 @@ class Librarie {
   String get jarName =>
       "$_artifactId-$_version${_classifier == null ? '' : '-$_classifier'}.jar";
   String get jarPath => join(path, artifactId, version, jarName);
+
+  String getPath(String gameLibrariesPath) => join(gameLibrariesPath, jarPath);
+  Future<bool> exists(String gameLibrariesPath) async =>
+      await File(getPath(gameLibrariesPath)).exists();
 
   static List<String> _splitPackageName(String packageName) {
     List<String> parts = packageName.split(':');

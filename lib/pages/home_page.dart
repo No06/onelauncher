@@ -121,33 +121,35 @@ class _Navigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final selectedColor = Theme.of(context).colorScheme.onPrimary;
     return Container(
       width: 200,
       color: Colors.transparent,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
       child: Column(
         children: [
-          ...routes.entries.map((route) {
-            final routePath = route.key;
-            final selectedColor = Theme.of(context).colorScheme.onPrimary;
-            return Obx(() {
+          for (final route in routes.entries)
+            Obx(() {
+              final routePath = route.key;
               final isSelected = routePath == _currentRoutePath.value;
+              final name = route.value["name"];
+              final icon = Icon(route.value["icon"]);
+              final selectedIcon =
+                  Icon(route.value["selectedIcon"], color: selectedColor);
+              void onTap() {
+                _currentRoutePath(route.key);
+                Get.offNamed(id: 1, route.key);
+              }
+
               return _NavigationButton(
-                name: route.value["name"],
-                icon: Icon(route.value["icon"]),
-                selectedIcon: Icon(
-                  route.value["selectedIcon"],
-                  color: selectedColor,
-                ),
+                name: name,
+                icon: icon,
+                selectedIcon: selectedIcon,
                 elevation: isSelected ? 3 : 0,
                 isSelected: isSelected,
-                onTap: () {
-                  _currentRoutePath(route.key);
-                  Get.offNamed(id: 1, route.key);
-                },
+                onTap: onTap,
               );
-            });
-          })
+            })
         ]
           ..insert(routes.length - 1, const Spacer())
           ..insert(1, const SizedBox(height: 10)),
@@ -160,6 +162,7 @@ class _NavigationView extends StatelessWidget {
   const _NavigationView({required this.routes});
 
   final Map<String, Map> routes;
+  static final globalKey = Get.nestedKey(1);
 
   Route createRoute(final Widget widget) {
     return PageRouteBuilder(
@@ -193,7 +196,7 @@ class _NavigationView extends StatelessWidget {
       child: ClipRect(
         clipBehavior: Clip.hardEdge,
         child: Navigator(
-          key: Get.nestedKey(1),
+          key: globalKey,
           initialRoute: _kDefaultRoutePath,
           onGenerateRoute: (settings) {
             switch (settings.name) {

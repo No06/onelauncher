@@ -4,7 +4,7 @@ part 'java_version.g.dart';
 
 @JsonSerializable()
 class JavaVersion {
-  JavaVersion(this.component, this.majorVersion);
+  const JavaVersion(this.component, this.majorVersion);
 
   final String component;
   final int majorVersion;

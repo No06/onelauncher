@@ -16,9 +16,9 @@ NativesLibrarie _$NativesLibrarieFromJson(Map<String, dynamic> json) =>
       natives: (json['natives'] as Map<String, dynamic>).map(
         (k, e) => MapEntry($enumDecode(_$OsNameEnumMap, k), e as String),
       ),
-      extract: json['extract'] == null
+      extractRule: json['extract'] == null
           ? null
-          : Extract.fromJson(json['extract'] as Map<String, dynamic>),
+          : ExtractRule.fromJson(json['extract'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$NativesLibrarieToJson(NativesLibrarie instance) =>
@@ -28,11 +28,12 @@ Map<String, dynamic> _$NativesLibrarieToJson(NativesLibrarie instance) =>
       'rules': instance.rules,
       'natives':
           instance.natives.map((k, e) => MapEntry(_$OsNameEnumMap[k]!, e)),
-      'extract': instance.extract,
+      'extract': instance.extractRule,
     };
 
 const _$OsNameEnumMap = {
   OsName.windows: 'windows',
   OsName.linux: 'linux',
   OsName.osx: 'osx',
+  OsName.unknown: 'unknown',
 };

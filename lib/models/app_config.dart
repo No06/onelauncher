@@ -33,7 +33,7 @@ final class AppConfig extends ChangeNotifier {
         _launcherGamePathIndexes = RxList.from(GetStorage()
                 .read<List>(_launcherGamePathBoxKey)
                 ?.map((e) => e as int) ??
-            []),
+            List.generate(launcherGamePaths.length, (index) => index)),
         _paths = RxSet(paths ?? {}),
         _selectedAccount =
             ValueNotifier(_selectedAccountFromJson(selectedAccount, accounts)),
@@ -45,7 +45,7 @@ final class AppConfig extends ChangeNotifier {
       _launcherGamePathIndexes,
       (callback) => GetStorage().write(
         _launcherGamePathBoxKey,
-        _launcherGamePathIndexes,
+        callback,
       ),
     );
     for (var path in _paths) {
@@ -66,16 +66,16 @@ final class AppConfig extends ChangeNotifier {
   final RxSet<Account> _accounts;
   final GameSettingConfig gameSetting;
 
-  final _currentGamePath = GamePath(
+  static final _currentGamePath = GamePath(
     name: "启动器目录",
     path:
         join(File(Platform.resolvedExecutable).parent.path, kGameDirectoryName),
   );
-  late final _officialGamePath = GamePath(
+  static final _officialGamePath = GamePath(
     name: "官方启动器目录",
     path: _getOfficialPath,
   );
-  late final launcherGamePaths = [_currentGamePath, _officialGamePath];
+  static final launcherGamePaths = [_currentGamePath, _officialGamePath];
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   RxList<int> get launcherGamePathIndexes => _launcherGamePathIndexes;
@@ -85,7 +85,7 @@ final class AppConfig extends ChangeNotifier {
         (index) => launcherGamePaths[_launcherGamePathIndexes[index]],
       );
 
-  String get _getOfficialPath {
+  static String get _getOfficialPath {
     try {
       final String env = Platform.isWindows ? 'APPDATA' : 'HOME';
       final String? value = Platform.environment[env];
@@ -114,12 +114,15 @@ final class AppConfig extends ChangeNotifier {
     return List.from(gameList.expand((list) => list));
   }
 
+  @JsonKey(toJson: _setToList)
   RxSet<GamePath> get paths => _paths;
-
+  @JsonKey(toJson: _setToList)
   RxSet<Account> get accounts => _accounts;
 
+  static List _setToList(Set set) => set.toList();
+
   ValueNotifier<Account?> get selectedAccountNotifier => _selectedAccount;
-  @JsonKey(toJson: _selectedAccounttoString)
+  @JsonKey(toJson: _selectedAccounttoString, includeIfNull: false)
   Account? get selectedAccount => _selectedAccount.value;
   set selectedAccount(Account? newVal) => _selectedAccount.value = newVal;
   static String? _selectedAccounttoString(Account? account) {

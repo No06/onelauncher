@@ -6,11 +6,12 @@ part of 'extract.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Extract _$ExtractFromJson(Map<String, dynamic> json) => Extract(
+ExtractRule _$ExtractRuleFromJson(Map<String, dynamic> json) => ExtractRule(
       exclude:
           (json['exclude'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
 
-Map<String, dynamic> _$ExtractToJson(Extract instance) => <String, dynamic>{
+Map<String, dynamic> _$ExtractRuleToJson(ExtractRule instance) =>
+    <String, dynamic>{
       'exclude': instance.exclude,
     };

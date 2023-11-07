@@ -18,4 +18,5 @@ const _$OsNameEnumMap = {
   OsName.windows: 'windows',
   OsName.linux: 'linux',
   OsName.osx: 'osx',
+  OsName.unknown: 'unknown',
 };

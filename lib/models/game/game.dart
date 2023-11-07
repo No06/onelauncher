@@ -1,54 +1,58 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:archive/archive_io.dart';
 import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/offline_account.dart';
 import 'package:one_launcher/models/game/version/librarie/common_librarie.dart';
 import 'package:one_launcher/models/game/version/librarie/librarie.dart';
+import 'package:one_launcher/models/game/version/librarie/maven_librarie.dart';
 import 'package:one_launcher/models/game/version/librarie/natives_librarie.dart';
-import 'package:one_launcher/models/game/version/os.dart';
-import 'package:one_launcher/models/game/version/os_rule.dart';
-import 'package:one_launcher/models/game/version/rule.dart';
 import 'package:one_launcher/models/game/version/version.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/java.dart';
 import 'package:one_launcher/utils/random_string.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../game_setting_config.dart';
 
 part 'game.g.dart';
-
-const kLibrariesDirectoryName = "libraries";
 
 typedef ResultMap = Map<Librarie, bool>;
 
 @JsonSerializable()
 class Game {
   Game(
-    String librariesPath,
+    String mainPath,
     String versionPath, {
     bool? useGlobalSetting,
     GameSettingConfig? setting,
-  })  : _useGlobalSetting = ValueNotifier(useGlobalSetting ?? false),
-        _setting = setting ?? GameSettingConfig(),
-        _librariesPath = librariesPath,
+  })  : _mainPath = mainPath,
         _versionPath = versionPath,
-        _version = _getVersionFromPath(join(librariesPath, versionPath)) {
+        _useGlobalSetting = ValueNotifier(useGlobalSetting ?? false),
+        _librariesPath = (join(mainPath, librariesDirectory)),
+        _setting = setting ?? GameSettingConfig(),
+        _version = _getVersionFromPath(join(mainPath, versionPath)) {
     _useGlobalSetting.addListener(saveConfig);
     _setting.addListener(saveConfig);
   }
 
-  final String _librariesPath;
+  static const librariesDirectory = "libraries";
+
+  final String _mainPath;
   @JsonKey(includeToJson: false)
-  String get librariesPath => _librariesPath;
+  String get mainPath => _mainPath;
 
   final String _versionPath;
   @JsonKey(includeToJson: false)
   String get versionPath => _versionPath;
 
-  String get path => join(_librariesPath, _versionPath);
+  final String _librariesPath;
+  @JsonKey(includeToJson: false)
+  String get librariesPath => _librariesPath;
+
+  String get path => join(_mainPath, _versionPath);
 
   Version _version;
   Version get version => _version;
@@ -65,69 +69,36 @@ class Game {
     config.writeAsStringSync(json);
   }
 
-  Stream<ResultMap> get retrieveLibraries {
-    return Stream.fromFutures(
-      _version.libraries.map(
-        (lib) async => {lib: await _checkLibrarieExists(lib)},
-      ),
-    );
-  }
+  String get assetsPath => join(_mainPath, "assets");
+  String get loggingFilePath =>
+      join(assetsPath, _version.logging.client.file.id);
 
-  String _librariePath(Librarie librarie) {
-    return join(librariesPath, kLibrariesDirectoryName, librarie.jarPath);
-  }
+  bool get isModVersion =>
+      _version.mainClass != "net.minecraft.client.main.Main";
 
-  Future<bool> _checkLibrarieExists(Librarie librarie) async {
-    return await File(_librariePath(librarie)).exists();
-  }
-
-  bool _isAllowed(Librarie lib) {
-    if (lib is CommonLibrarie && lib.rules != null) {
-      var osRules = <OsName>{};
-      // 规则解析
-      for (var rule in lib.rules!) {
-        var action = rule.action;
-        switch (action) {
-          case RuleAction.allow:
-            if (rule is OsRule) {
-              osRules.add(rule.os.name);
-            } else {
-              osRules.addAll(OsName.values);
-            }
-            break;
-          case RuleAction.disallow:
-            if (rule is OsRule) {
-              osRules.remove(rule.os.name);
-            } else {
-              osRules.clear();
-            }
-            break;
-        }
+  Future<String> get randomOutputPath async {
+    while (true) {
+      final random = generateRandomString(8);
+      final outputPath = join((await getApplicationDocumentsDirectory()).path,
+          "minecraft-${_version.id}-natives-$random");
+      if (!await Directory(outputPath).exists()) {
+        return outputPath;
       }
-      var operatingSystem = Platform.operatingSystem;
-      operatingSystem = operatingSystem == "macos" ? "osx" : operatingSystem;
-      return osRules.isEmpty ||
-          osRules.contains(OsName.fromName(operatingSystem));
     }
-    return true;
-  }
-
-  bool isModVersion() => _version.mainClass != "net.minecraft.client.main.Main";
-
-  // TODO: 解压Native jar
-  Future<void> extractLibrarie(NativesLibrarie librarie) async {
-    final random = generateRandomString(8);
-    final outputPath = join(_versionPath, "${_version.id}-natives-$random");
-    await extractFileToDisk(_librariePath(librarie), outputPath);
   }
 
   Stream<Librarie> get retrieveNonExitedLibraries async* {
-    await for (var e in retrieveLibraries) {
-      var entry = e.entries.first;
-      var lib = entry.key;
-      var exited = entry.value;
-      if (!exited && _isAllowed(lib)) {
-        yield lib;
+    String? outputPath;
+    for (var lib in version.libraries) {
+      if (lib is MavenLibrarie) {
+        if (!await lib.exists(_librariesPath)) yield lib;
+      } else if (lib is CommonLibrarie && lib.isAllowed) {
+        if (lib is NativesLibrarie) {
+          outputPath ??= await randomOutputPath;
+          await lib.extract(_librariesPath, outputPath);
+        } else {
+          if (!await lib.exists(_librariesPath)) yield lib;
+        }
       }
     }
   }
@@ -135,8 +106,11 @@ class Game {
   // TODO: 支持正版用户
   String getStartupCommandLine({
     required Java java,
-    required OfflineAccount account,
+    required Account account,
   }) {
+    if (account is! OfflineAccount) {
+      throw UnimplementedError();
+    }
     return '"${java.path}" -XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump';
   }
 

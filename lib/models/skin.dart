@@ -6,16 +6,17 @@ part 'skin.g.dart';
 
 @JsonSerializable(includeIfNull: false)
 class Skin {
-  Skin({
+  const Skin({
     this.type = SkinType.steve,
     this.textureModel = TextureModel.def,
     this.localSkinPath,
     this.localCapePath,
   });
-  SkinType type;
-  TextureModel textureModel;
-  String? localSkinPath;
-  String? localCapePath;
+
+  final SkinType type;
+  final TextureModel textureModel;
+  final String? localSkinPath;
+  final String? localCapePath;
 
   Future<Uint8List> get u8l async {
     const steve = "assets/images/skins/steve.png";
