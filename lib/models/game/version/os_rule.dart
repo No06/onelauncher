@@ -6,7 +6,7 @@ part 'os_rule.g.dart';
 
 @JsonSerializable()
 class OsRule extends Rule {
-  OsRule(this.os, {required super.action});
+  const OsRule(this.os, {required super.action});
 
   final Os os;
 

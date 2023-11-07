@@ -4,7 +4,7 @@ part 'native.g.dart';
 
 @JsonSerializable()
 class Natives {
-  Natives(this.linux, this.osx, this.windows);
+  const Natives(this.linux, this.osx, this.windows);
 
   final Native? linux;
   final Native? osx;

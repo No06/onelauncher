@@ -5,7 +5,7 @@ part 'artifact.g.dart';
 
 @JsonSerializable()
 class Artifact extends DownloadFile {
-  Artifact(
+  const Artifact(
     this.path, {
     required super.url,
     required super.sha1,

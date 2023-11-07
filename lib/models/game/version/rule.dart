@@ -5,7 +5,7 @@ part 'rule.g.dart';
 
 @JsonSerializable()
 class Rule {
-  Rule({required this.action});
+  const Rule({required this.action});
 
   final RuleAction action;
 

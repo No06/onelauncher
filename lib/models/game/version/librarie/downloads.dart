@@ -5,7 +5,7 @@ part 'downloads.g.dart';
 
 @JsonSerializable()
 class Downloads {
-  Downloads({this.artifact, this.classifiers});
+  const Downloads({this.artifact, this.classifiers});
 
   final Artifact? artifact;
   final Map<String, Artifact>? classifiers;

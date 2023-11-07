@@ -29,6 +29,15 @@ class AppPage extends StatelessWidget {
   final Widget? body;
   final Widget? background;
 
+  PreferredSize appBar(BuildContext context) => PreferredSize(
+        preferredSize: const Size.fromHeight(kWindowCaptionHeight),
+        child: WindowCaption(
+          brightness: Theme.of(context).brightness,
+          title: const Text('OneLauncher'),
+          backgroundColor: Colors.transparent,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -44,12 +53,3 @@ class AppPage extends StatelessWidget {
     );
   }
 }
-
-PreferredSizeWidget appBar(BuildContext context) => PreferredSize(
-      preferredSize: const Size.fromHeight(kWindowCaptionHeight),
-      child: WindowCaption(
-        brightness: Theme.of(context).brightness,
-        title: const Text('OneLauncher'),
-        backgroundColor: Colors.transparent,
-      ),
-    );

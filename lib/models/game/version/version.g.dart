@@ -8,6 +8,10 @@ part of 'version.dart';
 
 Version _$VersionFromJson(Map<String, dynamic> json) => Version(
       json['id'] as String,
+      json['arguments'] == null
+          ? null
+          : Arguments.fromJson(json['arguments'] as Map<String, dynamic>),
+      json['minecraftArguments'] as String?,
       json['mainClass'] as String,
       json['jar'] as String?,
       AssetIndex.fromJson(json['assetIndex'] as Map<String, dynamic>),
@@ -18,10 +22,13 @@ Version _$VersionFromJson(Map<String, dynamic> json) => Version(
       GameDownloads.fromJson(json['downloads'] as Map<String, dynamic>),
       Logging.fromJson(json['logging'] as Map<String, dynamic>),
       $enumDecode(_$GameTypeEnumMap, json['type']),
+      json['minimumLauncherVersion'] as int,
     );
 
 Map<String, dynamic> _$VersionToJson(Version instance) => <String, dynamic>{
       'id': instance.id,
+      'arguments': instance.arguments,
+      'minecraftArguments': instance.minecraftArguments,
       'mainClass': instance.mainClass,
       'jar': instance.jar,
       'assetIndex': instance.assetIndex,
@@ -30,6 +37,7 @@ Map<String, dynamic> _$VersionToJson(Version instance) => <String, dynamic>{
       'downloads': instance.downloads,
       'logging': instance.logging,
       'type': _$GameTypeEnumMap[instance.type]!,
+      'minimumLauncherVersion': instance.minimumLauncherVersion,
     };
 
 const _$GameTypeEnumMap = {

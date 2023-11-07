@@ -7,7 +7,7 @@ part of 'game.dart';
 // **************************************************************************
 
 Game _$GameFromJson(Map<String, dynamic> json) => Game(
-      json['librariesPath'] as String,
+      json['mainPath'] as String,
       json['versionPath'] as String,
       setting: json['setting'] == null
           ? null

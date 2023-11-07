@@ -236,8 +236,8 @@ class _AnimationController extends GetxController
   _AnimationController([this.value]);
 
   final double? value;
-  late Animation<double> animation;
-  late AnimationController animController;
+  late final Animation<double> animation;
+  late final AnimationController animController;
 
   @override
   void onInit() {

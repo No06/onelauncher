@@ -114,12 +114,15 @@ final class AppConfig extends ChangeNotifier {
     return List.from(gameList.expand((list) => list));
   }
 
+  @JsonKey(toJson: _setToList)
   RxSet<GamePath> get paths => _paths;
-
+  @JsonKey(toJson: _setToList)
   RxSet<Account> get accounts => _accounts;
 
+  static List _setToList(Set set) => set.toList();
+
   ValueNotifier<Account?> get selectedAccountNotifier => _selectedAccount;
-  @JsonKey(toJson: _selectedAccounttoString)
+  @JsonKey(toJson: _selectedAccounttoString, includeIfNull: false)
   Account? get selectedAccount => _selectedAccount.value;
   set selectedAccount(Account? newVal) => _selectedAccount.value = newVal;
   static String? _selectedAccounttoString(Account? account) {

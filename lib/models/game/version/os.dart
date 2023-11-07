@@ -4,7 +4,7 @@ part 'os.g.dart';
 
 @JsonSerializable()
 class Os {
-  Os({required this.name});
+  const Os({required this.name});
 
   final OsName name;
 
@@ -15,10 +15,14 @@ class Os {
 enum OsName {
   windows("windows"),
   linux("linux"),
-  osx("osx");
+  osx("osx"),
+  unknown("unknown");
 
   const OsName(this.name);
   final String name;
 
-  factory OsName.fromName(String name) => $enumDecode(_$OsNameEnumMap, name);
+  factory OsName.fromName(String name) {
+    if (name == "macos") return osx;
+    return $enumDecode(_$OsNameEnumMap, name, unknownValue: unknown);
+  }
 }

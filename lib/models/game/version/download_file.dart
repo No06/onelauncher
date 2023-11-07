@@ -4,7 +4,7 @@ part 'download_file.g.dart';
 
 @JsonSerializable()
 class DownloadFile {
-  DownloadFile({
+  const DownloadFile({
     this.id,
     required this.url,
     required this.sha1,

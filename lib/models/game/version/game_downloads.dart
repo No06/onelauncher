@@ -5,7 +5,7 @@ part 'game_downloads.g.dart';
 
 @JsonSerializable()
 class GameDownloads {
-  GameDownloads(this.client);
+  const GameDownloads(this.client);
 
   final DownloadFile client;
 

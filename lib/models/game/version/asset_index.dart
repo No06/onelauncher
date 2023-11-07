@@ -5,7 +5,7 @@ part 'asset_index.g.dart';
 
 @JsonSerializable()
 class AssetIndex extends DownloadFile {
-  AssetIndex(
+  const AssetIndex(
     this.totalSize, {
     required super.id,
     required super.url,
