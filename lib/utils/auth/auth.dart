@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:one_launcher/utils/http.dart';
 
 // 获取code
@@ -13,9 +12,11 @@ String? _getUrlCode(final String url) {
 class MicrosoftAuthUtil {
   late String code;
   late String msAcessToken;
+  late String msRefeshToken;
   late String xblToken;
   late String xstsToken;
   late String uhs;
+  late String minecraftToken;
 
   /// 获取 Microsoft Oauth 的 AccessToken, 用于 XBox Live 身份验证
   ///
@@ -33,6 +34,21 @@ class MicrosoftAuthUtil {
     };
     final response = await httpPost(url, params: params);
     msAcessToken = response['access_token'];
+    msRefeshToken = response['refresh_token'];
+  }
+
+  Future<void> refreshMSOauthToken() async {
+    const url = 'https://login.live.com/oauth20_token.srf';
+    final Map<String, String> params = {
+      "client_id": "00000000402b5328",
+      "refresh_token": msRefeshToken,
+      "grant_type": "refresh_token",
+      "redirect_uri": "https://login.live.com/oauth20_desktop.srf",
+      "scope": "service::user.auth.xboxlive.com::MBI_SSL"
+    };
+    final response = await httpPost(url, params: params);
+    msAcessToken = response['access_token'];
+    msRefeshToken = response['refresh_token'];
   }
 
   /// 通过 Xbox Live 获取用于 XSTS 身份验证的 Token
@@ -42,6 +58,7 @@ class MicrosoftAuthUtil {
   ///
   Future<void> getXBoxLiveToken() async {
     const url = 'https://user.auth.xboxlive.com/user/authenticate';
+    const Map<String, String> header = {"Content-Type": "application/json"};
     final params = {
       "Properties": {
         "AuthMethod": "RPS",
@@ -51,10 +68,8 @@ class MicrosoftAuthUtil {
       "RelyingParty": "http://auth.xboxlive.com",
       "TokenType": "JWT"
     };
-    final response = await httpPost(url,
-        params: jsonEncode(params),
-        header: {"Content-Type": "application/json"});
-    print(response);
+    final response =
+        await httpPost(url, params: jsonEncode(params), header: header);
     xblToken = response['Token'];
     uhs = response['DisplayClaims']['xui'][0]['uhs'];
   }
@@ -66,6 +81,7 @@ class MicrosoftAuthUtil {
   ///
   Future<void> getXSTSToken() async {
     const url = 'https://xsts.auth.xboxlive.com/xsts/authorize';
+    const Map<String, String> header = {"Content-Type": "application/json"};
     final Map<String, dynamic> params = {
       "Properties": {
         "SandboxId": "RETAIL",
@@ -76,31 +92,42 @@ class MicrosoftAuthUtil {
       "RelyingParty": "rp://api.minecraftservices.com/",
       "TokenType": "JWT"
     };
-    final response = await httpPost(url,
-        params: jsonEncode(params),
-        header: {"Content-Type": "application/json"});
+    final response =
+        await httpPost(url, params: jsonEncode(params), header: header);
     xstsToken = response['Token'];
   }
 
   Future<String> getMinecraftToken() async {
     const url =
         'https://api.minecraftservices.com/authentication/login_with_xbox';
+    const Map<String, String> header = {"Content-Type": "application/json"};
     final Map<String, String> params = {
       "identityToken": "XBL3.0 x=$uhs;$xstsToken"
     };
-    final response = await httpPost(url,
-        params: jsonEncode(params),
-        header: {"Content-Type": "application/json"});
-    return response['access_token'];
+    final response =
+        await httpPost(url, params: jsonEncode(params), header: header);
+    minecraftToken = response['access_token'];
+    return minecraftToken;
+  }
+
+  Future<void> getPlayerProfile() async {
+    const url = 'https://api.minecraftservices.com/minecraft/profile';
+    final Map<String, String> header = {
+      'Authorization': 'Bearer $minecraftToken'
+    };
+    final response = await httpGet(url, header: header);
+    print(response);
   }
 }
 
 void main() async {
   MicrosoftAuthUtil mau = MicrosoftAuthUtil();
-  mau.code = 'M.C106_SN1.2.b6b7ebb9-5afd-6623-41f9-a8eb3a476053';
+  mau.code = 'M.C106_SN1.2.ecb1a86e-582d-17b3-6b06-730b5225140d';
   await mau.getMSOauthToken();
-  await mau.getXBoxLiveToken();
-  await mau.getXSTSToken();
-  final mctoken = await mau.getMinecraftToken();
-  print(mctoken);
+  await mau.refreshMSOauthToken();
+  // await mau.getXBoxLiveToken();
+  // await mau.getXSTSToken();
+  // final mctoken = await mau.getMinecraftToken();
+  // print(mctoken);
+  // mau.getPlayerProfile();
 }

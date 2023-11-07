@@ -9,3 +9,9 @@ Future<dynamic> httpPost(String url,
   print(response.body);
   return jsonDecode(response.body);
 }
+
+Future<dynamic> httpGet(String url, {Map<String, String>? header}) async {
+  final response = await http.get(Uri.parse(url), headers: header);
+  print(response.body);
+  return jsonDecode(response.body);
+}
