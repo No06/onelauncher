@@ -149,14 +149,14 @@ class _SliverTitle extends StatelessWidget {
 class _SliverList extends StatelessWidget {
   const _SliverList();
 
-  static int compare(Game a, Game b) => a.version.id.compareTo(b.version.id);
+  static int _compare(Game a, Game b) => a.version.id.compareTo(b.version.id);
   static const _divider = Divider(height: 1, indent: 64, endIndent: 32);
 
-  List<Widget> buildWidgetList(List<Game> gameList, Set<_GameType> types) {
-    bool where(Game game) {
-      return types.whereType<_GameType>().contains(_GameType.fromGame(game));
-    }
+  bool _where(Game game) => _filterRule.gameTypes.isEmpty
+      ? true
+      : _filterRule.gameTypes.contains(_GameType.fromGame(game));
 
+  List<Widget> _buildGameItems(GameCollation collation, List<Game> gameList) {
     switch (_filterRule.collation) {
       // TODO: 最近游玩排序
       case GameCollation.recentlyPlayed:
@@ -167,25 +167,10 @@ class _SliverList extends StatelessWidget {
       case GameCollation.byName:
         return [
           for (final game
-              in gameList.where(where).toList(growable: false)..sort(compare))
+              in gameList.where(_where).toList(growable: false)..sort(_compare))
             _GameItem(game)
         ];
     }
-  }
-
-  Widget _buildSliverList(List<Game> gameList, Set<_GameType> types) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          if (index.isEven) {
-            return _GameItem(gameList[index ~/ 2]);
-          } else {
-            return _divider;
-          }
-        },
-        childCount: gameList.length * 2 - 1,
-      ),
-    );
   }
 
   @override
@@ -209,7 +194,15 @@ class _SliverList extends StatelessWidget {
           return ListenableBuilder(
             listenable: _filterRule.collationIndex,
             builder: (context, child) => ObxValue(
-              (types) => _buildSliverList(snapshot.data!.toList(), types),
+              (types) => SliverList.list(
+                children: buildWidgetsWithDivider(
+                  _buildGameItems(
+                    _filterRule.collation,
+                    snapshot.data!.toList(),
+                  ),
+                  _divider,
+                ),
+              ),
               _filterRule.gameTypes,
             ),
           );
