@@ -12,53 +12,58 @@ class _ConfigurationPage extends StatelessWidget {
     return Stack(
       children: [
         ObxValue(
-          (data) => ListView(
-            children: List<Widget>.generate(paths.length, (index) {
-                  final path = paths[index];
-                  return ValueBuilder<bool?>(
-                    initialValue: indexes.contains(index),
-                    onUpdate: (value) => value ?? false
-                        ? indexes.add(index)
-                        : indexes.remove(index),
-                    builder: (value, updater) => SwitchListTile(
-                      selected: value!,
-                      title: Text(path.name),
-                      subtitle: Text(path.path),
-                      value: value,
-                      onChanged: updater,
-                    ),
-                  );
-                }) +
-                List.generate(data.length, (index) {
-                  final path = data.elementAt(index);
-                  return ValueBuilder<bool?>(
-                    initialValue: false,
-                    builder: (value, updater) => MouseRegion(
-                      onEnter: (_) => updater(true),
-                      onExit: (_) => updater(false),
-                      child: ListTile(
+          (data) => DynMouseScroll(
+            animationCurve: kMouseScrollAnimationCurve,
+            builder: (context, controller, physics) => ListView(
+              controller: controller,
+              physics: physics,
+              children: List<Widget>.generate(paths.length, (index) {
+                    final path = paths[index];
+                    return ValueBuilder<bool?>(
+                      initialValue: indexes.contains(index),
+                      onUpdate: (value) => value ?? false
+                          ? indexes.add(index)
+                          : indexes.remove(index),
+                      builder: (value, updater) => SwitchListTile(
+                        selected: value!,
                         title: Text(path.name),
                         subtitle: Text(path.path),
-                        onTap: () {},
-                        trailing: value ?? false
-                            ? IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => showDialog(
-                                  context: context,
-                                  builder: (context) => WarningDialog(
-                                    content: const Text("你确定要删除这条数据吗？"),
-                                    onConfirmed: () {
-                                      data.remove(path);
-                                      dialogPop();
-                                    },
-                                  ),
-                                ),
-                              )
-                            : null,
+                        value: value,
+                        onChanged: updater,
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  }) +
+                  List.generate(data.length, (index) {
+                    final path = data.elementAt(index);
+                    return ValueBuilder<bool?>(
+                      initialValue: false,
+                      builder: (value, updater) => MouseRegion(
+                        onEnter: (_) => updater(true),
+                        onExit: (_) => updater(false),
+                        child: ListTile(
+                          title: Text(path.name),
+                          subtitle: Text(path.path),
+                          onTap: () {},
+                          trailing: value ?? false
+                              ? IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => showDialog(
+                                    context: context,
+                                    builder: (context) => WarningDialog(
+                                      content: const Text("你确定要删除这条数据吗？"),
+                                      onConfirmed: () {
+                                        data.remove(path);
+                                        dialogPop();
+                                      },
+                                    ),
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
+                    );
+                  }),
+            ),
           ),
           appConfig.paths,
         ),

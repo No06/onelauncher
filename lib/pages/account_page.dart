@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
 import 'package:one_launcher/widgets/route_page.dart';
+import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
 import '../models/theme_config.dart';
 import '../models/account/microsoft_account.dart';
@@ -22,37 +23,42 @@ class AccountPage extends RoutePage {
     return Expanded(
       child: Stack(
         children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Obx(
-              () => Column(
-                children: () {
-                  final results = <Widget>[];
-                  for (var account in appConfig.accounts) {
-                    results.add(
-                      ValueListenableBuilder(
-                        key: UniqueKey(),
-                        valueListenable: appConfig.selectedAccountNotifier,
-                        builder: (_, selectedAccount, __) => _AccountItem(
-                          account: account,
-                          isSelected: appConfig.selectedAccount == account,
-                          onTap: () => appConfig.selectedAccount = account,
-                          onRemoved: (account) {
-                            appConfig.accounts.remove(account);
-                            try {
-                              appConfig.selectedAccount =
-                                  appConfig.accounts.first;
-                            } catch (e) {
-                              appConfig.selectedAccount = null;
-                            }
-                            Get.showSnackbar(successSnackBar("删除成功"));
-                          },
+          DynMouseScroll(
+            animationCurve: kMouseScrollAnimationCurve,
+            builder: (context, controller, physics) => SingleChildScrollView(
+              controller: controller,
+              physics: physics,
+              padding: const EdgeInsets.all(16),
+              child: Obx(
+                () => Column(
+                  children: () {
+                    final results = <Widget>[];
+                    for (var account in appConfig.accounts) {
+                      results.add(
+                        ValueListenableBuilder(
+                          key: UniqueKey(),
+                          valueListenable: appConfig.selectedAccountNotifier,
+                          builder: (_, selectedAccount, __) => _AccountItem(
+                            account: account,
+                            isSelected: appConfig.selectedAccount == account,
+                            onTap: () => appConfig.selectedAccount = account,
+                            onRemoved: (account) {
+                              appConfig.accounts.remove(account);
+                              try {
+                                appConfig.selectedAccount =
+                                    appConfig.accounts.first;
+                              } catch (e) {
+                                appConfig.selectedAccount = null;
+                              }
+                              Get.showSnackbar(successSnackBar("删除成功"));
+                            },
+                          ),
                         ),
-                      ),
-                    );
-                  }
-                  return results;
-                }(),
+                      );
+                    }
+                    return results;
+                  }(),
+                ),
               ),
             ),
           ),
@@ -365,7 +371,9 @@ class _AddAccountDialog extends HookWidget {
             case AccountType.custom:
             // TODO: Handle this case.
           }
-          (onSubmit ?? () {})(account);
+          if (onSubmit != null) {
+            onSubmit!(account);
+          }
         }
       },
       onCanceled: dialogPop,

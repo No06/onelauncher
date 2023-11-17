@@ -9,8 +9,13 @@ class _HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        const CustomScrollView(
-          slivers: [_SliverTitle(), _SliverList()],
+        DynMouseScroll(
+          animationCurve: kMouseScrollAnimationCurve,
+          builder: (context, controller, physics) => CustomScrollView(
+            controller: controller,
+            physics: physics,
+            slivers: const [_SliverTitle(), _SliverList()],
+          ),
         ),
         Align(
           alignment: Alignment.bottomRight,

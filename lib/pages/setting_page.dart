@@ -1,7 +1,9 @@
+import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/app_config.dart';
 import 'package:one_launcher/pages/game_setting_page.dart';
 import 'package:one_launcher/widgets/route_page.dart';
 import 'package:flutter/material.dart' hide Dialog;
+import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
 class SettingPage extends RoutePage {
   SettingPage({super.key, required super.pageName});
@@ -22,6 +24,8 @@ class SettingPage extends RoutePage {
             SizedBox(
               height: 35,
               child: TabBar(
+                tabAlignment: TabAlignment.start,
+                dividerHeight: 0,
                 isScrollable: true,
                 tabs: tabs.keys.map((text) => Tab(text: text)).toList(),
               ),
@@ -45,9 +49,14 @@ abstract class _SettingBasePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      children: [body(context)],
+    return DynMouseScroll(
+      animationCurve: kMouseScrollAnimationCurve,
+      builder: (context, controller, physics) => ListView(
+        controller: controller,
+        physics: physics,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        children: [body(context)],
+      ),
     );
   }
 }

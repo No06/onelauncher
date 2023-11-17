@@ -14,6 +14,7 @@ import 'package:one_launcher/utils/sys_info/sys_info_windows.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/textfield.dart';
 import 'package:one_launcher/widgets/widget_group.dart';
+import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
 abstract class SettingBasePage extends StatelessWidget {
   const SettingBasePage({super.key});
@@ -22,9 +23,14 @@ abstract class SettingBasePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      children: [body(context)],
+    return DynMouseScroll(
+      animationCurve: kMouseScrollAnimationCurve,
+      builder: (context, controller, physics) => ListView(
+        controller: controller,
+        physics: physics,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        children: [body(context)],
+      ),
     );
   }
 }

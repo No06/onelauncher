@@ -16,6 +16,7 @@ import 'package:one_launcher/utils/file_picker.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/route_page.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
+import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
 part 'filter_rule.dart';
 part 'home_page.dart';
@@ -42,6 +43,8 @@ class GameLibraryPage extends RoutePage {
             SizedBox(
               height: 35,
               child: TabBar(
+                tabAlignment: TabAlignment.start,
+                dividerHeight: 0,
                 isScrollable: true,
                 tabs: tabs.keys.map((text) => Tab(text: text)).toList(),
               ),
