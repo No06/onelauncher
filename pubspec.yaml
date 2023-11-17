@@ -51,6 +51,7 @@ dependencies:
   package_info_plus: ^4.2.0
   get_storage: ^2.1.1
   http: ^1.1.0
+  smooth_scroll_multiplatform: ^1.0.8
 
 dev_dependencies:
 
