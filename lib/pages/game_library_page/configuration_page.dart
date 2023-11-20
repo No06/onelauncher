@@ -11,10 +11,10 @@ class _ConfigurationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        ObxValue(
-          (data) => DynMouseScroll(
-            animationCurve: kMouseScrollAnimationCurve,
-            builder: (context, controller, physics) => ListView(
+        DynMouseScroll(
+          animationCurve: kMouseScrollAnimationCurve,
+          builder: (context, controller, physics) => ObxValue(
+            (data) => ListView(
               controller: controller,
               physics: physics,
               children: List<Widget>.generate(paths.length, (index) {
@@ -64,8 +64,8 @@ class _ConfigurationPage extends StatelessWidget {
                     );
                   }),
             ),
+            appConfig.paths,
           ),
-          appConfig.paths,
         ),
         Align(
           alignment: Alignment.bottomRight,
