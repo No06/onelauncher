@@ -38,6 +38,6 @@ Map<String, dynamic> _$AppConfigToJson(AppConfig instance) {
   }
 
   writeNotNull('selectedAccount',
-      AppConfig._selectedAccounttoString(instance.selectedAccount));
+      AppConfig._selectedAccountToString(instance.selectedAccount));
   return val;
 }
