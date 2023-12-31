@@ -1,5 +1,5 @@
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/app_config.dart';
+import 'package:one_launcher/models/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:one_launcher/widgets/route_page.dart';
@@ -7,6 +7,12 @@ import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
 class AppearancePage extends RoutePage {
   const AppearancePage({super.key, required super.pageName});
+
+  static const radioValues = {
+    ThemeMode.system: "跟随系统",
+    ThemeMode.light: "浅色",
+    ThemeMode.dark: "深色",
+  };
 
   Widget radio(
     String text,
@@ -31,12 +37,6 @@ class AppearancePage extends RoutePage {
 
   @override
   Widget body(BuildContext context) {
-    const radioValues = {
-      ThemeMode.system: "跟随系统",
-      ThemeMode.light: "浅色",
-      ThemeMode.dark: "深色",
-    };
-
     return Expanded(
       child: DynMouseScroll(
         animationCurve: kMouseScrollAnimationCurve,

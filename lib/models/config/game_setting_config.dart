@@ -1,4 +1,4 @@
-import 'package:one_launcher/models/java.dart';
+import 'package:one_launcher/models/game/java.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';

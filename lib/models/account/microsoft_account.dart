@@ -1,5 +1,5 @@
 import 'package:one_launcher/models/account/account.dart';
-import 'package:one_launcher/models/skin.dart';
+import 'package:one_launcher/models/account/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'microsoft_account.g.dart';

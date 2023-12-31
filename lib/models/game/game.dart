@@ -10,12 +10,12 @@ import 'package:one_launcher/models/game/version/librarie/natives_librarie.dart'
 import 'package:one_launcher/models/game/version/version.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/java.dart';
+import 'package:one_launcher/models/game/java.dart';
 import 'package:one_launcher/utils/random_string.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../game_setting_config.dart';
+import '../config/game_setting_config.dart';
 
 part 'game.g.dart';
 

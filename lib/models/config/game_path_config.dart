@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart';
 
-import 'game/game.dart';
+import '../game/game.dart';
 
 part 'game_path_config.g.dart';
 

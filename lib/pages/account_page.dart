@@ -1,5 +1,5 @@
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/app_config.dart';
+import 'package:one_launcher/models/config/app_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:flutter/services.dart';
@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 import 'package:one_launcher/widgets/route_page.dart';
 import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
-import '../models/theme_config.dart';
+import '../models/config/theme_config.dart';
 import '../models/account/microsoft_account.dart';
 import '../models/account/offline_account.dart';
 import '../models/account/account.dart';

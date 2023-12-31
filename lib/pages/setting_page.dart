@@ -1,5 +1,5 @@
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/app_config.dart';
+import 'package:one_launcher/models/config/app_config.dart';
 import 'package:one_launcher/pages/game_setting_page.dart';
 import 'package:one_launcher/widgets/route_page.dart';
 import 'package:flutter/material.dart' hide Dialog;

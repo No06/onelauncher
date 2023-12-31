@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:one_launcher/models/java.dart';
+import 'package:one_launcher/models/game/java.dart';
 import 'package:path/path.dart';
 
 final kJavaBinName = Platform.isWindows ? "java.exe" : "java";
