@@ -18,6 +18,8 @@ class Java {
   late final String versionNumber;
   final String args;
 
+  /// 从版本号中获取版本
+  /// 如: 1.8.200 为 8, 17.0.1 为 17
   String get version {
     final regex1 = RegExp(r"(\d+)");
     final regex2 = RegExp(r"\.(\d+)");
@@ -26,12 +28,10 @@ class Java {
     if (match1 != null) {
       if (match1.group(1) == "1" && match2 != null) {
         return "${match2.group(1)}";
-      } else {
-        return "${match1.group(1)}";
       }
-    } else {
-      return "unknown";
+      return "${match1.group(1)}";
     }
+    return "unknown";
   }
 
   String _getVersion() {
@@ -48,6 +48,7 @@ class Java {
     return "unknown";
   }
 
+  /// 从 Java 路径中的 release 文件中获取版本号
   String _getVersionByReleaseFile() {
     const javaVersionLine = "JAVA_VERSION=";
     final parentPath =
@@ -67,6 +68,7 @@ class Java {
     }
   }
 
+  /// 通过运行二进制文件获取版本号
   String _getVersionByRun() {
     final parentPath = path.substring(0, path.length - kJavaBinName.length);
     final javacBinName = Platform.isWindows ? "javac.exe" : "javac";

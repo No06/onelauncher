@@ -315,11 +315,9 @@ class _GameItem extends StatelessWidget {
                       borderRadius: kDefaultBorderRadius,
                     ),
                     backgroundColor: colors.primary,
-                    onPressed: () => Navigator.push(
-                      Get.context!,
-                      MaterialPageRoute(
-                        builder: (context) => GameStartupPage(game: game),
-                      ),
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (context) => GameStartupDialog(game: game),
                     ),
                     heroTag: null,
                     icon: Icon(

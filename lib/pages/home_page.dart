@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'account_page.dart';
 import 'game_library_page/game_library_page.dart';
 import 'appearance_page.dart';
-import 'setting_page.dart';
+import 'setting_page/setting_page.dart';
 
 const _kDefaultRoutePath = "/home";
 final _currentRoutePath = _kDefaultRoutePath.obs;

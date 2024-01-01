@@ -10,6 +10,8 @@ import '../game/game.dart';
 
 part 'game_path_config.g.dart';
 
+/// 游戏路径
+/// 路径应传入如: /home/onelauncher/.minecraft
 @JsonSerializable()
 class GamePath extends ChangeNotifier {
   GamePath({String? name, String? path})
@@ -34,17 +36,21 @@ class GamePath extends ChangeNotifier {
   final _availableGames = <Game>[];
   List<Game> get availableGames => _availableGames;
 
+  /// 从 [path] 路径下的 versions 文件夹中搜索游戏
   Future<List<Game>> get gamesOnVersion async {
     var results = <Game>[];
     var directory = Directory(join(path, "versions"));
+    // 如果文件夹不存在则直接返回空结果
     if (!directory.existsSync()) return results;
-    var stream = directory.list(followLinks: false);
-    await for (var dir in stream) {
+
+    await for (var dir in directory.list(followLinks: false)) {
       final json = join(dir.path, "${basename(dir.path)}.json");
+      // 如果该路径是文件夹或者文件
       if (await Directory(join(path, dir.path)).exists() &&
           await File(json).exists()) {
         var gameConfig = File(join(dir.path, kGameConfigName));
-        if (gameConfig.existsSync()) {
+        // 如果存在启动器生成的单独配置文件
+        if (await gameConfig.exists()) {
           results.add(
             Game.fromJson(
               _path.value,
@@ -53,8 +59,10 @@ class GamePath extends ChangeNotifier {
             ),
           );
         } else {
-          results.add(
-              Game(_path.value, dir.path.substring(_path.value.length + 1)));
+          results.add(Game(
+            _path.value,
+            dir.path.substring(_path.value.length + 1),
+          ));
         }
       }
     }

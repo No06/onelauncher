@@ -1,6 +1,6 @@
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
-import 'package:one_launcher/pages/game_setting_page.dart';
+import 'package:one_launcher/pages/setting_page/game_setting_page.dart';
 import 'package:one_launcher/widgets/route_page.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
