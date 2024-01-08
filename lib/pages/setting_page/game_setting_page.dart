@@ -150,7 +150,7 @@ class GameSettingPage extends SettingBasePage {
                                 content: const Text("你确定要重置吗？"),
                                 onConfirmed: () {
                                   dialogPop();
-                                  controller.text = kDefaultJvmArgs;
+                                  config.restoreJvmArgs();
                                 },
                               ),
                             ),
