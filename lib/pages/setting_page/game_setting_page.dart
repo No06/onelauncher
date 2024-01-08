@@ -126,7 +126,7 @@ class GameSettingPage extends SettingBasePage {
                 builder: (_, __, ___) {
                   var jvmArgs = config.jvmArgs;
                   return Text(
-                    jvmArgs.isEmpty ? "空" : jvmArgs,
+                    jvmArgs.isEmpty ? "默认" : jvmArgs,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   );
@@ -150,7 +150,7 @@ class GameSettingPage extends SettingBasePage {
                                 content: const Text("你确定要重置吗？"),
                                 onConfirmed: () {
                                   dialogPop();
-                                  config.restoreJvmArgs();
+                                  controller.clear();
                                 },
                               ),
                             ),
