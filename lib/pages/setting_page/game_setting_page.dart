@@ -69,7 +69,7 @@ class GameSettingPage extends SettingBasePage {
                     if (java == null) {
                       text = "自动选择最佳版本";
                     } else {
-                      text = "${java.versionNumber}: ${java.path}";
+                      text = "${java.versionNumber} - ${java.path}";
                     }
                     return Text(text);
                   },
@@ -123,10 +123,9 @@ class GameSettingPage extends SettingBasePage {
               title: const Text("JVM启动参数"),
               subtitle: ValueListenableBuilder(
                 valueListenable: config.jvmArgsNotifier,
-                builder: (_, __, ___) {
-                  var jvmArgs = config.jvmArgs;
+                builder: (context, value, child) {
                   return Text(
-                    jvmArgs.isEmpty ? "默认" : jvmArgs,
+                    config.jvmArgsIsEmpty ? "默认" : value!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   );
@@ -136,8 +135,8 @@ class GameSettingPage extends SettingBasePage {
                 context: Get.context!,
                 builder: (_) => HookBuilder(
                   builder: (context) {
-                    final controller =
-                        useTextEditingController(text: config.jvmArgs);
+                    final controller = useTextEditingController(
+                        text: config.jvmArgsNotifier.value);
                     return DefaultDialog(
                       title: Row(
                         mainAxisSize: MainAxisSize.min,

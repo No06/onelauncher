@@ -29,11 +29,12 @@ Future<void> init() async {
   await Future.wait([
     PackageInfo.fromPlatform().then((value) => appInfo = value),
     JavaUtil.init(),
-    GetStorage.init().then(
-      (value) => AppConfig.init(),
-    ),
     windowManager.ensureInitialized(),
   ]);
+  // 获取持久化配置文件
+  await GetStorage.init().then(
+    (value) => AppConfig.init(),
+  );
   // 初始化窗口
   const windowSize = Size(kDefaultWindowWidth, kDefaultWindowHeight);
   final windowOptions = WindowOptions(

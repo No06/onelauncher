@@ -65,6 +65,8 @@ class GameSettingConfig extends ChangeNotifier {
   @JsonKey(includeIfNull: false)
   Java? get java => _java.value;
   set java(Java? newVal) => _java.value = newVal;
+
+  /// java 序列化函数
   static Java? _javaFromJson(Java? item) {
     if (item == null) return null;
     if (JavaUtil.set.contains(item)) {
@@ -75,9 +77,13 @@ class GameSettingConfig extends ChangeNotifier {
 
   /// JVM 启动参数
   ValueNotifier<String?> get jvmArgsNotifier => _jvmArgs;
+  bool get jvmArgsIsEmpty =>
+      jvmArgsNotifier.value == null || jvmArgsNotifier.value!.isEmpty;
+
+  /// 为空时返回默认的JVM参数 [kDefaultJvmArgs]
   String get jvmArgs => _jvmArgs.value ?? kDefaultJvmArgs;
-  set jvmArgs(String newVal) => _jvmArgs.value = newVal;
-  void restoreJvmArgs() => jvmArgs = kDefaultJvmArgs;
+  set jvmArgs(String? newVal) => _jvmArgs.value = newVal;
+  void restoreJvmArgs() => jvmArgs = null;
 
   /// 自动分配内存
   ValueNotifier<bool> get autoMemoryNotifier => _autoMemory;
