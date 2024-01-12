@@ -39,6 +39,8 @@ class Version {
   final GameType type;
   final int minimumLauncherVersion;
 
+  String get jarFile => "$jar.jar";
+
   factory Version.fromJson(Map<String, dynamic> json) =>
       _$VersionFromJson(json);
 }
