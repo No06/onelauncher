@@ -37,15 +37,12 @@ final class MEMORYSTATUSEX extends Struct {
 }
 
 final class WindowsSysInfo implements SysInfo {
-  WindowsSysInfo() {
-    _arg.ref.dwLength = sizeOf<MEMORYSTATUSEX>();
-  }
-
   static const _libraryPath = 'kernel32.dll';
   static const _functionName = 'GlobalMemoryStatusEx';
   static const _debounce = 1000; // 1000ms
 
-  final Pointer<MEMORYSTATUSEX> _arg = calloc<MEMORYSTATUSEX>();
+  final Pointer<MEMORYSTATUSEX> _arg = calloc<MEMORYSTATUSEX>()
+    ..ref.dwLength = sizeOf<MEMORYSTATUSEX>();
   var _allowChange = true;
 
   void freshInstance() {

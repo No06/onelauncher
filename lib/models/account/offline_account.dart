@@ -48,5 +48,5 @@ class OfflineAccount extends Account {
 
   @override
   // TODO: implement token
-  String get accessToken => throw UnimplementedError();
+  String get accessToken => uuid;
 }

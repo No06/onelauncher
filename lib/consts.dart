@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
-final kConfigName = "${appInfo.appName}.json";
-final kGameConfigName = kConfigName;
+const appName = "OneLauncher";
+const kConfigName = "config.json";
+final kGameConfigName = "${appInfo.appName}.json";
 final kConfigDirectoryName = appInfo.appName;
 final kConfigPath = Future(() async => join(
     (await getApplicationDocumentsDirectory()).path, kConfigDirectoryName));

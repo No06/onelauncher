@@ -94,7 +94,6 @@ class AccountPage extends RoutePage {
 // TODO: 加载卡顿
 class _AccountItem extends StatelessWidget {
   const _AccountItem({
-    super.key,
     required this.account,
     this.isSelected = false,
     this.onTap,

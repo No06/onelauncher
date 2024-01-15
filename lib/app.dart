@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -33,7 +34,7 @@ class AppPage extends StatelessWidget {
         preferredSize: const Size.fromHeight(kWindowCaptionHeight),
         child: WindowCaption(
           brightness: Theme.of(context).brightness,
-          title: const Text('OneLauncher'),
+          title: const Text(appName),
           backgroundColor: Colors.transparent,
         ),
       );
