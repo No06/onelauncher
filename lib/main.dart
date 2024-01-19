@@ -10,9 +10,6 @@ import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
 
-const kDefaultWindowWidth = 960.0;
-const kDefaultWindowHeight = 593.0;
-
 late final PackageInfo appInfo;
 
 void main() async {
@@ -36,17 +33,19 @@ Future<void> init() async {
     (value) => AppConfig.init(),
   );
   // 初始化窗口
-  const windowSize = Size(kDefaultWindowWidth, kDefaultWindowHeight);
+  const defaultWindowWidth = 960.0;
+  const defaultWindowHeight = 593.0;
+  const windowSize = Size(defaultWindowWidth, defaultWindowHeight);
   final windowOptions = WindowOptions(
     size: windowSize,
     minimumSize: windowSize,
-    center: true,
+    center: false,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle:
         Platform.isWindows ? TitleBarStyle.hidden : TitleBarStyle.normal,
   );
-  await windowManager.waitUntilReadyToShow(windowOptions, () async {
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
   });
