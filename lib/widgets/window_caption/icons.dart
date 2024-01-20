@@ -103,7 +103,7 @@ abstract class _IconPainter extends CustomPainter {
   final Color color;
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _AlignedPaint extends StatelessWidget {

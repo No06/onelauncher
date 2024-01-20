@@ -12,7 +12,7 @@ class MyWindowCaptionButtonColors {
 
   /// 浅色
   const MyWindowCaptionButtonColors.light({
-    this.normal = Colors.transparent,
+    this.normal = const Color.fromARGB(0, 0, 0, 0),
     this.mouseOver = const Color.fromARGB(20, 0, 0, 0),
     this.mouseDown = const Color.fromARGB(40, 0, 0, 0),
     this.iconNormal = const Color(0xe4000000),
@@ -22,7 +22,7 @@ class MyWindowCaptionButtonColors {
 
   /// 深色
   const MyWindowCaptionButtonColors.dark({
-    this.normal = Colors.transparent,
+    this.normal = const Color.fromARGB(0, 255, 255, 255),
     this.mouseOver = const Color.fromARGB(25, 255, 255, 255),
     this.mouseDown = const Color.fromARGB(35, 255, 255, 255),
     this.iconNormal = Colors.white,
@@ -32,7 +32,7 @@ class MyWindowCaptionButtonColors {
 
   /// 关闭按钮浅色
   const MyWindowCaptionButtonColors.closeLight({
-    this.normal = Colors.transparent,
+    this.normal = const Color.fromARGB(0, 232, 17, 35),
     this.mouseOver = const Color(0xFFE81123),
     this.mouseDown = const Color.fromRGBO(154, 28, 41, 1),
     this.iconNormal = const Color(0xe4000000),
@@ -42,7 +42,7 @@ class MyWindowCaptionButtonColors {
 
   /// 关闭按钮深色
   const MyWindowCaptionButtonColors.closeDark({
-    this.normal = Colors.transparent,
+    this.normal = const Color.fromARGB(0, 232, 17, 35),
     this.mouseOver = const Color(0xFFE81123),
     this.mouseDown = const Color.fromRGBO(154, 28, 41, 1),
     this.iconNormal = Colors.white,

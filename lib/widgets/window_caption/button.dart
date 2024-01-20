@@ -111,6 +111,9 @@ class MyWindowCaptionButton extends StatelessWidget {
     }
   }
 
+  /// 颜色渐变动画时长
+  static const animatedTime = 120;
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -124,8 +127,9 @@ class MyWindowCaptionButton extends StatelessWidget {
         onTap: onPressed,
         child: Obx(
           () => AnimatedContainer(
-            duration:
-                animated ? const Duration(milliseconds: 100) : Duration.zero,
+            duration: animated
+                ? const Duration(milliseconds: animatedTime)
+                : Duration.zero,
             curve: Curves.linear,
             color: _backgroundColor,
             constraints: const BoxConstraints(minWidth: 46, minHeight: 32),
