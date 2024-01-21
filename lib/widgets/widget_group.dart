@@ -193,36 +193,70 @@ class WidgetGroupBox extends StatelessWidget {
   }
 }
 
-class ExpansionListTile extends StatelessWidget {
+/// 如果组件 [expandTile] 每次构建开销过大,
+/// 则设 [keepVisible] 为 True 使组件保持可见以减少构建开销
+class ExpansionListTile extends StatefulWidget {
   const ExpansionListTile({
     super.key,
-    required this.tile,
+    required this.title,
     required this.expandTile,
     required this.isExpaned,
+    this.keepVisible = false,
   });
 
-  final Widget tile;
+  final Widget title;
   final Widget expandTile;
   final bool isExpaned;
+  final bool keepVisible;
+
+  @override
+  State<ExpansionListTile> createState() => _ExpansionListTileState();
+}
+
+class _ExpansionListTileState extends State<ExpansionListTile> {
+  late Widget? _child;
+  late final _AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _child = widget.isExpaned ? widget.expandTile : null;
+    _controller = _AnimationController(widget.isExpaned ? 1 : 0);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void forward() {
+    _child ??= widget.expandTile;
+    _controller.animController.forward();
+  }
+
+  void reverse() {
+    _controller.animController.reverse().then((value) {
+      // 将组件设置为 null 减少性能开销
+      if (!widget.keepVisible) _child = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return GetBuilder(
       global: false,
-      init: _AnimationController(isExpaned ? 1 : 0),
+      autoRemove: false,
+      init: _controller,
       builder: (c) {
-        if (isExpaned) {
-          c.animController.forward();
-        } else {
-          c.animController.reverse();
-        }
+        widget.isExpaned ? forward() : reverse();
         return Column(
           children: [
-            tile,
+            widget.title,
             SizeTransition(
               axisAlignment: 1.0,
               sizeFactor: c.animation,
-              child: expandTile,
+              child: _child,
             ),
           ],
         );
