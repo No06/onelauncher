@@ -11,6 +11,7 @@ import 'package:one_launcher/models/game/version/librarie/natives_librarie.dart'
 import 'package:one_launcher/models/game/version/version.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/utils/extract_file_to_disk_and_exclude.dart';
 import 'package:one_launcher/utils/random_string.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -20,7 +21,7 @@ import '../config/game_setting_config.dart';
 
 part 'game.g.dart';
 
-typedef ResultMap = Map<Librarie, bool>;
+typedef ResultMap = Map<Library, bool>;
 
 @JsonSerializable()
 class Game {
@@ -102,21 +103,23 @@ class Game {
   /// 如: /home/onelauncher/.minecraft/assets
   String get assetsPath => join(_mainPath, "assets");
 
-  String get assetIndex => "5";
+  String? get assetIndex => version.assetIndex.id;
 
   /// 获取游戏拼接资源 -cp 字符串
   String get argCp {
     const prefix = "-cp";
-    final libraries = version.libraries;
-    final librariesJars = libraries.map((lib) => lib.jarPath).toList()
+    final libraries = allowedLibraries;
+    final librariesJars = libraries
+        .map((lib) => join(librariesPath, lib.jarPath))
+        .toList()
       ..add(clientPath);
     return "$prefix ${librariesJars.join(';')}";
   }
 
   /// 获取游戏native资源解压路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/natives-windows-x86_64
-  String get nativeLibrarieExtractPath {
-    final architecture = SysInfo.kernelArchitecture.name;
+  String get nativeLibraryExtractPath {
+    final architecture = SysInfo.rawKernelArchitecture.toLowerCase();
     final bitness = SysInfo.kernelBitness;
     return join(
         path, "natives-${Platform.operatingSystem}-${architecture}_$bitness");
@@ -133,19 +136,26 @@ class Game {
   }
 
   /// 检索游戏资源 返回游戏资源库中不存在的资源
-  Stream<Librarie> get retrieveLibraries async* {
-    String? outputPath;
-    for (var lib in version.libraries) {
-      if (lib is MavenLibrarie || lib is CommonLibrarie && lib.isAllowed) {
-        if (lib is NativesLibrarie) {
-          outputPath ??= await randomOutputPath;
-          await lib.extract(_librariesPath, outputPath);
-          continue;
-        }
-        if (!await lib.exists(_librariesPath)) yield lib;
+  Stream<Library> get retrieveLibraries async* {
+    late final String nativesOutputPath = nativeLibraryExtractPath;
+    for (var lib in allowedLibraries) {
+      if (lib is NativesLibrary) {
+        await extractNativesLibrary(lib, nativesOutputPath);
+      } else if (!await lib.exists(librariesPath)) {
+        yield lib;
       }
     }
   }
+
+  /// 获取可用的游戏资源
+  List<Library> get allowedLibraries => version.libraries
+      .where((lib) =>
+          lib is MavenLibrarie || lib is CommonLibrary && lib.isAllowed)
+      .toList();
+
+  /// 获取游戏匹配系统平台类型的 Natives 资源
+  List<Library> get requiredNativesLibraries =>
+      allowedLibraries.whereType<NativesLibrary>().toList();
 
   /// 刷新 [version] 游戏文件内容
   void freshVersion() => _version = _getVersionFromPath(path);
@@ -155,6 +165,16 @@ class Game {
     final config = File(path + kGameConfigName);
     final json = const JsonEncoder.withIndent('  ').convert(this);
     config.writeAsStringSync(json);
+  }
+
+  /// 解压 [NativesLibrary]
+  Future<void> extractNativesLibrary(
+    NativesLibrary lib,
+    String nativePath,
+  ) async {
+    await extractFileToDiskAndExclude(nativePath, nativeLibraryExtractPath,
+        excludeFiles: lib.extractRule?.exclude);
+    debugPrint("extract: $nativePath");
   }
 
   /// 获取启动参数
@@ -168,17 +188,21 @@ class Game {
       // 设置相关
       GameArgument(java.path),
       GameArgument("-Xmx${setting.maxMemory}M"),
-      GameArgument(setting.jvmArgs),
       // 设置相关end
-      GameArgument(version.logging.client.argument, loggingPath),
-      GameArgument("-Dminecraft.client.jar", clientPath),
+      () {
+        var arg = version.logging.client.argument;
+        arg = arg.substring(0, arg.lastIndexOf('=') - 1);
+        return GameArgument(arg, loggingPath);
+      }(),
+      GameArgument("-Dminecraft.client.jar", clientRelativePath),
+      GameArgument(setting.jvmArgs),
       const GameArgument("-XX:HeapDumpPath",
           "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"),
-      GameArgument("-Djava.library.path", nativeLibrarieExtractPath),
-      GameArgument("-Djna.tmpdir", nativeLibrarieExtractPath),
+      GameArgument("-Djava.library.path", nativeLibraryExtractPath),
+      GameArgument("-Djna.tmpdir", nativeLibraryExtractPath),
       GameArgument("-Dorg.lwjgl.system.SharedLibraryExtractPath",
-          nativeLibrarieExtractPath),
-      GameArgument("-Dio.netty.native.workdir", nativeLibrarieExtractPath),
+          nativeLibraryExtractPath),
+      GameArgument("-Dio.netty.native.workdir", nativeLibraryExtractPath),
       const GameArgument("-Dminecraft.launcher.brand", appName),
       GameArgument("-Dminecraft.launcher.version", appInfo.version),
       GameArgument(argCp),
@@ -192,15 +216,16 @@ class Game {
       // 资源文件路径
       GameArgument("--assetsDir $assetsPath"),
       // 资源索引版本
-      GameArgument("--assetIndex $assetIndex"),
+      if (assetIndex != null) GameArgument("--assetIndex $assetIndex"),
       // UUID
-      GameArgument("--uuid ${account.uuid}"),
+      GameArgument("--uuid ${account.uuid.replaceAll('-', '')}"),
       // token
-      GameArgument("--accessToken ${account.accessToken}"),
+      if (account.type != AccountType.offline)
+        GameArgument("--accessToken ${account.accessToken}"),
       // 登录类型
       const GameArgument("--userType msa"),
       // 版本类型
-      GameArgument("--versionType $appName ${appInfo.version}"),
+      GameArgument('--versionType "$appName ${appInfo.version}"'),
       // 窗口长宽
       GameArgument("--width ${setting.width}"),
       GameArgument("--height ${setting.height}"),

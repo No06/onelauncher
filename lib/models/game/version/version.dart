@@ -33,7 +33,7 @@ class Version {
   final String? jar;
   final AssetIndex assetIndex;
   final JavaVersion javaVersion;
-  final List<Librarie> libraries;
+  final List<Library> libraries;
   final GameDownloads downloads;
   final Logging logging;
   final GameType type;

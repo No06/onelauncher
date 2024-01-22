@@ -94,8 +94,8 @@ class _WindowCaptionMaximizeButtonState
     extends State<_WindowCaptionMaximizeButton> with WindowListener {
   @override
   void initState() {
-    windowManager.addListener(this);
     super.initState();
+    windowManager.addListener(this);
   }
 
   @override

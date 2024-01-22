@@ -10,8 +10,8 @@ import 'package:json_annotation/json_annotation.dart';
 part 'common_librarie.g.dart';
 
 @JsonSerializable()
-class CommonLibrarie extends Librarie {
-  CommonLibrarie({
+class CommonLibrary extends Library {
+  CommonLibrary({
     required super.name,
     required this.downloads,
     this.rules,
@@ -47,6 +47,6 @@ class CommonLibrarie extends Librarie {
     return true;
   }
 
-  factory CommonLibrarie.fromJson(Map<String, dynamic> json) =>
+  factory CommonLibrary.fromJson(Map<String, dynamic> json) =>
       _$CommonLibrarieFromJson(json);
 }

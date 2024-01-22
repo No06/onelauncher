@@ -4,7 +4,7 @@ import 'package:one_launcher/models/game/version/librarie/librarie.dart';
 part 'maven_librarie.g.dart';
 
 @JsonSerializable()
-class MavenLibrarie extends Librarie {
+class MavenLibrarie extends Library {
   MavenLibrarie(String name, this.url)
       : _nameSplit = name.split(":"),
         super(name: name);

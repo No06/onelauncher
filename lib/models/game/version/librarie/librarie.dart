@@ -10,8 +10,8 @@ part 'librarie.g.dart';
 
 // TODO: 解析json字段extract
 @JsonSerializable()
-class Librarie {
-  Librarie({required this.name}) {
+class Library {
+  Library({required this.name}) {
     final result = _splitPackageName(name);
     _groupId = result[0];
     _artifactId = result[1];
@@ -56,12 +56,12 @@ class Librarie {
     return parts;
   }
 
-  factory Librarie.fromJson(Map<String, dynamic> json) {
+  factory Library.fromJson(Map<String, dynamic> json) {
     if (json['natives'] != null) {
-      return NativesLibrarie.fromJson(json);
+      return NativesLibrary.fromJson(json);
     }
     if (json['downloads'] != null) {
-      return CommonLibrarie.fromJson(json);
+      return CommonLibrary.fromJson(json);
     }
     if (json['url'] != null) {
       return MavenLibrarie.fromJson(json);

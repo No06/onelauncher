@@ -17,7 +17,7 @@ Version _$VersionFromJson(Map<String, dynamic> json) => Version(
       AssetIndex.fromJson(json['assetIndex'] as Map<String, dynamic>),
       JavaVersion.fromJson(json['javaVersion'] as Map<String, dynamic>),
       (json['libraries'] as List<dynamic>)
-          .map((e) => Librarie.fromJson(e as Map<String, dynamic>))
+          .map((e) => Library.fromJson(e as Map<String, dynamic>))
           .toList(),
       GameDownloads.fromJson(json['downloads'] as Map<String, dynamic>),
       Logging.fromJson(json['logging'] as Map<String, dynamic>),
