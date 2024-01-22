@@ -1,4 +1,5 @@
 import 'package:one_launcher/models/account/account.dart';
+import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/account/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
@@ -48,8 +49,7 @@ class OfflineAccount extends Account {
       Skin(type: _uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve);
 
   @override
-  // TODO: implement token
-  String get accessToken => uuid;
+  String get accessToken => "";
 
   String get uuidFromName =>
       const Uuid().v5(Uuid.NAMESPACE_NIL, getUuidFromName(displayName));
@@ -65,4 +65,8 @@ class OfflineAccount extends Account {
     if (other is! OfflineAccount) return false;
     return displayName == other.displayName;
   }
+
+  @override
+  AccountLoginInfo login() =>
+      AccountLoginInfo(username: displayName, uuid: uuid);
 }

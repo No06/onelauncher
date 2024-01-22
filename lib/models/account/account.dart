@@ -1,3 +1,4 @@
+import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/models/account/offline_account.dart';
 import 'package:one_launcher/models/account/skin.dart';
@@ -16,6 +17,8 @@ abstract class Account {
 
   final AccountType _type;
   AccountType get type => _type;
+
+  AccountLoginInfo login();
 
   factory Account.fromJson(Map<String, dynamic> json) {
     switch (json['type']) {

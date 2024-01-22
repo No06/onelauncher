@@ -1,4 +1,5 @@
 import 'package:one_launcher/models/account/account.dart';
+import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/account/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -41,5 +42,11 @@ class MicrosoftAccount extends Account {
   bool operator ==(Object other) {
     if (other is! MicrosoftAccount) return false;
     return uuid == other.uuid;
+  }
+
+  @override
+  AccountLoginInfo login() {
+    // TODO: implement login
+    throw UnimplementedError();
   }
 }
