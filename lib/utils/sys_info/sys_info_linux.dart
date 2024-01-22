@@ -5,10 +5,10 @@ import 'package:ffi/ffi.dart';
 import 'package:one_launcher/utils/sys_info/sys_info.dart';
 
 // 定义一个C语言的sysinfo函数类型
-typedef SysInfoFunc = Int32 Function(Pointer<SYSINFO> info);
+typedef SysInfoFunc = Int32 Function(Pointer<NativeType> info);
 
 // 定义一个dart语言的sysinfo函数类型
-typedef SysInfoDart = int Function(Pointer<SYSINFO> info);
+typedef SysInfoDart = int Function(Pointer<NativeType> info);
 
 // 表示一个sysinfo结构体
 final class SYSINFO extends Struct {
@@ -58,39 +58,27 @@ final class SYSINFO extends Struct {
   external int memUnit; // Memory unit size in bytes
 }
 
-final class LinuxSysInfo implements SysInfo {
-  static const _debounce = 1000; // 1000ms
-  var _allowChange = true;
-
-  final Pointer<SYSINFO> info = calloc<SYSINFO>();
-
-  late final Pointer<NativeFunction<SysInfoFunc>> sysinfoPointer =
+final class LinuxSysInfo extends SysInfo with Debounce {
+  final Pointer<SYSINFO> _info = calloc<SYSINFO>();
+  final Pointer<NativeFunction<SysInfoFunc>> _pointer =
       DynamicLibrary.process().lookup('sysinfo');
-  late final SysInfoDart sysinfo = sysinfoPointer.asFunction<SysInfoDart>();
-
-  void freshInstance() {
-    if (!_allowChange) return;
-
-    _allowChange = false;
-    Future.delayed(const Duration(milliseconds: _debounce))
-        .then((_) => _allowChange = true);
-
-    if (sysinfo(info) == 1) {
-      final getLastError = DynamicLibrary.process()
-          .lookupFunction<GetLastErrorFunc, GetLastError>('GetLastError');
-      throw Exception("$runtimeType: Get sysinfo error: $getLastError");
-    }
-  }
+  late final SysInfoDart _status = _pointer.asFunction<SysInfoDart>();
 
   @override
   int get freePhyMem {
     freshInstance();
-    return info.ref.freeram;
+    return _info.ref.freeram;
   }
 
   @override
   int get totalPhyMem {
     freshInstance();
-    return info.ref.totalram;
+    return _info.ref.totalram;
   }
+
+  @override
+  Pointer<NativeType> get pointer => _pointer;
+
+  @override
+  int Function(Pointer<NativeType> p1) get status => _status;
 }
