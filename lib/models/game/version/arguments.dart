@@ -2,7 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'arguments.g.dart';
 
-@JsonSerializable(createToJson: false)
+@JsonSerializable()
 class Arguments {
   const Arguments(this.game, this.jvm);
 
@@ -11,4 +11,6 @@ class Arguments {
 
   factory Arguments.fromJson(Map<String, dynamic> json) =>
       _$ArgumentsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ArgumentsToJson(this);
 }

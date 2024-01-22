@@ -14,14 +14,13 @@ class OfflineAccount extends Account {
     Skin? skin,
   })  : _displayName = displayName,
         super(type) {
-    _uuid = uuid ?? const Uuid().v4();
-    _skin = skin ??
-        Skin(type: _uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve);
+    _uuid = uuid ?? uuidFromName;
+    _skin = skin;
   }
 
-  String _displayName;
-  late String _uuid;
-  late Skin _skin;
+  final String _displayName;
+  late final String _uuid;
+  late Skin? _skin;
 
   set displayName(String newVal) {
     displayName = newVal;
@@ -44,9 +43,26 @@ class OfflineAccount extends Account {
   String get displayName => _displayName;
 
   @override
-  Skin get skin => _skin;
+  Skin get skin =>
+      _skin ??
+      Skin(type: _uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve);
 
   @override
   // TODO: implement token
   String get accessToken => uuid;
+
+  String get uuidFromName =>
+      const Uuid().v5(Uuid.NAMESPACE_NIL, getUuidFromName(displayName));
+
+  static String getUuidFromName(String name) =>
+      const Uuid().v5(Uuid.NAMESPACE_NIL, name);
+
+  @override
+  int get hashCode => displayName.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! OfflineAccount) return false;
+    return displayName == other.displayName;
+  }
 }

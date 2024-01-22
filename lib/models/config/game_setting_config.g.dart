@@ -32,7 +32,7 @@ Map<String, dynamic> _$GameSettingConfigToJson(GameSettingConfig instance) {
   }
 
   writeNotNull('java', instance.java);
-  val['jvmArgs'] = instance.jvmArgs;
+  val['jvmArgs'] = GameSettingConfig.jvmArgsToJson(instance.jvmArgs);
   val['autoMemory'] = instance.autoMemory;
   val['maxMemory'] = instance.maxMemory;
   val['fullScreen'] = instance.fullScreen;

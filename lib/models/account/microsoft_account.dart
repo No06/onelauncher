@@ -33,4 +33,13 @@ class MicrosoftAccount extends Account {
   @override
   // TODO: implement token
   String get accessToken => throw UnimplementedError();
+
+  @override
+  int get hashCode => uuid.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! MicrosoftAccount) return false;
+    return uuid == other.uuid;
+  }
 }

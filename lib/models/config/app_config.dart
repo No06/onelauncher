@@ -199,7 +199,11 @@ final class AppConfig extends ChangeNotifier {
         return account;
       }
     }
-    throw ErrorDescription("已有账号中未找到目标");
+    try {
+      throw Exception("已有账号中未找到目标");
+    } catch (e) {
+      return null;
+    }
   }
 
   /// 静态存储 全局维护这一配置文件
@@ -246,9 +250,25 @@ final class AppConfig extends ChangeNotifier {
     await config.writeAsString(json);
   }
 
+  // 防抖保存
+  var _saving = false;
+  late Timer _timer;
+  Future<void> debounceSave([AppConfig? appConfig]) async {
+    if (_saving) {
+      _timer.cancel();
+    }
+
+    _saving = true;
+    const debounce = 350;
+    _timer = Timer(
+      const Duration(milliseconds: debounce),
+      () => save().then((value) => _saving = false),
+    );
+  }
+
   @override
   void notifyListeners() {
-    save();
+    debounceSave();
     super.notifyListeners();
   }
 
