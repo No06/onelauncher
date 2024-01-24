@@ -18,7 +18,7 @@ abstract class Account {
   final AccountType _type;
   AccountType get type => _type;
 
-  AccountLoginInfo login();
+  Future<AccountLoginInfo> login();
 
   factory Account.fromJson(Map<String, dynamic> json) {
     switch (json['type']) {

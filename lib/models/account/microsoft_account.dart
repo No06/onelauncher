@@ -45,7 +45,7 @@ class MicrosoftAccount extends Account {
   }
 
   @override
-  AccountLoginInfo login() {
+  Future<AccountLoginInfo> login() {
     // TODO: implement login
     throw UnimplementedError();
   }

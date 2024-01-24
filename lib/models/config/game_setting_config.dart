@@ -82,7 +82,9 @@ class GameSettingConfig extends ChangeNotifier {
 
   /// 为空时返回默认的JVM参数 [kDefaultJvmArgs]
   @JsonKey(toJson: jvmArgsToJson)
-  String get jvmArgs => _jvmArgs.value ?? kDefaultJvmArgs;
+  String get jvmArgs => _jvmArgs.value == null || _jvmArgs.value!.isEmpty
+      ? kDefaultJvmArgs
+      : _jvmArgs.value!;
   set jvmArgs(String? newVal) => _jvmArgs.value = newVal;
   void restoreJvmArgs() => jvmArgs = null;
   static String jvmArgsToJson(String value) =>

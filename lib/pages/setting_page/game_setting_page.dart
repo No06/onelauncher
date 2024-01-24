@@ -193,7 +193,7 @@ class GameSettingPage extends SettingBasePage {
               builder: (value, updater) {
                 return ExpansionListTile(
                   isExpaned: !value!,
-                  tile: SwitchListTile(
+                  title: SwitchListTile(
                     title: const Text("游戏内存"),
                     subtitle: const Text("自动分配"),
                     value: value,
@@ -259,7 +259,7 @@ class GameSettingPage extends SettingBasePage {
               initialValue: config.fullScreen,
               builder: (value, updater) => ExpansionListTile(
                 isExpaned: !value!,
-                tile: SwitchListTile(
+                title: SwitchListTile(
                   value: value,
                   selected: value,
                   title: const Text("全屏"),

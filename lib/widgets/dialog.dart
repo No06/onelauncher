@@ -113,12 +113,14 @@ class WarningDialog extends StatelessWidget {
     super.key,
     this.title,
     this.content,
+    this.onlyConfirm = false,
     this.onConfirmed,
     this.onCanceled,
   });
 
   final Widget? title;
   final Widget? content;
+  final bool onlyConfirm;
   final void Function()? onConfirmed;
   final void Function()? onCanceled;
 
@@ -137,7 +139,8 @@ class WarningDialog extends StatelessWidget {
         )
       ]),
       actions: [
-        DialogCancelButton(onPressed: onCanceled ?? dialogPop),
+        if (!onlyConfirm)
+          DialogCancelButton(onPressed: onCanceled ?? dialogPop),
         DialogConfirmButton(onPressed: onConfirmed),
       ],
     );

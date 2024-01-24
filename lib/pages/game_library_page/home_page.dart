@@ -116,7 +116,6 @@ class _SliverTitle extends StatelessWidget {
                   ),
                 ),
               ),
-              // TODO: 待实现
               _OptionItem(
                 title: "版本",
                 child: Row(
@@ -282,7 +281,7 @@ class _GameTypeCheckbox extends StatelessWidget {
 }
 
 class _GameItem extends StatelessWidget {
-  const _GameItem(this.game, {super.key});
+  const _GameItem(this.game);
 
   final Game game;
 
@@ -317,7 +316,16 @@ class _GameItem extends StatelessWidget {
                     backgroundColor: colors.primary,
                     onPressed: () => showDialog(
                       context: context,
-                      builder: (context) => GameStartupDialog(game: game),
+                      builder: (context) {
+                        if (appConfig.selectedAccount == null) {
+                          return const WarningDialog(
+                            content: Text("先添加一个账号再启动吧"),
+                            onlyConfirm: true,
+                            onConfirmed: dialogPop,
+                          );
+                        }
+                        return GameStartupDialog(game: game);
+                      },
                     ),
                     heroTag: null,
                     icon: Icon(
@@ -345,6 +353,7 @@ class _GameItem extends StatelessWidget {
           }
           return nil;
         }),
+        // TODO: 点击打开游戏配置
         onTap: () {},
       ),
     );
