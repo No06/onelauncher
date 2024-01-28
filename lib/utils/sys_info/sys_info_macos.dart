@@ -18,4 +18,8 @@ class MacOSSysInfo implements SysInfo {
   @override
   // TODO: implement status
   int Function(Pointer<NativeType> p1) get status => throw UnimplementedError();
+
+  @override
+  // TODO: implement usedPhyMem
+  int get usedPhyMem => throw UnimplementedError();
 }

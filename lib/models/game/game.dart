@@ -6,8 +6,8 @@ import 'package:one_launcher/models/game/version/librarie/librarie.dart';
 import 'package:one_launcher/models/game/version/version.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/version_number/version_number.dart';
 import 'package:path/path.dart';
-import 'package:system_info2/system_info2.dart';
 
 import '../config/game_setting_config.dart';
 
@@ -52,6 +52,21 @@ class Game {
   /// 游戏文件 1.x.x.json序列化内容
   Version _version;
   Version get version => _version;
+
+  /// 游戏版本
+  VersionNumber get versionNumber {
+    final split = version.id.split('.');
+    final major = split[0];
+    final minor = split.elementAtOrNull(1);
+    final revision = split.elementAtOrNull(2);
+
+    int? toInt(String? value) => value != null ? int.parse(value) : null;
+    return VersionNumber(
+      major: int.parse(major),
+      minor: toInt(minor),
+      revision: toInt(revision),
+    );
+  }
 
   /// 主路径
   /// 如: /home/onelauncher/.minecraft
@@ -99,12 +114,8 @@ class Game {
 
   /// 获取游戏native资源解压路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/natives-windows-x86_64
-  String get nativeLibraryExtractPath {
-    final architecture = SysInfo.rawKernelArchitecture.toLowerCase();
-    final bitness = SysInfo.kernelBitness;
-    return join(
-        path, "natives-${Platform.operatingSystem}-${architecture}_$bitness");
-  }
+  String get nativeLibraryExtractPath =>
+      join(path, "natives-${Platform.operatingSystem}");
 
   bool get isModVersion =>
       _version.mainClass != "net.minecraft.client.main.Main";

@@ -1,14 +1,19 @@
-import 'package:flutter/widgets.dart';
+import 'dart:math';
+
+import 'package:flutter/foundation.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/main.dart';
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/game/game.dart';
+import 'package:one_launcher/models/game/java.dart';
 import 'package:one_launcher/models/game/version/librarie/common_librarie.dart';
 import 'package:one_launcher/models/game/version/librarie/librarie.dart';
 import 'package:one_launcher/models/game/version/librarie/maven_librarie.dart';
 import 'package:one_launcher/models/game/version/librarie/natives_librarie.dart';
+import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/random_string.dart';
+import 'package:one_launcher/utils/sys_info/sys_info.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -21,6 +26,100 @@ class GameLaunchUtil {
   Iterable<Library>? _allowedLibraries;
   Iterable<Library> get allowedLibraries =>
       _allowedLibraries ??= getAllowedLibraries();
+
+  late final int _allocateMem;
+  int get allocateMem => max(_allocateMem, 512); // 设置下限 512MB
+
+  late final Java? java;
+
+  /// 检查游戏启动环境
+  /// 返回：错误信息
+  List<String> checkEnvironment() {
+    final messages = <String>[];
+    // Java
+    if (setJava() == null) {
+      messages.add("未找到安装的Java，如已安装请检查环境变量是否设置正确。");
+    }
+    // 内存
+    final maxMem = setMaxMem();
+    late final int recommendMinimum;
+    switch (game.versionNumber.minor ?? 0) {
+      case <= 12:
+        recommendMinimum = 1024;
+      default:
+        recommendMinimum = 2048;
+    }
+    if (maxMem < recommendMinimum) {
+      messages.add(
+          "可用内存过小，分配的内存为: $allocateMem，小于建议值: $recommendMinimum，这可能会导致游戏性能不佳。");
+    }
+    return messages;
+  }
+
+  /// 自动设置内存
+  int setMaxMem() {
+    if (game.setting.autoMemory) {
+      final freeMem = sysinfo.freePhyMem.toMB();
+      // 内存捉紧按空闲内存一半分配
+      final persent = freeMem > 4096 ? 0.6 : 0.5;
+      final allocate = freeMem * persent;
+      // 限制上限 4096MB，如果是Mod版则上限 6144MB
+      _allocateMem = min(allocate.toInt(), game.isModVersion ? 6144 : 4096);
+      if (kDebugMode) {
+        print(allocateMem);
+      }
+      return allocateMem;
+    }
+    return game.setting.maxMemory;
+  }
+
+  /// 自动设置 Java
+  /// 数据来源：https://minecraft.fandom.com/zh/wiki/%E6%95%99%E7%A8%8B/%E6%9B%B4%E6%96%B0Java?variant=zh
+  // FIXME: 可能不太精准
+  Java? setJava() {
+    if (game.setting.java == null) {
+      final gameVersionNumber = game.versionNumber;
+      final gameVersionMinor = gameVersionNumber.minor ?? 0;
+      late final int minimumVersion; // 最低版本
+      int? highestVersion; // 最高支持版本
+      // int? recommendVersion; //推荐版本
+      // 如果游戏版本大于等于 1.16
+      switch (gameVersionMinor) {
+        case <= 12:
+          minimumVersion = 6;
+          highestVersion = 8;
+        case <= 16:
+          minimumVersion = 8;
+          highestVersion = 11;
+        case <= 17:
+          minimumVersion = 16;
+        case <= 18:
+          minimumVersion = 17;
+        default:
+          minimumVersion = 17;
+      }
+      // 自动搜寻与游戏版本最佳的 Java
+      final targetList = <Java>[];
+      for (var java in JavaUtil.set) {
+        if (java.versionNumber.major >= minimumVersion &&
+                highestVersion == null ||
+            highestVersion != null &&
+                java.versionNumber.major <= highestVersion) {
+          targetList.add(java);
+        }
+      }
+      if (targetList.isNotEmpty) {
+        // 从低到高排序
+        targetList.sort((a, b) => a.versionNumber.compareTo(b.versionNumber));
+        java = targetList.first;
+        if (kDebugMode) {
+          print(targetList.map((e) => e.version));
+        }
+      }
+      return java;
+    }
+    return game.setting.java;
+  }
 
   Future<AccountLoginInfo> login(Account account) async =>
       loginInfo = await account.login();
@@ -52,17 +151,6 @@ class GameLaunchUtil {
         "minecraft-${game.version.id}-natives-$random");
   }
 
-  // TODO: 测试
-  /// 解压 [NativesLibrary]
-  Future<void> extractNativesLibrary() async {
-    final nativeFolderPath = game.librariesPath;
-    final outputPath = game.nativeLibraryExtractPath;
-    for (final lib in _extractLibraries) {
-      lib.extract(nativeFolderPath, outputPath);
-      debugPrint("extract: ${lib.name}");
-    }
-  }
-
   /// 获取游戏拼接资源 -cp 字符串
   String get argCp {
     const prefix = "-cp";
@@ -75,22 +163,17 @@ class GameLaunchUtil {
   }
 
   /// 获取启动参数
-  Future<String> getStartupCommand() async {
+  Future<Iterable<String>> getLaunchArguments() async {
     if (loginInfo == null) {
-      throw ErrorDescription("必须有登录信息");
+      throw Exception("必须有登录信息");
     }
     final setting = game.setting;
     final version = game.version;
-    final java = setting.java;
-    if (java == null) {
-      throw ErrorDescription("启动游戏必须要安装Java");
-    }
     // 命令行参数
     final args = [
-      // 设置相关
-      GameArgument(java.path),
-      GameArgument("-Xmx${setting.maxMemory}M"),
       // 设置相关end
+      GameArgument(
+          "-Xmx${setting.autoMemory ? allocateMem : setting.maxMemory}M"),
       () {
         var arg = version.logging.client.argument;
         arg = arg.substring(0, arg.lastIndexOf('=') - 1);
@@ -134,6 +217,14 @@ class GameLaunchUtil {
       GameArgument("--height ${setting.height}"),
     ];
 
-    return args.map((arg) => arg.toString()).join(' ');
+    return args.map((arg) => arg.toString());
+  }
+
+  /// 主要用于启动测试
+  Future<String> get launchCommand async {
+    if (java == null) {
+      throw Exception("启动游戏必须要安装 Java");
+    }
+    return "${java!.path} ${(await getLaunchArguments()).join(' ')}";
   }
 }

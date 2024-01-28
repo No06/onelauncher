@@ -6,7 +6,7 @@ part of 'common_librarie.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-CommonLibrary _$CommonLibrarieFromJson(Map<String, dynamic> json) =>
+CommonLibrary _$CommonLibraryFromJson(Map<String, dynamic> json) =>
     CommonLibrary(
       name: json['name'] as String,
       downloads: Downloads.fromJson(json['downloads'] as Map<String, dynamic>),
@@ -15,7 +15,7 @@ CommonLibrary _$CommonLibrarieFromJson(Map<String, dynamic> json) =>
           .toList(),
     );
 
-Map<String, dynamic> _$CommonLibrarieToJson(CommonLibrary instance) =>
+Map<String, dynamic> _$CommonLibraryToJson(CommonLibrary instance) =>
     <String, dynamic>{
       'name': instance.name,
       'downloads': instance.downloads,

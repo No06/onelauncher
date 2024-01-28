@@ -6,10 +6,10 @@ part of 'librarie.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Library _$LibrarieFromJson(Map<String, dynamic> json) => Library(
+Library _$LibraryFromJson(Map<String, dynamic> json) => Library(
       name: json['name'] as String,
     );
 
-Map<String, dynamic> _$LibrarieToJson(Library instance) => <String, dynamic>{
+Map<String, dynamic> _$LibraryToJson(Library instance) => <String, dynamic>{
       'name': instance.name,
     };

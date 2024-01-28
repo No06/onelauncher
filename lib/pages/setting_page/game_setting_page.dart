@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -8,9 +7,6 @@ import 'package:one_launcher/models/config/game_setting_config.dart';
 import 'package:one_launcher/models/config/theme_config.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/sys_info/sys_info.dart';
-import 'package:one_launcher/utils/sys_info/sys_info_linux.dart';
-import 'package:one_launcher/utils/sys_info/sys_info_macos.dart';
-import 'package:one_launcher/utils/sys_info/sys_info_windows.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/textfield.dart';
 import 'package:one_launcher/widgets/widget_group.dart';
@@ -36,23 +32,14 @@ abstract class SettingBasePage extends StatelessWidget {
 }
 
 class GameSettingPage extends SettingBasePage {
-  GameSettingPage({super.key, required this.config});
+  const GameSettingPage({super.key, required this.config});
 
-  static const _megaByte = 1024 * 1024;
   final GameSettingConfig config;
-  final SysInfo sysinfo = Platform.isWindows
-      ? WindowsSysInfo()
-      : Platform.isLinux
-          ? LinuxSysInfo()
-          : Platform.isMacOS
-              ? MacOSSysInfo()
-              : throw Exception("Unknown Platform System");
 
   @override
   Widget body(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final totalMemSize = sysinfo.totalPhyMem / _megaByte;
     return Column(
       children: [
         TitleWidgetGroup(
@@ -69,7 +56,7 @@ class GameSettingPage extends SettingBasePage {
                     if (java == null) {
                       text = "自动选择最佳版本";
                     } else {
-                      text = "${java.versionNumber} - ${java.path}";
+                      text = "${java.version} - ${java.path}";
                     }
                     return Text(text);
                   },
@@ -104,7 +91,7 @@ class GameSettingPage extends SettingBasePage {
                                       (e) => RadioListTile(
                                         value: e,
                                         groupValue: java,
-                                        title: Text(e.versionNumber),
+                                        title: Text(e.version),
                                         subtitle: Text(e.path),
                                         onChanged: (value) =>
                                             config.java = value,
@@ -218,7 +205,7 @@ class GameSettingPage extends SettingBasePage {
                                   inactiveColor: colors.primary.withOpacity(.2),
                                   value: config.maxMemory.toDouble(),
                                   min: 0,
-                                  max: totalMemSize,
+                                  max: sysinfo.totalPhyMem.toMB(),
                                   label: config.maxMemory.toString(),
                                   onChanged: (value) => setState(
                                     () => config.maxMemory = value.toInt(),
@@ -239,9 +226,9 @@ class GameSettingPage extends SettingBasePage {
                         child: ValueListenableBuilder(
                           valueListenable: config.maxMemoryNotifier,
                           builder: (_, maxMemory, __) => _MemoryAllocationBar(
-                            totalMemSize,
-                            sysinfo.freePhyMem / _megaByte,
-                            config.maxMemory.toDouble(),
+                            sysinfo.totalPhyMem.toGB(),
+                            sysinfo.freePhyMem.toGB(),
+                            config.maxMemory.toDouble() / 1024,
                           ),
                         ),
                       ),
@@ -472,10 +459,10 @@ class _MemoryAllocationBar extends StatelessWidget {
         Row(
           children: [
             Text(
-                "使用中内存：${_truncateToDecimalPlaces(usedMemSize / 1024, 1)} / ${_truncateToDecimalPlaces(totalMemSize / 1024, 1)} GB"),
+                "使用中内存：${_toDecimal(usedMemSize)} / ${_toDecimal(totalMemSize)} GB"),
             const Spacer(),
             Text(
-                "游戏分配：${_truncateToDecimalPlaces(allocationMemSize / 1024, 1)} GB ${allocationMemSize > freeMemSize ? "(${_truncateToDecimalPlaces(freeMemSize / 1024, 1)} GB 可用)" : ""}"),
+                "游戏分配：${_toDecimal(allocationMemSize)} GB ${allocationMemSize > freeMemSize ? "(${_toDecimal(freeMemSize)} GB 可用)" : ""}"),
           ],
         ),
       ],
@@ -483,5 +470,6 @@ class _MemoryAllocationBar extends StatelessWidget {
   }
 }
 
-double _truncateToDecimalPlaces(num value, int fractionalDigits) =>
+// 保留小数
+double _toDecimal(num value, [int fractionalDigits = 1]) =>
     (value * pow(10, fractionalDigits)).truncate() / pow(10, fractionalDigits);

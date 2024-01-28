@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:one_launcher/models/game/game.dart';
@@ -8,15 +11,69 @@ import 'package:one_launcher/widgets/dialog.dart';
 
 typedef _TaskFutureFunction<T> = Future<T>? Function()?;
 
-typedef _TaskDoneCallBack<T> = void Function(
+typedef _TaskDoneCallBack<T> = FutureOr Function(
     AsyncSnapshot<T> snapshot, bool? hasError)?;
 
-class GameStartupDialog extends StatelessWidget {
+class GameStartupDialog extends StatefulWidget {
   GameStartupDialog({super.key, required this.game})
       : launchUtil = GameLaunchUtil(game);
 
   final Game game;
   final GameLaunchUtil launchUtil;
+
+  @override
+  State<GameStartupDialog> createState() => _GameStartupDialogState();
+}
+
+class _GameStartupDialogState extends State<GameStartupDialog> {
+  final completer = Completer();
+  StreamSubscription? subscription;
+  StreamSubscription? errSubscription;
+  Process? process;
+  Timer? timer;
+  var seconds = 2;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    subscription?.cancel();
+    errSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// 启动游戏
+  Future<void> launchGame() async {
+    await widget.launchUtil.launchCommand;
+    process = await Process.start(
+      await widget.launchUtil.launchCommand,
+      [],
+      workingDirectory: widget.game.mainPath,
+    );
+
+    const white = "\u001b[37m";
+    const red = "\u001b[31m";
+
+    // 监听子进程的错误
+    if (kDebugMode) {
+      errSubscription = process!.stderr.transform(utf8.decoder).listen((data) {
+        print('$red$data'); // 打印错误
+      });
+    }
+
+    // 监听子进程
+    subscription = process!.stdout.transform(utf8.decoder).listen((data) {
+      if (data.contains("Setting user")) {
+        completer.complete();
+      }
+      if (kDebugMode) print("$white$data");
+    });
+    return await completer.future;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +83,32 @@ class GameStartupDialog extends StatelessWidget {
         child: _SequenceTaskItems(
           tasks: [
             _Task(
-              future: launchUtil.retrieveLibraries.toList,
-              title: const Text("检索游戏资源"),
+              future: () async => widget.launchUtil.checkEnvironment(),
+              title: const Text("检查游戏环境"),
+              // FIXME: 显示警告
+              // onDone: (snapshot, hasError) async {
+              //   if (snapshot.data!.isNotEmpty) {
+              //     await showDialog(
+              //       context: context,
+              //       builder: (context) => WarningDialog(
+              //         onConfirmed: dialogPop,
+              //         onCanceled: () {
+              //           hasError = true;
+              //           dialogPop();
+              //         },
+              //         content: SingleChildScrollView(
+              //           child: Text("${snapshot.data!
+              //             ..add('\n确定要继续吗？')
+              //             ..join('\n')}"),
+              //         ),
+              //       ),
+              //     );
+              //   }
+              // },
+            ),
+            _Task(
+              future: widget.launchUtil.retrieveLibraries.toList,
+              title: const Text("检索资源"),
               onDone: (snapshot, hasError) {
                 if (snapshot.data!.isNotEmpty) {
                   hasError = true;
@@ -35,7 +116,7 @@ class GameStartupDialog extends StatelessWidget {
               },
             ),
             _Task(
-              future: () => launchUtil.login(appConfig.selectedAccount!),
+              future: () => widget.launchUtil.login(appConfig.selectedAccount!),
               title: const Text("登录"),
               onDone: (snapshot, hasError) {
                 if (snapshot.data == null) {
@@ -43,29 +124,55 @@ class GameStartupDialog extends StatelessWidget {
                 }
               },
             ),
-            // TODO: 待测试
             _Task(
-              // future: launchUtil.extractNativesLibrary,
-              future: () => Future(() => null),
-              title: const Text("解压资源包"),
+              future: launchGame,
+              title: const Text("启动"),
             ),
           ],
         ),
       ),
       onlyConfirm: true,
-      onConfirmed: dialogPop,
-      confirmText: const Text("取消"),
+      onConfirmed: () {
+        if (!completer.isCompleted) {
+          // 强制关闭
+          process?.kill(ProcessSignal.sigkill);
+        }
+        dialogPop();
+      },
+      confirmText: FutureBuilder(
+        future: completer.future,
+        builder: (context, snapshot) {
+          return StatefulBuilder(builder: (context, setState) {
+            switch (snapshot.connectionState) {
+              // 启动成功后倒计时自动关闭窗口
+              case ConnectionState.done:
+                timer = Timer.periodic(Durations.extralong4, (time) {
+                  if (seconds > 0) {
+                    setState(() => seconds--);
+                    if (seconds == 0) {
+                      // 关闭 Process 并关闭窗口
+                      Future.delayed(Durations.extralong4, dialogPop);
+                    }
+                  }
+                });
+              default:
+            }
+            return Text("取消${timer != null ? ' ($seconds)' : ''}");
+          });
+        },
+      ),
     );
   }
 }
 
 /// 顺序执行任务
 class _SequenceTaskItems extends StatelessWidget {
-  _SequenceTaskItems({required this.tasks});
+  _SequenceTaskItems({required this.tasks, this.whenComplete});
 
   final List<_Task> tasks;
   final listenables = <ValueNotifier<_TaskFutureFunction>>[];
   final futures = <_TaskFutureFunction>[];
+  final VoidCallback? whenComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +193,8 @@ class _SequenceTaskItems extends StatelessWidget {
                     // 当还有下一个任务时
                     if (nextTask != null) {
                       listenables[i].value = futures[next];
+                    } else {
+                      whenComplete;
                     }
                     return value;
                   },

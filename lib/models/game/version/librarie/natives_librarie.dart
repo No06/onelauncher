@@ -6,8 +6,6 @@ import 'package:one_launcher/models/game/version/librarie/downloads.dart';
 import 'package:one_launcher/models/game/version/librarie/extract.dart';
 import 'package:one_launcher/models/game/version/os.dart';
 import 'package:one_launcher/models/game/version/rule.dart';
-import 'package:one_launcher/utils/extract_file_to_disk_and_exclude.dart';
-import 'package:path/path.dart';
 
 part 'natives_librarie.g.dart';
 
@@ -27,15 +25,8 @@ class NativesLibrary extends CommonLibrary {
   @JsonKey(name: "extract")
   final ExtractRule? extractRule;
 
-  Future<void> extract(String nativeFolderPath, String outputPath) async =>
-      await extractFileToDiskAndExclude(
-        join(nativeFolderPath, name),
-        outputPath,
-        excludeFiles: extractRule?.exclude,
-      );
-
   String? get osNameString => natives[currentOsName];
 
   factory NativesLibrary.fromJson(Map<String, dynamic> json) =>
-      _$NativesLibrarieFromJson(json);
+      _$NativesLibraryFromJson(json);
 }

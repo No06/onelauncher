@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:get/utils.dart';
+import 'package:one_launcher/models/version_number/java_version_number.dart';
+import 'package:one_launcher/models/version_number/version_number.dart';
 import 'package:one_launcher/utils/exceptions/java_release_file_not_found.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -10,29 +12,40 @@ part 'java.g.dart';
 
 @JsonSerializable()
 class Java {
-  Java(this.path, {String? versionNumber, this.args = ""}) {
-    this.versionNumber = versionNumber ?? _getVersion();
+  Java(this.path, {this.args = ""}) {
+    version = _getVersion();
   }
 
   final String path;
-  late final String versionNumber;
-  final String args;
 
-  /// 从版本号中获取版本
-  /// 如: 1.8.200 为 8, 17.0.1 为 17
-  String get version {
-    final regex1 = RegExp(r"(\d+)");
-    final regex2 = RegExp(r"\.(\d+)");
-    final match1 = regex1.firstMatch(versionNumber);
-    final match2 = regex2.firstMatch(versionNumber);
-    if (match1 != null) {
-      if (match1.group(1) == "1" && match2 != null) {
-        return "${match2.group(1)}";
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  late final String version;
+
+  JavaVersionNumber get versionNumber {
+    final split = version.split('.');
+    var major = split[0];
+    var minor = split.elementAtOrNull(1) ?? "-1";
+    var revision = split.elementAtOrNull(2) ?? "-1";
+    // 将版本号类似 1.8.0_352 转换为 8.0.352
+    if (int.parse(split[0]) == 1) {
+      final revisionSplit = revision.split('_');
+      major = minor;
+      minor = revisionSplit[0];
+      if (revisionSplit.length > 1) {
+        revision = revisionSplit[1];
       }
-      return "${match1.group(1)}";
+      return JavaVersionNumber(
+        major: int.parse(major),
+        minor: toInt(minor),
+        revision: toInt(revision),
+      );
     }
-    return "unknown";
+
+    return JavaVersionNumber.fromString(
+        split.reduce((value, element) => "$value.$element"));
   }
+
+  final String args;
 
   String _getVersion() {
     try {

@@ -6,7 +6,7 @@ part of 'natives_librarie.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-NativesLibrary _$NativesLibrarieFromJson(Map<String, dynamic> json) =>
+NativesLibrary _$NativesLibraryFromJson(Map<String, dynamic> json) =>
     NativesLibrary(
       name: json['name'] as String,
       downloads: Downloads.fromJson(json['downloads'] as Map<String, dynamic>),
@@ -21,7 +21,7 @@ NativesLibrary _$NativesLibrarieFromJson(Map<String, dynamic> json) =>
           : ExtractRule.fromJson(json['extract'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$NativesLibrarieToJson(NativesLibrary instance) =>
+Map<String, dynamic> _$NativesLibraryToJson(NativesLibrary instance) =>
     <String, dynamic>{
       'name': instance.name,
       'downloads': instance.downloads,

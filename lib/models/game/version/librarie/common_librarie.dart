@@ -48,5 +48,5 @@ class CommonLibrary extends Library {
   }
 
   factory CommonLibrary.fromJson(Map<String, dynamic> json) =>
-      _$CommonLibrarieFromJson(json);
+      _$CommonLibraryFromJson(json);
 }

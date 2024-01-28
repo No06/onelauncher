@@ -53,7 +53,6 @@ dependencies:
   http: ^1.1.0
   smooth_scroll_multiplatform: ^1.0.8
   handy_window: ^0.3.1
-  system_info2: ^4.0.0
 
 dev_dependencies:
 
