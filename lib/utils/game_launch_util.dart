@@ -18,10 +18,14 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class GameLaunchUtil {
-  GameLaunchUtil(this.game);
+  GameLaunchUtil(this.game) {
+    autoMem();
+    autoJava();
+  }
 
   final Game game;
   final List<NativesLibrary> _extractLibraries = [];
+  final List<String> warningMessages = [];
   AccountLoginInfo? loginInfo;
   Iterable<Library>? _allowedLibraries;
   Iterable<Library> get allowedLibraries =>
@@ -32,35 +36,11 @@ class GameLaunchUtil {
 
   late final Java? java;
 
-  /// 检查游戏启动环境
-  /// 返回：错误信息
-  List<String> checkEnvironment() {
-    final messages = <String>[];
-    // Java
-    if (setJava() == null) {
-      messages.add("未找到安装的Java，如已安装请检查环境变量是否设置正确。");
-    }
-    // 内存
-    final maxMem = setMaxMem();
-    late final int recommendMinimum;
-    switch (game.versionNumber.minor ?? 0) {
-      case <= 12:
-        recommendMinimum = 1024;
-      default:
-        recommendMinimum = 2048;
-    }
-    if (maxMem < recommendMinimum) {
-      messages.add(
-          "可用内存过小，分配的内存为: ${allocateMem}MB，小于建议值: ${recommendMinimum}MB，这可能会导致游戏性能不佳。");
-    }
-    return messages;
-  }
-
   /// 自动设置内存
-  int setMaxMem() {
+  int autoMem() {
     if (game.setting.autoMemory) {
       final freeMem = sysinfo.freePhyMem.toMB();
-      // 内存捉紧按空闲内存一半分配
+      // 内存捉紧按空闲内存一半分配，否则四六开
       final persent = freeMem > 4096 ? 0.6 : 0.5;
       final allocate = freeMem * persent;
       // 限制上限 4096MB，如果是Mod版则上限 6144MB
@@ -68,36 +48,49 @@ class GameLaunchUtil {
       if (kDebugMode) {
         print(allocateMem);
       }
-      return allocateMem;
+    } else {
+      _allocateMem = game.setting.maxMemory;
     }
-    return game.setting.maxMemory;
+    // 检查内存设置
+    late final int recommendMinimum;
+    switch (game.versionNumber.minor ?? 0) {
+      case <= 12:
+        recommendMinimum = 1024;
+      default:
+        recommendMinimum = 2048;
+    }
+    if (allocateMem < recommendMinimum) {
+      warningMessages.add(
+          "可用内存过小，分配的内存为: ${allocateMem}MB，小于建议值: ${recommendMinimum}MB，这可能会导致游戏性能不佳。");
+    }
+    return allocateMem;
   }
 
   /// 自动设置 Java
   /// 数据来源：https://minecraft.fandom.com/zh/wiki/%E6%95%99%E7%A8%8B/%E6%9B%B4%E6%96%B0Java?variant=zh
-  // FIXME: 可能不太精准
-  Java? setJava() {
+  Java? autoJava() {
+    late final int minimumVersion; // 最低版本
+    int? highestVersion; // 最高支持版本
+    // int? recommendVersion; //推荐版本
+    final gameVersionNumber = game.versionNumber;
+    final gameVersionMinor = gameVersionNumber.minor ?? 0;
+    // 设置建议的Java版本
+    // FIXME: 可能不太精准
+    switch (gameVersionMinor) {
+      case <= 12:
+        minimumVersion = 6;
+        highestVersion = 8;
+      case <= 16:
+        minimumVersion = 8;
+        highestVersion = 11;
+      case <= 17:
+        minimumVersion = 16;
+      case <= 18:
+        minimumVersion = 17;
+      default:
+        minimumVersion = 17;
+    }
     if (game.setting.java == null) {
-      final gameVersionNumber = game.versionNumber;
-      final gameVersionMinor = gameVersionNumber.minor ?? 0;
-      late final int minimumVersion; // 最低版本
-      int? highestVersion; // 最高支持版本
-      // int? recommendVersion; //推荐版本
-      // 如果游戏版本大于等于 1.16
-      switch (gameVersionMinor) {
-        case <= 12:
-          minimumVersion = 6;
-          highestVersion = 8;
-        case <= 16:
-          minimumVersion = 8;
-          highestVersion = 11;
-        case <= 17:
-          minimumVersion = 16;
-        case <= 18:
-          minimumVersion = 17;
-        default:
-          minimumVersion = 17;
-      }
       // 自动搜寻与游戏版本最佳的 Java
       final targetList = <Java>[];
       for (var java in JavaUtil.set) {
@@ -117,8 +110,20 @@ class GameLaunchUtil {
         }
       }
       return java;
+    } else {
+      java = game.setting.java;
+      // 检查选择的Java版本是否兼容
+      final majorVersion = java!.versionNumber.major;
+      if (majorVersion < minimumVersion) {
+        warningMessages
+            .add("选择的Java版本为：$majorVersion, 此游戏版本最低要求为：$minimumVersion。");
+      }
     }
-    return game.setting.java;
+    // 如未找到Java
+    if (java == null) {
+      warningMessages.add("未找到安装的Java，如已安装请检查环境变量是否设置正确。");
+    }
+    return java;
   }
 
   Future<AccountLoginInfo> login(Account account) async =>

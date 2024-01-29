@@ -26,7 +26,7 @@ class GameStartupDialog extends StatefulWidget {
 }
 
 class _GameStartupDialogState extends State<GameStartupDialog> {
-  late final List<String> checkEnvironment;
+  late final List<String> warningMessages;
   final completer = Completer();
   StreamSubscription? subscription;
   StreamSubscription? errSubscription;
@@ -38,7 +38,7 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
   @override
   void initState() {
     super.initState();
-    checkEnvironment = widget.launchUtil.checkEnvironment();
+    warningMessages = widget.launchUtil.warningMessages;
   }
 
   @override
@@ -80,12 +80,12 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return checkEnvironment.isNotEmpty && !_continue
+    return warningMessages.isNotEmpty && !_continue
         ? WarningDialog(
             onConfirmed: () => setState(() => _continue = true),
             onCanceled: dialogPop,
             content: SingleChildScrollView(
-              child: Text((checkEnvironment..add('确定要继续吗？')).join('\n')),
+              child: Text((warningMessages..add('确定要继续吗？')).join('\n')),
             ),
           )
         : DefaultDialog(
