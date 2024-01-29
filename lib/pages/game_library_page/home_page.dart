@@ -17,15 +17,15 @@ class _HomePage extends StatelessWidget {
             slivers: const [_SliverTitle(), _SliverList()],
           ),
         ),
-        Align(
+        const Align(
           alignment: Alignment.bottomRight,
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32),
             // TODO: 新安装游戏
-            child: FloatingActionButton(
-              onPressed: () {},
-              child: const Icon(Icons.download),
-            ),
+            // child: FloatingActionButton(
+            //   onPressed: () {},
+            //   child: const Icon(Icons.download),
+            // ),
           ),
         ),
       ],

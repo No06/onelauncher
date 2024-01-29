@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
 import 'package:one_launcher/consts.dart';
@@ -172,73 +173,112 @@ class GameSettingPage extends SettingBasePage {
             ),
           ],
         ),
-        TitleWidgetGroup(
-          "内存",
-          children: [
-            ValueBuilder<bool?>(
-              initialValue: config.autoMemory,
-              builder: (value, updater) {
-                return ExpansionListTile(
-                  isExpaned: !value!,
-                  title: SwitchListTile(
-                    title: const Text("游戏内存"),
-                    subtitle: const Text("自动分配"),
-                    value: value,
-                    selected: value,
-                    hoverColor: colorWithValue(colors.secondaryContainer, -.05),
-                    onChanged: (value) {
-                      config.autoMemory = value;
-                      updater(value);
-                    },
-                  ),
-                  expandTile: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15),
-                        child: Row(
-                          children: [
-                            const Text("手动分配"),
-                            Expanded(
-                              child: StatefulBuilder(
-                                builder: (context, setState) => Slider(
-                                  inactiveColor: colors.primary.withOpacity(.2),
-                                  value: config.maxMemory.toDouble(),
-                                  min: 0,
-                                  max: sysinfo.totalPhyMem.toMB(),
-                                  label: config.maxMemory.toString(),
-                                  onChanged: (value) => setState(
-                                    () => config.maxMemory = value.toInt(),
-                                  ),
-                                  onChangeEnd: (value) => setState(
-                                    () => config.maxMemory = value.toInt(),
+        HookBuilder(builder: (context) {
+          final textController =
+              useTextEditingController(text: config.maxMemory.toString());
+          textController.addListener(
+              () => config.maxMemory = int.parse(textController.text));
+          return TitleWidgetGroup(
+            "内存",
+            children: [
+              ValueBuilder<bool?>(
+                initialValue: config.autoMemory,
+                builder: (value, updater) {
+                  return ExpansionListTile(
+                    isExpaned: !value!,
+                    title: SwitchListTile(
+                      title: const Text("游戏内存"),
+                      subtitle: const Text("自动分配"),
+                      value: value,
+                      selected: value,
+                      hoverColor:
+                          colorWithValue(colors.secondaryContainer, -.05),
+                      onChanged: (value) {
+                        config.autoMemory = value;
+                        updater(value);
+                      },
+                    ),
+                    expandTile: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 15),
+                          child: Row(
+                            children: [
+                              const Text("手动分配"),
+                              Expanded(
+                                child: ValueListenableBuilder(
+                                  valueListenable: textController,
+                                  builder: (context, textValue, child) =>
+                                      Slider(
+                                    inactiveColor:
+                                        colors.primary.withOpacity(.2),
+                                    value: double.parse(textValue.text),
+                                    min: 1,
+                                    max: sysinfo.totalPhyMem.toMB(),
+                                    label: textValue.text,
+                                    onChanged: (value) => textController.text =
+                                        value.toInt().toString(),
+                                    onChangeEnd: (value) => textController
+                                        .text = value.toInt().toString(),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            left: 15, right: 15, bottom: 10),
-                        child: ValueListenableBuilder(
-                          valueListenable: config.maxMemoryNotifier,
-                          builder: (_, maxMemory, __) => _MemoryAllocationBar(
-                            sysinfo.totalPhyMem.toGB(),
-                            sysinfo.freePhyMem.toGB(),
-                            config.maxMemory.toDouble() / 1024,
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15),
+                                child: SizedBox(
+                                  width: 100,
+                                  height: 36,
+                                  child: Theme(
+                                    data: simpleInputDecorationTheme(context),
+                                    child: TextField(
+                                      controller: textController,
+                                      inputFormatters: [
+                                        MemoryTextInputFormatter(
+                                            sysinfo.totalPhyMem.toMB().toInt())
+                                      ],
+                                      onChanged: (value) =>
+                                          config.maxMemory = int.parse(value),
+                                      decoration: const InputDecoration(
+                                        suffixIcon: SizedBox.shrink(
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Padding(
+                                              padding:
+                                                  EdgeInsets.only(right: 10),
+                                              child: Text("MB"),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 15, right: 15, bottom: 10),
+                          child: ValueListenableBuilder(
+                            valueListenable: config.maxMemoryNotifier,
+                            builder: (_, maxMemory, __) => _MemoryAllocationBar(
+                              sysinfo.totalPhyMem.toGB(),
+                              sysinfo.freePhyMem.toGB(),
+                              config.maxMemory.toDouble() / 1024,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        }),
         TitleWidgetGroup(
           "游戏",
           children: [
@@ -467,6 +507,23 @@ class _MemoryAllocationBar extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class MemoryTextInputFormatter extends TextInputFormatter {
+  const MemoryTextInputFormatter(this.maxSize);
+
+  final int maxSize;
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty ||
+        newValue.text.startsWith('0') ||
+        int.parse(newValue.text) > maxSize) {
+      return oldValue;
+    }
+    return newValue;
   }
 }
 
