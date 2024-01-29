@@ -31,8 +31,7 @@ class GameLaunchUtil {
   Iterable<Library> get allowedLibraries =>
       _allowedLibraries ??= getAllowedLibraries();
 
-  late final int _allocateMem;
-  int get allocateMem => max(_allocateMem, 512); // 设置下限 512MB
+  late final int allocateMem;
 
   late final Java? java;
 
@@ -43,13 +42,14 @@ class GameLaunchUtil {
       // 内存捉紧按空闲内存一半分配，否则四六开
       final persent = freeMem > 4096 ? 0.6 : 0.5;
       final allocate = freeMem * persent;
-      // 限制上限 4096MB，如果是Mod版则上限 6144MB
-      _allocateMem = min(allocate.toInt(), game.isModVersion ? 6144 : 4096);
+      // 限制下限 512MB, 上限 4096MB，如果是Mod版则上限 6144MB
+      allocateMem =
+          min(max(allocate.toInt(), 512), game.isModVersion ? 6144 : 4096);
       if (kDebugMode) {
         print(allocateMem);
       }
     } else {
-      _allocateMem = game.setting.maxMemory;
+      allocateMem = game.setting.maxMemory;
     }
     // 检查内存设置
     late final int recommendMinimum;
@@ -61,7 +61,7 @@ class GameLaunchUtil {
     }
     if (allocateMem < recommendMinimum) {
       warningMessages.add(
-          "可用内存过小，分配的内存为: ${allocateMem}MB，小于建议值: ${recommendMinimum}MB，这可能会导致游戏性能不佳。");
+          "可用内存过小，分配的内存为: ${allocateMem}MB，小于建议值: ${recommendMinimum}MB，这可能会导致游戏性能不佳甚至崩溃。");
     }
     return allocateMem;
   }
@@ -224,6 +224,7 @@ class GameLaunchUtil {
       // 窗口长宽
       GameArgument("--width ${setting.width}"),
       GameArgument("--height ${setting.height}"),
+      if (setting.fullScreen) const GameArgument("--fullscreen"),
     ];
 
     return args.map((arg) => arg.toString());

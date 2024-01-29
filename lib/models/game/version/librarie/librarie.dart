@@ -8,7 +8,6 @@ import 'package:path/path.dart';
 
 part 'librarie.g.dart';
 
-// TODO: 解析json字段extract
 @JsonSerializable()
 class Library {
   Library({required this.name}) {

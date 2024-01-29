@@ -97,7 +97,6 @@ class GameSettingConfig extends ChangeNotifier {
 
   /// 最大分配内存
   ValueNotifier<int> get maxMemoryNotifier => _maxMemory;
-  // TODO: 自适应内存大小
   int get maxMemory => _maxMemory.value;
   set maxMemory(int newVal) => _maxMemory.value = newVal;
 

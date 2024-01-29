@@ -87,6 +87,12 @@ class TitleWidgetGroup extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
+  Widget _defaultDivider(BuildContext context) => Divider(
+        height: 1,
+        color:
+            Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(.08),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -98,7 +104,8 @@ class TitleWidgetGroup extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: WidgetGroup(divider: _defaultDivider(), children: children),
+          child: WidgetGroup(
+              divider: _defaultDivider(context), children: children),
         ),
       ],
     );
@@ -293,11 +300,4 @@ class _AnimationController extends GetxController
     animController.dispose();
     super.dispose();
   }
-}
-
-Widget _defaultDivider() {
-  return Divider(
-    height: 1,
-    color: Get.theme.colorScheme.onPrimaryContainer.withOpacity(.2),
-  );
 }

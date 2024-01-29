@@ -39,7 +39,7 @@ Future<void> init() async {
   final windowOptions = WindowOptions(
     size: windowSize,
     minimumSize: windowSize,
-    center: false,
+    center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle:

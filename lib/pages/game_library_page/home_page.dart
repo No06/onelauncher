@@ -315,6 +315,7 @@ class _GameItem extends StatelessWidget {
                     ),
                     backgroundColor: colors.primary,
                     onPressed: () => showDialog(
+                      barrierDismissible: false,
                       context: context,
                       builder: (context) {
                         if (appConfig.selectedAccount == null) {

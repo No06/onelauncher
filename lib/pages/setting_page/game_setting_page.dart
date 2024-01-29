@@ -158,7 +158,6 @@ class GameSettingPage extends SettingBasePage {
                             width: 400,
                             child: Theme(
                               data: simpleInputDecorationTheme(context),
-                              // TODO: 空判断 格式判断
                               child: TextField(
                                 controller: controller,
                               ),
