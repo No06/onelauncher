@@ -68,5 +68,5 @@ class OfflineAccount extends Account {
 
   @override
   Future<AccountLoginInfo> login() async =>
-      AccountLoginInfo(username: displayName, uuid: uuid);
+      AccountLoginInfo(username: displayName, uuid: uuid, accessToken: "0");
 }

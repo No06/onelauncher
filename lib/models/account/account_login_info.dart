@@ -3,7 +3,7 @@ class AccountLoginInfo {
   const AccountLoginInfo({
     required this.username,
     required this.uuid,
-    this.accessToken = "",
+    required this.accessToken,
   });
 
   static const String userType = "msa";

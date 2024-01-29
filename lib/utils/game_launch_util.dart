@@ -215,8 +215,7 @@ class GameLaunchUtil {
       // UUID
       GameArgument("--uuid ${loginInfo!.uuid.replaceAll('-', '')}"),
       // token
-      if (loginInfo!.accessToken.isNotEmpty)
-        GameArgument("--accessToken ${loginInfo!.accessToken}"),
+      GameArgument("--accessToken ${loginInfo!.accessToken}"),
       // 登录类型
       const GameArgument("--userType msa"),
       // 版本类型
