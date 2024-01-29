@@ -23,6 +23,7 @@ Version _$VersionFromJson(Map<String, dynamic> json) => Version(
       Logging.fromJson(json['logging'] as Map<String, dynamic>),
       $enumDecode(_$GameTypeEnumMap, json['type']),
       json['minimumLauncherVersion'] as int,
+      json['clientVersion'] as String,
     );
 
 Map<String, dynamic> _$VersionToJson(Version instance) => <String, dynamic>{
@@ -38,6 +39,7 @@ Map<String, dynamic> _$VersionToJson(Version instance) => <String, dynamic>{
       'logging': instance.logging,
       'type': _$GameTypeEnumMap[instance.type]!,
       'minimumLauncherVersion': instance.minimumLauncherVersion,
+      'clientVersion': instance.clientVersion,
     };
 
 const _$GameTypeEnumMap = {

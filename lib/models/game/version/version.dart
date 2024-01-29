@@ -24,7 +24,9 @@ class Version {
     this.logging,
     this.type,
     this.minimumLauncherVersion,
+    this.clientVersion
   );
+
   ///游戏名 可能是版本号，也可能是自定义的名字
   final String id;
   final Arguments? arguments;
@@ -38,9 +40,10 @@ class Version {
   final Logging logging;
   final GameType type;
   final int minimumLauncherVersion;
+  final String? clientVersion;
 
   String get jarFile => jar == null ? "$id.jar" : "$jar.jar";
-
+  
   factory Version.fromJson(Map<String, dynamic> json) =>
       _$VersionFromJson(json);
 }
