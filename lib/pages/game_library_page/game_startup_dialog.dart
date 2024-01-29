@@ -26,16 +26,19 @@ class GameStartupDialog extends StatefulWidget {
 }
 
 class _GameStartupDialogState extends State<GameStartupDialog> {
+  late final List<String> checkEnvironment;
   final completer = Completer();
   StreamSubscription? subscription;
   StreamSubscription? errSubscription;
   Process? process;
   Timer? timer;
   var seconds = 2;
+  var _continue = false;
 
   @override
   void initState() {
     super.initState();
+    checkEnvironment = widget.launchUtil.checkEnvironment();
   }
 
   @override
@@ -77,109 +80,100 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultDialog(
-      title: const Text("为启动游戏做准备"),
-      content: SingleChildScrollView(
-        child: _SequenceTaskItems(
-          tasks: [
-            _Task(
-              future: () async => widget.launchUtil.checkEnvironment(),
-              title: const Text("检查游戏环境"),
-              // FIXME: 显示警告
-              // onDone: (snapshot, hasError) async {
-              //   if (snapshot.data!.isNotEmpty) {
-              //     await showDialog(
-              //       context: context,
-              //       builder: (context) => WarningDialog(
-              //         onConfirmed: dialogPop,
-              //         onCanceled: () {
-              //           hasError = true;
-              //           dialogPop();
-              //         },
-              //         content: SingleChildScrollView(
-              //           child: Text("${snapshot.data!
-              //             ..add('\n确定要继续吗？')
-              //             ..join('\n')}"),
-              //         ),
-              //       ),
-              //     );
-              //   }
-              // },
+    return checkEnvironment.isNotEmpty && !_continue
+        ? WarningDialog(
+            onConfirmed: () => setState(() => _continue = true),
+            onCanceled: dialogPop,
+            content: SingleChildScrollView(
+              child: Text((checkEnvironment..add('确定要继续吗？')).join('\n')),
             ),
-            _Task(
-              future: widget.launchUtil.retrieveLibraries.toList,
-              title: const Text("检索资源"),
-              onDone: (snapshot, hasError) {
-                if (snapshot.data!.isNotEmpty) {
-                  hasError = true;
-                }
-              },
+          )
+        : DefaultDialog(
+            title: const Text("为启动游戏做准备"),
+            content: SingleChildScrollView(
+              child: _SequenceTaskItems(
+                tasks: [
+                  _Task(
+                    future: widget.launchUtil.retrieveLibraries.toList,
+                    title: const Text("检索资源"),
+                    onDone: (snapshot, hasError) {
+                      if (snapshot.data!.isNotEmpty) {
+                        hasError = true;
+                      }
+                    },
+                  ),
+                  _Task(
+                    future: () =>
+                        widget.launchUtil.login(appConfig.selectedAccount!),
+                    title: const Text("登录"),
+                    onDone: (snapshot, hasError) {
+                      if (snapshot.data == null) {
+                        hasError = true;
+                      }
+                    },
+                  ),
+                  _Task(
+                    future: launchGame,
+                    title: const Text("启动"),
+                  ),
+                ],
+              ),
             ),
-            _Task(
-              future: () => widget.launchUtil.login(appConfig.selectedAccount!),
-              title: const Text("登录"),
-              onDone: (snapshot, hasError) {
-                if (snapshot.data == null) {
-                  hasError = true;
-                }
-              },
-            ),
-            _Task(
-              future: launchGame,
-              title: const Text("启动"),
-            ),
-          ],
-        ),
-      ),
-      onlyConfirm: true,
-      onConfirmed: () {
-        if (!completer.isCompleted) {
-          // 强制关闭
-          process?.kill(ProcessSignal.sigkill);
-        }
-        dialogPop();
-      },
-      confirmText: FutureBuilder(
-        future: completer.future,
-        builder: (context, snapshot) {
-          return StatefulBuilder(builder: (context, setState) {
-            switch (snapshot.connectionState) {
-              // 启动成功后倒计时自动关闭窗口
-              case ConnectionState.done:
-                timer = Timer.periodic(Durations.extralong4, (time) {
-                  if (seconds > 0) {
-                    setState(() => seconds--);
-                    if (seconds == 0) {
-                      // 关闭 Process 并关闭窗口
-                      Future.delayed(Durations.extralong4, dialogPop);
-                    }
+            onlyConfirm: true,
+            onConfirmed: () {
+              if (!completer.isCompleted) {
+                // 强制关闭
+                process?.kill(ProcessSignal.sigkill);
+              }
+              dialogPop();
+            },
+            confirmText: FutureBuilder(
+              future: completer.future,
+              builder: (context, snapshot) {
+                return StatefulBuilder(builder: (context, setState) {
+                  switch (snapshot.connectionState) {
+                    // 启动成功后倒计时自动关闭窗口
+                    case ConnectionState.done:
+                      timer = Timer.periodic(Durations.extralong4, (time) {
+                        if (seconds > 0) {
+                          setState(() => seconds--);
+                          if (seconds == 0) {
+                            // 关闭 Process 并关闭窗口
+                            Future.delayed(Durations.extralong4, dialogPop);
+                          }
+                        }
+                      });
+                    default:
                   }
+                  return Text("取消${timer != null ? ' ($seconds)' : ''}");
                 });
-              default:
-            }
-            return Text("取消${timer != null ? ' ($seconds)' : ''}");
-          });
-        },
-      ),
-    );
+              },
+            ),
+          );
   }
 }
 
 /// 顺序执行任务
-class _SequenceTaskItems extends StatelessWidget {
-  _SequenceTaskItems({required this.tasks, this.whenComplete});
+class _SequenceTaskItems extends StatefulWidget {
+  const _SequenceTaskItems({required this.tasks});
 
   final List<_Task> tasks;
-  final listenables = <ValueNotifier<_TaskFutureFunction>>[];
-  final futures = <_TaskFutureFunction>[];
-  final VoidCallback? whenComplete;
 
   @override
-  Widget build(BuildContext context) {
-    for (int i = 0; i < tasks.length; i++) {
-      final currentTaskFuture = tasks[i].future;
+  State<_SequenceTaskItems> createState() => _SequenceTaskItemsState();
+}
+
+class _SequenceTaskItemsState extends State<_SequenceTaskItems> {
+  final listenables = <ValueNotifier<_TaskFutureFunction>>[];
+  final futures = <_TaskFutureFunction>[];
+
+  @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < widget.tasks.length; i++) {
+      final currentTaskFuture = widget.tasks[i].future;
       final next = i + 1;
-      final nextTask = tasks.elementAtOrNull(next);
+      final nextTask = widget.tasks.elementAtOrNull(next);
       // 跳过第一个
       if (i != 0) {
         listenables.add(ValueNotifier(null));
@@ -193,18 +187,19 @@ class _SequenceTaskItems extends StatelessWidget {
                     // 当还有下一个任务时
                     if (nextTask != null) {
                       listenables[i].value = futures[next];
-                    } else {
-                      whenComplete;
                     }
                     return value;
                   },
                 ),
       );
     }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Column(
-      children: List<Widget>.generate(tasks.length, (index) {
-        final task = tasks[index];
+      children: List<Widget>.generate(widget.tasks.length, (index) {
+        final task = widget.tasks[index];
         if (index == 0) {
           return _TaskItem(
             title: task.title,
@@ -271,7 +266,7 @@ class _TaskItem<T> extends StatelessWidget {
               SizedBox.square(
                 dimension: _height,
                 child: Center(
-                  child: Builder(builder: (context) {
+                  child: () {
                     switch (state) {
                       case ConnectionState.none:
                         return const Icon(Icons.hourglass_empty);
@@ -287,7 +282,7 @@ class _TaskItem<T> extends StatelessWidget {
                         }
                         return const Icon(Icons.done, color: _doneIconColor);
                     }
-                  }),
+                  }(),
                 ),
               ),
               const SizedBox(width: 8),

@@ -51,7 +51,7 @@ class GameLaunchUtil {
     }
     if (maxMem < recommendMinimum) {
       messages.add(
-          "可用内存过小，分配的内存为: $allocateMem，小于建议值: $recommendMinimum，这可能会导致游戏性能不佳。");
+          "可用内存过小，分配的内存为: ${allocateMem}MB，小于建议值: ${recommendMinimum}MB，这可能会导致游戏性能不佳。");
     }
     return messages;
   }
@@ -174,6 +174,8 @@ class GameLaunchUtil {
       // 设置相关end
       GameArgument(
           "-Xmx${setting.autoMemory ? allocateMem : setting.maxMemory}M"),
+      const GameArgument(
+          "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Djava.rmi.server.useCodebaseOnly=true -Dcom.sun.jndi.rmi.object.trustURLCodebase=false -Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false -Dlog4j2.formatMsgNoLookups=true"),
       () {
         var arg = version.logging.client.argument;
         arg = arg.substring(0, arg.lastIndexOf('=') - 1);
@@ -181,6 +183,8 @@ class GameLaunchUtil {
       }(),
       GameArgument("-Dminecraft.client.jar", game.clientRelativePath),
       GameArgument(setting.jvmArgs),
+      const GameArgument(
+          "-XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -XX:-DontCompileHugeMethods -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true"),
       const GameArgument("-XX:HeapDumpPath",
           "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"),
       GameArgument("-Djava.library.path", game.nativeLibraryExtractPath),
