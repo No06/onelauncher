@@ -25,7 +25,7 @@ class Version {
     this.type,
     this.minimumLauncherVersion,
   );
-
+  ///游戏名 可能是版本号，也可能是自定义的名字
   final String id;
   final Arguments? arguments;
   final String? minecraftArguments;
@@ -39,7 +39,7 @@ class Version {
   final GameType type;
   final int minimumLauncherVersion;
 
-  String get jarFile => "$jar.jar";
+  String get jarFile => jar == null ? "$id.jar" : "$jar.jar";
 
   factory Version.fromJson(Map<String, dynamic> json) =>
       _$VersionFromJson(json);
