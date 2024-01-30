@@ -1,31 +1,30 @@
 import 'package:one_launcher/models/game/version/arguments.dart';
 import 'package:one_launcher/models/game/version/game_type.dart';
-import 'package:one_launcher/models/game/version/librarie/librarie.dart';
+import 'package:one_launcher/models/game/version/library/library.dart';
 import 'package:one_launcher/models/game/version/asset_index.dart';
 import 'package:one_launcher/models/game/version/game_downloads.dart';
 import 'package:one_launcher/models/game/version/java_version.dart';
 import 'package:one_launcher/models/game/version/logging/logging.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'version.g.dart';
+part 'game_data.g.dart';
 
 @JsonSerializable()
-class Version {
-  const Version(
-    this.id,
-    this.arguments,
-    this.minecraftArguments,
-    this.mainClass,
-    this.jar,
-    this.assetIndex,
-    this.javaVersion,
-    this.libraries,
-    this.downloads,
-    this.logging,
-    this.type,
-    this.minimumLauncherVersion,
-    this.clientVersion
-  );
+class GameData {
+  const GameData(
+      this.id,
+      this.arguments,
+      this.minecraftArguments,
+      this.mainClass,
+      this.jar,
+      this.assetIndex,
+      this.javaVersion,
+      this.libraries,
+      this.downloads,
+      this.logging,
+      this.type,
+      this.minimumLauncherVersion,
+      this.clientVersion);
 
   ///游戏名 可能是版本号，也可能是自定义的名字
   final String id;
@@ -43,7 +42,7 @@ class Version {
   final String? clientVersion;
 
   String get jarFile => jar == null ? "$id.jar" : "$jar.jar";
-  
-  factory Version.fromJson(Map<String, dynamic> json) =>
-      _$VersionFromJson(json);
+
+  factory GameData.fromJson(Map<String, dynamic> json) =>
+      _$GameDataFromJson(json);
 }

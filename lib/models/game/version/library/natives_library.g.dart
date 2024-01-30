@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'natives_librarie.dart';
+part of 'natives_library.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

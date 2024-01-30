@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/version/librarie/common_librarie.dart';
-import 'package:one_launcher/models/game/version/librarie/maven_librarie.dart';
-import 'package:one_launcher/models/game/version/librarie/natives_librarie.dart';
+import 'package:one_launcher/models/game/version/library/common_library.dart';
+import 'package:one_launcher/models/game/version/library/maven_library.dart';
+import 'package:one_launcher/models/game/version/library/natives_library.dart';
 import 'package:path/path.dart';
 
-part 'librarie.g.dart';
+part 'library.g.dart';
 
 @JsonSerializable()
 class Library {
@@ -63,7 +63,10 @@ class Library {
       return CommonLibrary.fromJson(json);
     }
     if (json['url'] != null) {
-      return MavenLibrarie.fromJson(json);
+      return MavenLibrary.fromJson(json);
+    }
+    if (json['name'] != null) {
+      return Library(name: json['name']);
     }
     throw Exception("未知资源类型");
   }

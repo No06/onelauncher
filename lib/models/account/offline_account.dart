@@ -49,7 +49,7 @@ class OfflineAccount extends Account {
       Skin(type: _uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve);
 
   @override
-  String get accessToken => "";
+  String get accessToken => "0";
 
   String get uuidFromName =>
       const Uuid().v5(Uuid.NAMESPACE_NIL, getUuidFromName(displayName));
@@ -67,6 +67,6 @@ class OfflineAccount extends Account {
   }
 
   @override
-  Future<AccountLoginInfo> login() async =>
-      AccountLoginInfo(username: displayName, uuid: uuid, accessToken: "0");
+  Future<AccountLoginInfo> login() async => AccountLoginInfo(
+      username: displayName, uuid: uuid, accessToken: accessToken);
 }

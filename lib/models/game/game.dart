@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
-import 'package:one_launcher/models/game/version/librarie/librarie.dart';
-import 'package:one_launcher/models/game/version/version.dart';
+import 'package:one_launcher/models/game/version/library/library.dart';
+import 'package:one_launcher/models/game/version/game_data.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/version_number/version_number.dart';
@@ -25,7 +25,7 @@ class Game {
   })  : _mainPath = mainPath,
         _versionPath = versionPath,
         _useGlobalSetting = ValueNotifier(useGlobalSetting ?? false),
-        _librariesPath = (join(mainPath, "libraries")),
+        _librarysPath = (join(mainPath, "libraries")),
         _setting = setting,
         _version = _getVersionFromPath(join(mainPath, versionPath)) {
     _useGlobalSetting.addListener(saveConfig);
@@ -50,8 +50,8 @@ class Game {
   ValueNotifier<bool> _useGlobalSetting;
 
   /// 游戏文件 1.x.x.json序列化内容
-  Version _version;
-  Version get version => _version;
+  GameData _version;
+  GameData get version => _version;
 
   /// 游戏版本
   VersionNumber get versionNumber {
@@ -81,10 +81,10 @@ class Game {
   String get versionPath => _versionPath;
 
   /// 游戏资源库路径
-  /// 如: /home/onelauncher/.minecraft/libraries
-  final String _librariesPath;
+  /// 如: /home/onelauncher/.minecraft/librarys
+  final String _librarysPath;
   @JsonKey(includeToJson: false)
-  String get librariesPath => _librariesPath;
+  String get librariesPath => _librarysPath;
 
   /// 游戏路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x
@@ -132,9 +132,9 @@ class Game {
 
   Map<String, dynamic> toJson() => _$GameToJson(this);
 
-  /// 从指定路径读取文件序列化为 [Version]
-  static Version _getVersionFromPath(String path) {
-    return Version.fromJson(
+  /// 从指定路径读取文件序列化为 [GameData]
+  static GameData _getVersionFromPath(String path) {
+    return GameData.fromJson(
       jsonDecode(File(join(path, "${basename(path)}.json")).readAsStringSync()),
     );
   }
@@ -142,8 +142,6 @@ class Game {
 
 /// 游戏运行的参数
 class GameArgument {
-  /// 传入字符串，或者
-  /// 如：
   const GameArgument(this.key, [this.value]);
 
   static const connector = "=";

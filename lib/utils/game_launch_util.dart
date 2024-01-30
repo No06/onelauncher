@@ -7,10 +7,10 @@ import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game/java.dart';
-import 'package:one_launcher/models/game/version/librarie/common_librarie.dart';
-import 'package:one_launcher/models/game/version/librarie/librarie.dart';
-import 'package:one_launcher/models/game/version/librarie/maven_librarie.dart';
-import 'package:one_launcher/models/game/version/librarie/natives_librarie.dart';
+import 'package:one_launcher/models/game/version/library/common_library.dart';
+import 'package:one_launcher/models/game/version/library/library.dart';
+import 'package:one_launcher/models/game/version/library/maven_library.dart';
+import 'package:one_launcher/models/game/version/library/natives_library.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/random_string.dart';
 import 'package:one_launcher/utils/sys_info/sys_info.dart';
@@ -131,7 +131,7 @@ class GameLaunchUtil {
 
   /// 获取可用的游戏资源
   Iterable<Library> getAllowedLibraries() => game.version.libraries.where(
-      (lib) => lib is MavenLibrarie || lib is CommonLibrary && lib.isAllowed);
+      (lib) => lib is MavenLibrary || lib is CommonLibrary && lib.isAllowed);
 
   /// 获取游戏匹配系统平台类型的 Natives 资源
   Iterable<Library> get requiredNativesLibraries =>
