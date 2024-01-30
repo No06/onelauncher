@@ -107,7 +107,8 @@ class _MicosoftLoginForm extends HookWidget with _AccountLoginForm {
     var mau = MicrosoftAuthUtil();
     String refreshToken = await mau.doGetMSToken(usernameTextController.text);
     String jwt = await mau.doGetJWT();
-    var aiu = AccountInfoUtil(jwt)..getProfile();
+    var aiu = AccountInfoUtil(jwt);
+    await aiu.getProfile();
     String username = aiu.name;
     String uuid = aiu.uuid;
     return MicrosoftAccount(uuid, username, refreshToken);
