@@ -1,29 +1,41 @@
 import 'package:one_launcher/models/account/account.dart';
-import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/account/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/utils/account/ms_auth.dart';
 
 part 'microsoft_account.g.dart';
 
 @JsonSerializable()
 class MicrosoftAccount extends Account {
-  const MicrosoftAccount() : super(AccountType.microsoft);
+  MicrosoftAccount(String uuid, String displayName, String msRefreshToken,
+      {AccountType type = AccountType.microsoft})
+      : _uuid = uuid,
+        _displayName = displayName,
+        _msRefreshToken = msRefreshToken,
+        super(AccountType.microsoft);
+  final String _uuid;
+  String _displayName;
+  String _msRefreshToken;
 
   @override
-  // TODO: implement uuid
-  String get uuid => throw UnimplementedError();
+  String get uuid => _uuid;
 
   @override
-  // TODO: implement displayName
-  String get displayName => throw UnimplementedError();
-
+  String get displayName => _displayName;
+  String get msRefreshToken => _msRefreshToken;
   @override
   // TODO: implement skin
   Skin get skin => throw UnimplementedError();
 
   @override
-  // TODO: implement type
-  AccountType get type => throw UnimplementedError();
+  Future<String> accessToken() async {
+    var mau = MicrosoftAuthUtil();
+    _msRefreshToken = await mau.doRefreshTokens(_msRefreshToken);
+    return await mau.doGetJWT();
+  }
+
+  @override
+  AccountType get type => AccountType.microsoft;
 
   factory MicrosoftAccount.fromJson(Map<String, dynamic> json) =>
       _$MicrosoftAccountFromJson(json);
@@ -32,21 +44,11 @@ class MicrosoftAccount extends Account {
   Map<String, dynamic> toJson() => _$MicrosoftAccountToJson(this);
 
   @override
-  // TODO: implement token
-  String get accessToken => throw UnimplementedError();
-
-  @override
   int get hashCode => uuid.hashCode;
 
   @override
   bool operator ==(Object other) {
     if (other is! MicrosoftAccount) return false;
     return uuid == other.uuid;
-  }
-
-  @override
-  Future<AccountLoginInfo> login() {
-    // TODO: implement login
-    throw UnimplementedError();
   }
 }
