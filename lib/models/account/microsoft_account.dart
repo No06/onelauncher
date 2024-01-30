@@ -1,6 +1,7 @@
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/utils/auth/account_info_util.dart';
 import 'package:one_launcher/utils/auth/ms_auth_util.dart';
 
 part 'microsoft_account.g.dart';
@@ -37,6 +38,11 @@ class MicrosoftAccount extends Account {
     var mau = MicrosoftAuthUtil();
     _msRefreshToken = await mau.doRefreshTokens(_msRefreshToken);
     return await mau.doGetJWT();
+  }
+
+  Future<void> refreshProfile() async {
+    var aiu = AccountInfoUtil(await accessToken());
+    await aiu.getProfile();
   }
 
   factory MicrosoftAccount.fromJson(Map<String, dynamic> json) =>

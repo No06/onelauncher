@@ -252,6 +252,17 @@ class _AccountItem extends StatelessWidget {
                           Wrap(
                             spacing: 5,
                             children: [
+                              if (account is MicrosoftAccount)
+                                IconButton(
+                                  onPressed: () {
+                                    (account as MicrosoftAccount)
+                                        .refreshProfile();
+                                  },
+                                  icon: Icon(
+                                    Icons.refresh,
+                                    color: fontColor,
+                                  ),
+                                ),
                               ObxValue(
                                 (p0) => AbsorbPointer(
                                   absorbing: p0.value,
