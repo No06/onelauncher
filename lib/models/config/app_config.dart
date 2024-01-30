@@ -134,6 +134,7 @@ final class AppConfig extends ChangeNotifier {
       }
       throw Exception("不支持的系统类型 ${Platform.operatingSystem}");
     } catch (e) {
+      e.printError();
       return "unknown";
     }
   }
