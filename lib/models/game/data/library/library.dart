@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/version/library/common_library.dart';
-import 'package:one_launcher/models/game/version/library/maven_library.dart';
-import 'package:one_launcher/models/game/version/library/natives_library.dart';
+import 'package:one_launcher/models/game/data/library/common_library.dart';
+import 'package:one_launcher/models/game/data/library/maven_library.dart';
+import 'package:one_launcher/models/game/data/library/natives_library.dart';
 import 'package:path/path.dart';
 
 part 'library.g.dart';

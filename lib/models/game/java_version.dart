@@ -1,7 +1,7 @@
-import 'package:one_launcher/models/version_number/version_number.dart';
+import 'package:one_launcher/models/version.dart';
 
-class JavaVersionNumber extends VersionNumber {
-  JavaVersionNumber({
+class JavaVersion extends Version {
+  JavaVersion({
     required super.major,
     required super.minor,
     required super.revision,
@@ -14,7 +14,7 @@ class JavaVersionNumber extends VersionNumber {
   @override
   int get revision => super.revision!;
 
-  factory JavaVersionNumber.fromString(String value) {
+  factory JavaVersion.fromString(String value) {
     final split = value.split('.');
     final major = split[0];
     final minor = split.elementAtOrNull(1);
@@ -23,7 +23,7 @@ class JavaVersionNumber extends VersionNumber {
     if (minor == null || revision == null) {
       throw Exception("Java版本格式不正确");
     }
-    return JavaVersionNumber(
+    return JavaVersion(
       major: int.parse(major),
       minor: toInt(minor),
       revision: toInt(revision),

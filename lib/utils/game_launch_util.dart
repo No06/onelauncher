@@ -7,10 +7,10 @@ import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game/java.dart';
-import 'package:one_launcher/models/game/version/library/common_library.dart';
-import 'package:one_launcher/models/game/version/library/library.dart';
-import 'package:one_launcher/models/game/version/library/maven_library.dart';
-import 'package:one_launcher/models/game/version/library/natives_library.dart';
+import 'package:one_launcher/models/game/data/library/common_library.dart';
+import 'package:one_launcher/models/game/data/library/library.dart';
+import 'package:one_launcher/models/game/data/library/maven_library.dart';
+import 'package:one_launcher/models/game/data/library/natives_library.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/random_string.dart';
 import 'package:one_launcher/utils/sys_info/sys_info.dart';
@@ -130,7 +130,7 @@ class GameLaunchUtil {
       loginInfo = await account.login();
 
   /// 获取可用的游戏资源
-  Iterable<Library> getAllowedLibraries() => game.version.libraries.where(
+  Iterable<Library> getAllowedLibraries() => game.data.libraries.where(
       (lib) => lib is MavenLibrary || lib is CommonLibrary && lib.isAllowed);
 
   /// 获取游戏匹配系统平台类型的 Natives 资源
@@ -153,7 +153,7 @@ class GameLaunchUtil {
   Future<String> get randomOutputPath async {
     final random = generateRandomString(8);
     return join((await getApplicationDocumentsDirectory()).path,
-        "minecraft-${game.version.id}-natives-$random");
+        "minecraft-${game.data.id}-natives-$random");
   }
 
   /// 获取游戏拼接资源 -cp 字符串
@@ -173,7 +173,7 @@ class GameLaunchUtil {
       throw Exception("必须有登录信息");
     }
     final setting = game.setting;
-    final version = game.version;
+    final version = game.data;
     // 命令行参数
     final args = [
       // 设置相关end

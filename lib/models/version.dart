@@ -1,5 +1,5 @@
-class VersionNumber {
-  const VersionNumber({
+class Version {
+  const Version({
     required this.major,
     this.minor,
     this.revision,
@@ -12,7 +12,7 @@ class VersionNumber {
   final int? patched;
 
   // 定义一个比较器，用于比较两个VersionNumber对象的大小
-  int compareTo(VersionNumber other) {
+  int compareTo(Version other) {
     // 先比较主版本号
     if (major > other.major) return 1;
     if (major < other.major) return -1;
@@ -36,13 +36,13 @@ class VersionNumber {
   }
 
   /// 传入 1.x.x 格式的字符串
-  factory VersionNumber.fromString(String value) {
+  factory Version.fromString(String value) {
     final split = value.split('.');
     final major = split[0];
     final minor = split.elementAtOrNull(1);
     final revision = split.elementAtOrNull(2);
     final patched = split.elementAtOrNull(3);
-    return VersionNumber(
+    return Version(
       major: int.parse(major),
       minor: toInt(minor),
       revision: toInt(revision),

@@ -153,7 +153,7 @@ class _SliverTitle extends StatelessWidget {
 class _SliverList extends StatelessWidget {
   const _SliverList();
 
-  static int _compare(Game a, Game b) => a.version.id.compareTo(b.version.id);
+  static int _compare(Game a, Game b) => a.data.id.compareTo(b.data.id);
   static const _divider = Divider(height: 1, indent: 64, endIndent: 32);
 
   bool _where(Game game) => _filterRule.gameTypes.isEmpty
@@ -183,8 +183,8 @@ class _SliverList extends StatelessWidget {
           return const SliverFillRemaining(
             child: Center(child: CircularProgressIndicator()),
           );
-        }
-        if (snapshot.hasError) {
+          // FIXME: 不应直接抛出错误，而应跳过错误
+        } else if (snapshot.hasError) {
           return SliverToBoxAdapter(
             child: Text(
               snapshot.stackTrace.toString(),
@@ -296,7 +296,7 @@ class _GameItem extends StatelessWidget {
       onExit: (_) => isHover(false),
       child: ListTile(
         leading: const FlutterLogo(size: 36),
-        title: Text(game.version.id),
+        title: Text(game.data.id),
         subtitle: Text(game.path),
         subtitleTextStyle: textTheme.bodySmall!.copyWith(
           color: colors.outline,

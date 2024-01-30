@@ -1,4 +1,4 @@
-import 'package:one_launcher/models/game/version/download_file.dart';
+import 'package:one_launcher/models/game/data/download_file.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'game_downloads.g.dart';

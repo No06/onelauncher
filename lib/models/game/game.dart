@@ -2,11 +2,11 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
-import 'package:one_launcher/models/game/version/library/library.dart';
-import 'package:one_launcher/models/game/version/game_data.dart';
+import 'package:one_launcher/models/game/data/library/library.dart';
+import 'package:one_launcher/models/game/data/game_data.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/version_number/version_number.dart';
+import 'package:one_launcher/models/version.dart';
 import 'package:path/path.dart';
 
 import '../config/game_setting_config.dart';
@@ -25,9 +25,9 @@ class Game {
   })  : _mainPath = mainPath,
         _versionPath = versionPath,
         _useGlobalSetting = ValueNotifier(useGlobalSetting ?? false),
-        _librarysPath = (join(mainPath, "libraries")),
+        _librariesPath = (join(mainPath, "libraries")),
         _setting = setting,
-        _version = _getVersionFromPath(join(mainPath, versionPath)) {
+        _data = _getDataFromPath(join(mainPath, versionPath)) {
     _useGlobalSetting.addListener(saveConfig);
     _setting?.addListener(saveConfig);
   }
@@ -50,18 +50,18 @@ class Game {
   ValueNotifier<bool> _useGlobalSetting;
 
   /// 游戏文件 1.x.x.json序列化内容
-  GameData _version;
-  GameData get version => _version;
+  GameData _data;
+  GameData get data => _data;
 
   /// 游戏版本
-  VersionNumber get versionNumber {
-    final split = version.id.split('.');
+  Version get versionNumber {
+    final split = data.clientVersion.split('.');
     final major = split[0];
     final minor = split.elementAtOrNull(1);
     final revision = split.elementAtOrNull(2);
 
     int? toInt(String? value) => value != null ? int.parse(value) : null;
-    return VersionNumber(
+    return Version(
       major: int.parse(major),
       minor: toInt(minor),
       revision: toInt(revision),
@@ -81,10 +81,10 @@ class Game {
   String get versionPath => _versionPath;
 
   /// 游戏资源库路径
-  /// 如: /home/onelauncher/.minecraft/librarys
-  final String _librarysPath;
+  /// 如: /home/onelauncher/.minecraft/libraries
+  final String _librariesPath;
   @JsonKey(includeToJson: false)
-  String get librariesPath => _librarysPath;
+  String get librariesPath => _librariesPath;
 
   /// 游戏路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x
@@ -96,32 +96,31 @@ class Game {
 
   /// 客户端路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/1.x.x.jar
-  String get clientPath => join(path, version.jarFile);
+  String get clientPath => join(path, data.jarFile);
 
   /// 客户端相对路径
   /// 如: .minecraft/version/1.x.x/1.x.x.jar
-  String get clientRelativePath => join(relativePath, version.jarFile);
+  String get clientRelativePath => join(relativePath, data.jarFile);
 
   /// log 配置文件路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/log4j2.xml
-  String get loggingPath => join(path, version.logging.client.file.id);
+  String get loggingPath => join(path, data.logging.client.file.id);
 
   /// 游戏资源路径
   /// 如: /home/onelauncher/.minecraft/assets
   String get assetsPath => join(_mainPath, "assets");
 
-  String? get assetIndex => version.assetIndex.id;
+  String? get assetIndex => data.assetIndex.id;
 
   /// 获取游戏native资源解压路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/natives-windows-x86_64
   String get nativeLibraryExtractPath =>
       join(path, "natives-${Platform.operatingSystem}");
 
-  bool get isModVersion =>
-      _version.mainClass != "net.minecraft.client.main.Main";
+  bool get isModVersion => _data.mainClass != "net.minecraft.client.main.Main";
 
-  /// 刷新 [version] 游戏文件内容
-  void freshVersion() => _version = _getVersionFromPath(path);
+  /// 刷新 [data] 游戏文件内容
+  void freshVersion() => _data = _getDataFromPath(path);
 
   /// 将游戏配置保存至本地
   void saveConfig() {
@@ -133,7 +132,7 @@ class Game {
   Map<String, dynamic> toJson() => _$GameToJson(this);
 
   /// 从指定路径读取文件序列化为 [GameData]
-  static GameData _getVersionFromPath(String path) {
+  static GameData _getDataFromPath(String path) {
     return GameData.fromJson(
       jsonDecode(File(join(path, "${basename(path)}.json")).readAsStringSync()),
     );

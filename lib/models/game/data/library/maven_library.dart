@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/version/library/library.dart';
+import 'package:one_launcher/models/game/data/library/library.dart';
 
 part 'maven_library.g.dart';
 

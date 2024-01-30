@@ -7,7 +7,7 @@ import 'package:nil/nil.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:one_launcher/models/game/game.dart';
-import 'package:one_launcher/models/game/version/game_type.dart';
+import 'package:one_launcher/models/game/data/game_type.dart';
 import 'package:one_launcher/models/config/game_path_config.dart';
 import 'package:one_launcher/models/read_write_value_notifier.dart';
 import 'package:one_launcher/pages/game_library_page/game_startup_dialog.dart';

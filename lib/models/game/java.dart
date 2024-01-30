@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:get/utils.dart';
-import 'package:one_launcher/models/version_number/java_version_number.dart';
-import 'package:one_launcher/models/version_number/version_number.dart';
+import 'package:one_launcher/models/game/java_version.dart';
+import 'package:one_launcher/models/version.dart';
 import 'package:one_launcher/utils/exceptions/java_release_file_not_found.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -21,7 +21,7 @@ class Java {
   @JsonKey(includeFromJson: false, includeToJson: false)
   late final String version;
 
-  JavaVersionNumber get versionNumber {
+  JavaVersion get versionNumber {
     final split = version.split('.');
     var major = split[0];
     var minor = split.elementAtOrNull(1) ?? "-1";
@@ -34,14 +34,14 @@ class Java {
       if (revisionSplit.length > 1) {
         revision = revisionSplit[1];
       }
-      return JavaVersionNumber(
+      return JavaVersion(
         major: int.parse(major),
         minor: toInt(minor),
         revision: toInt(revision),
       );
     }
 
-    return JavaVersionNumber.fromString(
+    return JavaVersion.fromString(
         split.reduce((value, element) => "$value.$element"));
   }
 

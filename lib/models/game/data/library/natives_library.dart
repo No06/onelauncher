@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/version/library/common_library.dart';
-import 'package:one_launcher/models/game/version/library/downloads.dart';
-import 'package:one_launcher/models/game/version/library/extract.dart';
-import 'package:one_launcher/models/game/version/os.dart';
-import 'package:one_launcher/models/game/version/rule.dart';
+import 'package:one_launcher/models/game/data/library/common_library.dart';
+import 'package:one_launcher/models/game/data/library/downloads.dart';
+import 'package:one_launcher/models/game/data/library/extract.dart';
+import 'package:one_launcher/models/game/data/os.dart';
+import 'package:one_launcher/models/game/data/rule.dart';
 
 part 'natives_library.g.dart';
 
