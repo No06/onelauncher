@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:archive/archive.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:one_launcher/models/game/data/game_data.dart';
@@ -50,9 +51,18 @@ class Game {
   GameData _data;
   GameData get data => _data;
 
+  String get version => data.clientVersion ?? getVersionFromJar();
+
+  String getVersionFromJar() {
+    return jsonDecode(utf8.decode(ZipDecoder()
+        .decodeBytes(File(mainPath + _data.jarFile).readAsBytesSync())
+        .findFile("version.json")!
+        .content as List<int>))["id"];
+  }
+
   /// 游戏版本
   GameVersion? get versionNumber {
-    final split = data.clientVersion?.split('.');
+    final split = version.split('.');
     if (split == null) return null;
     final major = split[0];
     final minor = split.elementAtOrNull(1);
