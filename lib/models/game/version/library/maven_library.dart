@@ -1,11 +1,11 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/version/librarie/librarie.dart';
+import 'package:one_launcher/models/game/version/library/library.dart';
 
-part 'maven_librarie.g.dart';
+part 'maven_library.g.dart';
 
 @JsonSerializable()
-class MavenLibrarie extends Library {
-  MavenLibrarie(String name, this.url)
+class MavenLibrary extends Library {
+  MavenLibrary(String name, this.url)
       : _nameSplit = name.split(":"),
         super(name: name);
 
@@ -22,6 +22,6 @@ class MavenLibrarie extends Library {
   String get downloadUrl =>
       "$url/$domainSuffix/$domainName/$packageName/$packageVersion/$packageName-$packageVersion.jar";
 
-  factory MavenLibrarie.fromJson(Map<String, dynamic> json) =>
-      _$MavenLibrarieFromJson(json);
+  factory MavenLibrary.fromJson(Map<String, dynamic> json) =>
+      _$MavenLibraryFromJson(json);
 }

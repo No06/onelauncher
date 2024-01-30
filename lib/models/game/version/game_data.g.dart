@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'version.dart';
+part of 'game_data.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-Version _$VersionFromJson(Map<String, dynamic> json) => Version(
+GameData _$GameDataFromJson(Map<String, dynamic> json) => GameData(
       json['id'] as String,
       json['arguments'] == null
           ? null
@@ -26,7 +26,7 @@ Version _$VersionFromJson(Map<String, dynamic> json) => Version(
       json['clientVersion'] as String?,
     );
 
-Map<String, dynamic> _$VersionToJson(Version instance) => <String, dynamic>{
+Map<String, dynamic> _$GameDataToJson(GameData instance) => <String, dynamic>{
       'id': instance.id,
       'arguments': instance.arguments,
       'minecraftArguments': instance.minecraftArguments,

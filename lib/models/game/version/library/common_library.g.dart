@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'common_librarie.dart';
+part of 'common_library.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

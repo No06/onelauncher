@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:one_launcher/models/game/version/librarie/downloads.dart';
-import 'package:one_launcher/models/game/version/librarie/librarie.dart';
+import 'package:one_launcher/models/game/version/library/downloads.dart';
+import 'package:one_launcher/models/game/version/library/library.dart';
 import 'package:one_launcher/models/game/version/os.dart';
 import 'package:one_launcher/models/game/version/os_rule.dart';
 import 'package:one_launcher/models/game/version/rule.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'common_librarie.g.dart';
+part 'common_library.g.dart';
 
 @JsonSerializable()
 class CommonLibrary extends Library {
