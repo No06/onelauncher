@@ -5,12 +5,13 @@ abstract mixin class _AccountLoginForm {
 }
 
 class _OfflineLoginForm extends HookWidget with _AccountLoginForm {
-  late final OfflineAccount Function() onSubmit;
+  late final TextEditingController uuidTextController;
+  late final TextEditingController usernameTextController;
 
   @override
   Widget build(BuildContext context) {
-    final uuidTextController = useTextEditingController();
-    final usernameTextController = useTextEditingController();
+    uuidTextController = useTextEditingController();
+    usernameTextController = useTextEditingController();
     final rotationAnimationController = useAnimationController(
       upperBound: 0.5,
       duration: const Duration(milliseconds: 250),
@@ -20,10 +21,6 @@ class _OfflineLoginForm extends HookWidget with _AccountLoginForm {
       () => uuidTextController.text =
           OfflineAccount.getUuidFromName(usernameTextController.text),
     );
-    onSubmit = () => OfflineAccount(
-          usernameTextController.text,
-          uuid: uuidTextController.text,
-        );
 
     return Column(
       children: [
@@ -80,25 +77,18 @@ class _OfflineLoginForm extends HookWidget with _AccountLoginForm {
   }
 
   @override
-  Future<Account> submit() => Future(() => onSubmit());
+  Future<Account> submit() async => OfflineAccount(
+        usernameTextController.text,
+        uuid: uuidTextController.text,
+      );
 }
 
 class _MicosoftLoginForm extends HookWidget with _AccountLoginForm {
-  late final Future<MicrosoftAccount> Function() onSubmit;
+  late final TextEditingController usernameTextController;
 
   @override
   Widget build(BuildContext context) {
-    final usernameTextController = useTextEditingController();
-    onSubmit = () async {
-      var mau = MicrosoftAuthUtil();
-      String refreshToken = await mau.doGetMSToken(usernameTextController.text);
-      String jwt = await mau.doGetJWT();
-      var aiu = AccountInfoUtil(jwt)..getProfile();
-      String username = aiu.name;
-      String uuid = aiu.uuid;
-      return MicrosoftAccount(uuid, username, refreshToken);
-    };
-
+    usernameTextController = useTextEditingController();
     return Column(
       children: [
         TextFormField(
@@ -113,5 +103,13 @@ class _MicosoftLoginForm extends HookWidget with _AccountLoginForm {
   }
 
   @override
-  Future<Account> submit() => onSubmit();
+  Future<Account> submit() async {
+    var mau = MicrosoftAuthUtil();
+    String refreshToken = await mau.doGetMSToken(usernameTextController.text);
+    String jwt = await mau.doGetJWT();
+    var aiu = AccountInfoUtil(jwt)..getProfile();
+    String username = aiu.name;
+    String uuid = aiu.uuid;
+    return MicrosoftAccount(uuid, username, refreshToken);
+  }
 }

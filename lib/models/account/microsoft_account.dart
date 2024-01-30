@@ -1,18 +1,18 @@
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/utils/account/ms_auth.dart';
+import 'package:one_launcher/utils/auth/ms_auth.dart';
 
 part 'microsoft_account.g.dart';
 
 @JsonSerializable()
 class MicrosoftAccount extends Account {
-  MicrosoftAccount(String uuid, String displayName, String msRefreshToken,
-      {AccountType type = AccountType.microsoft})
+  MicrosoftAccount(String uuid, String displayName, String msRefreshToken)
       : _uuid = uuid,
         _displayName = displayName,
         _msRefreshToken = msRefreshToken,
         super(AccountType.microsoft);
+
   final String _uuid;
   String _displayName;
   String _msRefreshToken;
@@ -22,7 +22,9 @@ class MicrosoftAccount extends Account {
 
   @override
   String get displayName => _displayName;
+
   String get msRefreshToken => _msRefreshToken;
+
   @override
   // TODO: implement skin
   Skin get skin => throw UnimplementedError();

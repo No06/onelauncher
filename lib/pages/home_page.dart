@@ -4,7 +4,7 @@ import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'account_path/account_page.dart';
+import 'account_page/account_page.dart';
 import 'game_library_page/game_library_page.dart';
 import 'appearance_page.dart';
 import 'setting_page/setting_page.dart';

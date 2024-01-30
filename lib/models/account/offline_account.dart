@@ -9,11 +9,10 @@ part 'offline_account.g.dart';
 class OfflineAccount extends Account {
   OfflineAccount(
     String displayName, {
-    AccountType type = AccountType.offline,
     String? uuid,
     Skin? skin,
   })  : _displayName = displayName,
-        super(type) {
+        super(AccountType.offline) {
     _uuid = uuid ?? uuidFromName;
     _skin = skin;
   }
@@ -48,7 +47,7 @@ class OfflineAccount extends Account {
       Skin(type: _uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve);
 
   @override
-  Future<String> accessToken() => Future(() => "0");
+  Future<String> accessToken() async => "0";
 
   String get uuidFromName =>
       const Uuid().v5(Uuid.NAMESPACE_NIL, getUuidFromName(displayName));
