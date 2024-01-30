@@ -178,25 +178,20 @@ class _SliverList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: appConfig.gamesOnPaths,
+      future: appConfig.searchGamesOnPaths(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState != ConnectionState.done) {
           return const SliverFillRemaining(
             child: Center(child: CircularProgressIndicator()),
           );
-          // FIXME: 不应直接抛出错误，而应跳过错误
-        } else if (snapshot.hasError) {
-          return SliverToBoxAdapter(
-            child: Text(
-              snapshot.stackTrace.toString(),
-              style: const TextStyle(color: Colors.red),
-            ),
-          );
         } else {
+          if (snapshot.hasError) {
+            snapshot.error.printError();
+          }
           return ListenableBuilder(
             listenable: _filterRule,
             builder: (context, child) {
-              final gameList = snapshot.data!.toList();
+              final gameList = snapshot.data!;
               return SliverList.list(
                 children: buildWidgetsWithDivider(
                   _buildGameItems(gameList),

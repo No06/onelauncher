@@ -18,14 +18,14 @@ class GameData {
     this.mainClass,
     this.jar,
     this.assetIndex,
-    this.javaVersion,
     this.libraries,
     this.downloads,
     this.logging,
     this.type,
-    this.minimumLauncherVersion,
+    this.minimumLauncherVersion, {
+    this.javaVersion,
     this.clientVersion,
-  );
+  });
 
   ///游戏名 可能是版本号，也可能是自定义的名字
   final String id;
@@ -34,13 +34,13 @@ class GameData {
   final String mainClass;
   final String? jar;
   final AssetIndex assetIndex;
-  final JavaVersion javaVersion;
+  final JavaVersion? javaVersion;
   final List<Library> libraries;
   final GameDownloads downloads;
-  final Logging logging;
+  final Logging? logging;
   final GameType type;
   final int minimumLauncherVersion;
-  final String clientVersion;
+  final String? clientVersion;
 
   String get jarFile => jar == null ? "$id.jar" : "$jar.jar";
 

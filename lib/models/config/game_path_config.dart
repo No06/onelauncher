@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:get/utils.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -37,36 +39,36 @@ class GamePath extends ChangeNotifier {
   List<Game> get availableGames => _availableGames;
 
   /// 从 [path] 路径下的 versions 文件夹中搜索游戏
-  Future<List<Game>> get gamesOnVersion async {
-    var results = <Game>[];
+  Stream<Game> get gamesOnPath async* {
     var directory = Directory(join(path, "versions"));
     // 如果文件夹不存在则直接返回空结果
-    if (!directory.existsSync()) return results;
+    if (!directory.existsSync()) return;
 
     await for (var dir in directory.list(followLinks: false)) {
       final json = join(dir.path, "${basename(dir.path)}.json");
-      // 如果该路径是文件夹或者文件
+      // 如果该文件夹存在且存在相同命名的json文件
       if (await Directory(join(path, dir.path)).exists() &&
           await File(json).exists()) {
         var gameConfig = File(join(dir.path, kGameConfigName));
+        final librariesPath = _path.value;
+        final versionPath = dir.path.substring(_path.value.length + 1);
         // 如果存在启动器生成的单独配置文件
-        if (await gameConfig.exists()) {
-          results.add(
-            Game.fromJson(
-              _path.value,
-              dir.path.substring(_path.value.length),
+        try {
+          if (await gameConfig.exists()) {
+            yield Game.fromJson(
+              librariesPath,
+              versionPath,
               jsonDecode(gameConfig.readAsStringSync()),
-            ),
-          );
-        } else {
-          results.add(Game(
-            _path.value,
-            dir.path.substring(_path.value.length + 1),
-          ));
+            );
+          } else {
+            yield Game(librariesPath, versionPath);
+          }
+          // 如有异常则跳过
+        } catch (e) {
+          e.printError(info: "path: ${dir.path}");
         }
       }
     }
-    return results;
   }
 
   factory GamePath.fromJson(Map<String, dynamic> json) =>

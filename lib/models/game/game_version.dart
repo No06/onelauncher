@@ -11,9 +11,6 @@ class GameVersion extends Version {
   @override
   int get minor => super.minor!;
 
-  @override
-  int get revision => super.revision!;
-
   factory GameVersion.fromString(String value) {
     final split = value.split('.');
     final major = split[0];

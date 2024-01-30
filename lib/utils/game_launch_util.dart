@@ -53,7 +53,7 @@ class GameLaunchUtil {
     }
     // 检查内存设置
     late final int recommendMinimum;
-    switch (game.versionNumber.minor ?? 0) {
+    switch (game.versionNumber?.minor ?? 0) {
       case <= 12:
         recommendMinimum = 1024;
       default:
@@ -73,7 +73,7 @@ class GameLaunchUtil {
     int? highestVersion; // 最高支持版本
     // int? recommendVersion; //推荐版本
     final gameVersionNumber = game.versionNumber;
-    final gameVersionMinor = gameVersionNumber.minor ?? 0;
+    final gameVersionMinor = gameVersionNumber?.minor ?? 0;
     // 设置建议的Java版本
     // FIXME: 可能不太精准
     switch (gameVersionMinor) {
@@ -88,7 +88,7 @@ class GameLaunchUtil {
       case <= 18:
         minimumVersion = 17;
       default:
-        minimumVersion = 17;
+        minimumVersion = 6;
     }
     if (game.setting.java == null) {
       // 自动搜寻与游戏版本最佳的 Java
@@ -181,11 +181,12 @@ class GameLaunchUtil {
           "-Xmx${setting.autoMemory ? allocateMem : setting.maxMemory}M"),
       const GameArgument(
           "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Djava.rmi.server.useCodebaseOnly=true -Dcom.sun.jndi.rmi.object.trustURLCodebase=false -Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false -Dlog4j2.formatMsgNoLookups=true"),
-      () {
-        var arg = version.logging.client.argument;
-        arg = arg.substring(0, arg.lastIndexOf('=') - 1);
-        return GameArgument(arg, game.loggingPath);
-      }(),
+      if (version.logging != null)
+        () {
+          var arg = version.logging!.client.argument;
+          arg = arg.substring(0, arg.lastIndexOf('=') - 1);
+          return GameArgument(arg, game.loggingPath);
+        }(),
       GameArgument("-Dminecraft.client.jar", game.clientRelativePath),
       GameArgument(setting.jvmArgs),
       const GameArgument(

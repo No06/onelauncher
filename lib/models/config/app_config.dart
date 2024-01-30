@@ -140,12 +140,13 @@ final class AppConfig extends ChangeNotifier {
 
   /// 从 [availableLauncherGamePaths] 可用的启动器游戏路径再加上 [path] 存储的
   /// 手动添加的路径中执行 [GamePath.gamesOnVersion] 搜索游戏
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  Future<List<Game>> get gamesOnPaths async {
+  Future<List<Game>> searchGamesOnPaths() async {
     final gameList = await Future.wait(
       availableLauncherGamePaths
-          .map((path) => path.gamesOnVersion)
-          .followedBy(_paths.map((path) => path.gamesOnVersion)),
+          // 从手动添加的路径搜索
+          .map((path) => path.gamesOnPath.toList())
+          // 从启动器路径搜索
+          .followedBy(_paths.map((path) => path.gamesOnPath.toList())),
     );
     return List.from(gameList.expand((list) => list));
   }

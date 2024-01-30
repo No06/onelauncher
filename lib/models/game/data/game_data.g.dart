@@ -15,15 +15,19 @@ GameData _$GameDataFromJson(Map<String, dynamic> json) => GameData(
       json['mainClass'] as String,
       json['jar'] as String?,
       AssetIndex.fromJson(json['assetIndex'] as Map<String, dynamic>),
-      JavaVersion.fromJson(json['javaVersion'] as Map<String, dynamic>),
       (json['libraries'] as List<dynamic>)
           .map((e) => Library.fromJson(e as Map<String, dynamic>))
           .toList(),
       GameDownloads.fromJson(json['downloads'] as Map<String, dynamic>),
-      Logging.fromJson(json['logging'] as Map<String, dynamic>),
+      json['logging'] == null
+          ? null
+          : Logging.fromJson(json['logging'] as Map<String, dynamic>),
       $enumDecode(_$GameTypeEnumMap, json['type']),
       json['minimumLauncherVersion'] as int,
-      json['clientVersion'] as String,
+      javaVersion: json['javaVersion'] == null
+          ? null
+          : JavaVersion.fromJson(json['javaVersion'] as Map<String, dynamic>),
+      clientVersion: json['clientVersion'] as String?,
     );
 
 Map<String, dynamic> _$GameDataToJson(GameData instance) => <String, dynamic>{

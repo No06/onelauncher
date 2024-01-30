@@ -2,18 +2,15 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
-import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/game_data.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/version.dart';
+import 'package:one_launcher/models/game/game_version.dart';
 import 'package:path/path.dart';
 
 import '../config/game_setting_config.dart';
 
 part 'game.g.dart';
-
-typedef ResultMap = Map<Library, bool>;
 
 @JsonSerializable()
 class Game {
@@ -25,7 +22,7 @@ class Game {
   })  : _mainPath = mainPath,
         _versionPath = versionPath,
         _useGlobalSetting = ValueNotifier(useGlobalSetting ?? false),
-        _librariesPath = (join(mainPath, "libraries")),
+        _librariesPath = join(mainPath, "libraries"),
         _setting = setting,
         _data = _getDataFromPath(join(mainPath, versionPath)) {
     _useGlobalSetting.addListener(saveConfig);
@@ -54,14 +51,15 @@ class Game {
   GameData get data => _data;
 
   /// 游戏版本
-  Version get versionNumber {
-    final split = data.clientVersion.split('.');
+  GameVersion? get versionNumber {
+    final split = data.clientVersion?.split('.');
+    if (split == null) return null;
     final major = split[0];
     final minor = split.elementAtOrNull(1);
     final revision = split.elementAtOrNull(2);
 
     int? toInt(String? value) => value != null ? int.parse(value) : null;
-    return Version(
+    return GameVersion(
       major: int.parse(major),
       minor: toInt(minor),
       revision: toInt(revision),
@@ -104,7 +102,7 @@ class Game {
 
   /// log 配置文件路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/log4j2.xml
-  String get loggingPath => join(path, data.logging.client.file.id);
+  String? get loggingPath => join(path, data.logging?.client.file.id);
 
   /// 游戏资源路径
   /// 如: /home/onelauncher/.minecraft/assets
@@ -133,9 +131,10 @@ class Game {
 
   /// 从指定路径读取文件序列化为 [GameData]
   static GameData _getDataFromPath(String path) {
-    return GameData.fromJson(
+    final gameData = GameData.fromJson(
       jsonDecode(File(join(path, "${basename(path)}.json")).readAsStringSync()),
     );
+    return gameData;
   }
 
   @override
