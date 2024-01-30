@@ -8,15 +8,14 @@ part 'account.g.dart';
 
 @JsonSerializable(createFactory: false)
 abstract class Account {
-  const Account(this._type);
+  const Account();
 
   String get uuid;
   String get displayName;
   Skin get skin;
   Future<String> accessToken();
 
-  final AccountType _type;
-  AccountType get type => _type;
+  AccountType get type;
 
   Future<AccountLoginInfo> login() async => AccountLoginInfo(
       username: displayName, uuid: uuid, accessToken: await accessToken());

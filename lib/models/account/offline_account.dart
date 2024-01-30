@@ -11,8 +11,7 @@ class OfflineAccount extends Account {
     String displayName, {
     String? uuid,
     Skin? skin,
-  })  : _displayName = displayName,
-        super(AccountType.offline) {
+  }) : _displayName = displayName {
     _uuid = uuid ?? uuidFromName;
     _skin = skin;
   }
@@ -32,6 +31,7 @@ class OfflineAccount extends Account {
   @override
   Map<String, dynamic> toJson() => _$OfflineAccountToJson(this);
 
+  @JsonKey(includeToJson: true)
   @override
   AccountType get type => AccountType.offline;
 

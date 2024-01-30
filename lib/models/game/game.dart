@@ -137,6 +137,12 @@ class Game {
       jsonDecode(File(join(path, "${basename(path)}.json")).readAsStringSync()),
     );
   }
+
+  @override
+  int get hashCode => data.id.hashCode;
+
+  @override
+  bool operator ==(Object other) => other is Game && path == other.path;
 }
 
 /// 游戏运行的参数

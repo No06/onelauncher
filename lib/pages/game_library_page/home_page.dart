@@ -153,7 +153,7 @@ class _SliverTitle extends StatelessWidget {
 class _SliverList extends StatelessWidget {
   const _SliverList();
 
-  static int _compare(Game a, Game b) => a.data.id.compareTo(b.data.id);
+  static int _compareByName(Game a, Game b) => a.data.id.compareTo(b.data.id);
   static const _divider = Divider(height: 1, indent: 64, endIndent: 32);
 
   bool _where(Game game) => _filterRule.gameTypes.isEmpty
@@ -168,7 +168,8 @@ class _SliverList extends StatelessWidget {
       case GameCollation.byName:
         return [
           for (final game
-              in gameList.where(_where).toList(growable: false)..sort(_compare))
+              in gameList.where(_where).toList(growable: false)
+                ..sort(_compareByName))
             _GameItem(game)
         ];
     }
