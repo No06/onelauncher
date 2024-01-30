@@ -6,6 +6,8 @@ import 'package:flutter/material.dart' hide Dialog;
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/utils/account/account_info.dart';
+import 'package:one_launcher/utils/account/ms_auth.dart';
 import 'package:one_launcher/utils/form_validator.dart';
 import 'package:one_launcher/widgets/route_page.dart';
 import 'package:one_launcher/widgets/widget_group.dart';
@@ -359,7 +361,7 @@ class _AddAccountDialog extends StatelessWidget {
                     return form = _OfflineLoginForm();
                   // TODO: 支持正版等登录方式
                   case AccountType.microsoft:
-                    null;
+                    return form = _MicosoftLoginForm();
                   case AccountType.custom:
                     null;
                 }
@@ -369,9 +371,9 @@ class _AddAccountDialog extends StatelessWidget {
           ],
         ),
       ),
-      onConfirmed: () {
+      onConfirmed: () async {
         if (_formKey.currentState!.validate() && onSubmit != null) {
-          account = form.submit();
+          account = await form.submit();
           onSubmit!(account);
         }
       },

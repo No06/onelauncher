@@ -1,7 +1,7 @@
 part of 'account_page.dart';
 
 abstract mixin class _AccountLoginForm {
-  Account submit();
+  Future<Account> submit();
 }
 
 class _OfflineLoginForm extends HookWidget with _AccountLoginForm {
@@ -80,5 +80,38 @@ class _OfflineLoginForm extends HookWidget with _AccountLoginForm {
   }
 
   @override
-  Account submit() => onSubmit();
+  Future<Account> submit() => Future(() => onSubmit());
+}
+
+class _MicosoftLoginForm extends HookWidget with _AccountLoginForm {
+  late final Future<MicrosoftAccount> Function() onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    final usernameTextController = useTextEditingController();
+    onSubmit = () async {
+      var mau = MicrosoftAuthUtil();
+      String refreshToken = await mau.doGetMSToken(usernameTextController.text);
+      String jwt = await mau.doGetJWT();
+      var aiu = AccountInfoUtil(jwt)..getProfile();
+      String username = aiu.name;
+      String uuid = aiu.uuid;
+      return MicrosoftAccount(uuid, username, refreshToken);
+    };
+
+    return Column(
+      children: [
+        TextFormField(
+          decoration: const InputDecoration(labelText: "oauth link"),
+          obscureText: false,
+          readOnly: false,
+          controller: usernameTextController,
+          validator: noEmpty,
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<Account> submit() => onSubmit();
 }
