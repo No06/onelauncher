@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -68,27 +69,29 @@ class GameLaunchUtil {
 
   /// 自动设置 Java
   /// 数据来源：https://minecraft.fandom.com/zh/wiki/%E6%95%99%E7%A8%8B/%E6%9B%B4%E6%96%B0Java?variant=zh
+  /// TODO: 异常处理
   Java? autoJava() {
-    late final int minimumVersion; // 最低版本
+    int? minimumVersion = game.data.javaVersion?.majorVersion; // 最低版本
     int? highestVersion; // 最高支持版本
     // int? recommendVersion; //推荐版本
-    final gameVersionNumber = game.versionNumber;
-    final gameVersionMinor = gameVersionNumber?.minor ?? 0;
+    final gameMinorVersion = game.versionNumber?.minor ?? 0;
     // 设置建议的Java版本
     // FIXME: 可能不太精准
-    switch (gameVersionMinor) {
-      case <= 12:
-        minimumVersion = 6;
-        highestVersion = 8;
-      case <= 16:
-        minimumVersion = 8;
-        highestVersion = 11;
-      case <= 17:
-        minimumVersion = 16;
-      case <= 18:
-        minimumVersion = 17;
-      default:
-        minimumVersion = 6;
+    if (minimumVersion == null) {
+      switch (gameMinorVersion) {
+        case <= 12:
+          minimumVersion = 6;
+          highestVersion = 8;
+        case <= 16:
+          minimumVersion = 8;
+          highestVersion = 11;
+        case <= 17:
+          minimumVersion = 16;
+        case <= 18:
+          minimumVersion = 17;
+        default:
+          minimumVersion = 6;
+      }
     }
     if (game.setting.java == null) {
       // 自动搜寻与游戏版本最佳的 Java
@@ -157,14 +160,60 @@ class GameLaunchUtil {
   }
 
   /// 获取游戏拼接资源 -cp 字符串
-  String get argCp {
-    const prefix = "-cp";
-    final libraries = allowedLibraries;
-    final librariesJars = [
-      ...libraries.map((lib) => join(game.librariesPath, lib.jarPath)),
-      game.clientPath
-    ];
-    return "$prefix ${librariesJars.join(';')}";
+  String get argCp => [
+        ...allowedLibraries.map((lib) => join(game.librariesPath, lib.jarPath)),
+        game.clientPath
+      ].join(';');
+
+  /// 替换参数中 ${} 的内容
+  List<String> replaceVariables(
+    Iterable<String>? input,
+    Map<String, String?> valueMap,
+  ) {
+    if (input == null) return [];
+    final results = <String>[];
+    // 正则用于解析出 ${xxx} 内容
+    final argumentRegex = RegExp(r"\${(\w+)}");
+    results.addAll(
+      input.map(
+        (arg) => arg.replaceFirstMapped(argumentRegex, (match) {
+          final name = match[1];
+          return valueMap[name] ?? match[0]!;
+        }),
+      ),
+    );
+    return results;
+  }
+
+  /// 获取游戏启动项
+  List<String> get gameArgs {
+    final gameArgsMap = <String, String?>{
+      "auth_player_name": loginInfo!.username,
+      "version_name": game.data.id,
+      "game_directory": game.mainPath,
+      "assets_root": game.assetsPath,
+      "assets_index_name": game.data.assetIndex.id,
+      "auth_uuid": loginInfo!.uuid.replaceAll('-', ''),
+      "auth_access_token": loginInfo!.accessToken,
+      "user_type": "msa",
+      "version_type": '"$appName"',
+    };
+    return replaceVariables(game.data.arguments?.gameFilterString, gameArgsMap)
+      ..add("--width ${game.setting.width}")
+      ..add("--height ${game.setting.height}");
+  }
+
+  /// 获取JVM参数
+  List<String> get jvmArgs {
+    /// 一个映射，用来存储变量名和对应的值
+    /// TODO: 待补充
+    final jvmArgsMap = {
+      "natives_directory": game.nativesPath,
+      "launcher_name": appInfo.appName,
+      "launcher_version": "114514",
+      "classpath": argCp
+    };
+    return replaceVariables(game.data.arguments?.jvmFilterString, jvmArgsMap);
   }
 
   /// 获取启动参数
@@ -191,39 +240,14 @@ class GameLaunchUtil {
       GameArgument(setting.jvmArgs),
       const GameArgument(
           "-XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -XX:-DontCompileHugeMethods -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true"),
-      const GameArgument("-XX:HeapDumpPath",
-          "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"),
-      GameArgument("-Djava.library.path", game.nativeLibraryExtractPath),
-      GameArgument("-Djna.tmpdir", game.nativeLibraryExtractPath),
-      GameArgument("-Dorg.lwjgl.system.SharedLibraryExtractPath",
-          game.nativeLibraryExtractPath),
-      GameArgument("-Dio.netty.native.workdir", game.nativeLibraryExtractPath),
-      const GameArgument("-Dminecraft.launcher.brand", appName),
-      GameArgument("-Dminecraft.launcher.version", appInfo.version),
-      GameArgument(argCp),
+      if (Platform.isWindows)
+        const GameArgument("-XX:HeapDumpPath",
+            "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"),
+      // JVM 启动参数
+      GameArgument(jvmArgs.join(' ')),
       GameArgument(version.mainClass),
-      // 用户名
-      GameArgument("--username ${loginInfo!.username}"),
-      // version
-      GameArgument("--version ${version.id}"),
-      // 游戏路径
-      GameArgument("--gameDir ${game.mainPath}"),
-      // 资源文件路径
-      GameArgument("--assetsDir ${game.assetsPath}"),
-      // 资源索引版本
-      if (version.assetIndex.id != null)
-        GameArgument("--assetIndex ${version.assetIndex.id}"),
-      // UUID
-      GameArgument("--uuid ${loginInfo!.uuid.replaceAll('-', '')}"),
-      // token
-      GameArgument("--accessToken ${loginInfo!.accessToken}"),
-      // 登录类型
-      const GameArgument("--userType msa"),
-      // 版本类型
-      GameArgument('--versionType "$appName ${appInfo.version}"'),
-      // 窗口长宽
-      GameArgument("--width ${setting.width}"),
-      GameArgument("--height ${setting.height}"),
+      // 游戏参数
+      GameArgument(gameArgs.join(' ')),
       if (setting.fullScreen) const GameArgument("--fullscreen"),
     ];
 

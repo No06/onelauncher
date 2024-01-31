@@ -10,6 +10,9 @@ class Arguments {
   final List<dynamic> game;
   final List<dynamic> jvm;
 
+  Iterable<String> get gameFilterString => game.whereType<String>();
+  Iterable<String> get jvmFilterString => jvm.whereType<String>();
+
   factory Arguments.fromJson(JsonMap json) => _$ArgumentsFromJson(json);
 
   JsonMap toJson() => _$ArgumentsToJson(this);

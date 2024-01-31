@@ -17,6 +17,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = AppConfig.instance.theme;
     return GetMaterialApp(
+      builder: (context, widget) {
+        Widget errorWidget(FlutterErrorDetails errorDetails) => Scaffold(
+              body: Center(
+                child: Text('遇到了预料之外的错误：${errorDetails.library}'),
+              ),
+            );
+        ErrorWidget.builder = (errorDetails) => errorWidget(errorDetails);
+        if (widget != null) return widget;
+        throw StateError('widget is null');
+      },
       theme: theme.lightTheme(),
       darkTheme: theme.darkTheme(),
       themeMode: theme.mode,

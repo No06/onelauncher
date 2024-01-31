@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/utils.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/utils/game_launch_util.dart';
@@ -51,15 +52,17 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
 
   /// 启动游戏
   Future<void> launchGame() async {
-    await widget.launchUtil.launchCommand;
+    const white = "\u001b[37m";
+    const red = "\u001b[31m";
+
+    Future(() async => await widget.launchUtil.launchCommand
+      ..printInfo());
+
     process = await Process.start(
       await widget.launchUtil.launchCommand,
       [],
       workingDirectory: widget.game.mainPath,
     );
-
-    const white = "\u001b[37m";
-    const red = "\u001b[31m";
 
     // 监听子进程的错误
     if (kDebugMode) {

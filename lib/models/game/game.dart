@@ -123,8 +123,7 @@ class Game {
 
   /// 获取游戏native资源解压路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/natives-windows-x86_64
-  String get nativeLibraryExtractPath =>
-      join(path, "natives-${Platform.operatingSystem}");
+  late final nativesPath = join(path, "natives-${Platform.operatingSystem}");
 
   bool get isModVersion => _data.mainClass != "net.minecraft.client.main.Main";
 
@@ -141,12 +140,10 @@ class Game {
   JsonMap toJson() => _$GameToJson(this);
 
   /// 从指定路径读取文件序列化为 [GameData]
-  static GameData _getDataFromPath(String path) {
-    final gameData = GameData.fromJson(
-      jsonDecode(File(join(path, "${basename(path)}.json")).readAsStringSync()),
-    );
-    return gameData;
-  }
+  static GameData _getDataFromPath(String path) => GameData.fromJson(
+        jsonDecode(
+            File(join(path, "${basename(path)}.json")).readAsStringSync()),
+      );
 
   @override
   int get hashCode => data.id.hashCode;
