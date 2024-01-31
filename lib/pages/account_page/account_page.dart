@@ -201,8 +201,9 @@ class _AccountItem extends StatelessWidget {
                                     ),
                                     HookBuilder(
                                       builder: (_) {
-                                        final future = useMemoized(
-                                            () => account.skin.drawAvatar());
+                                        final future = useMemoized(() async =>
+                                            (await account.getSkin())
+                                                .drawAvatar());
                                         final snapshot = useFuture(future);
                                         if (snapshot.connectionState ==
                                             ConnectionState.done) {

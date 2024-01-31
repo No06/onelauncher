@@ -3,6 +3,7 @@ import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/models/account/offline_account.dart';
 import 'package:one_launcher/models/account/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'account.g.dart';
 
@@ -12,7 +13,8 @@ abstract class Account {
 
   String get uuid;
   String get displayName;
-  Skin get skin;
+
+  Future<Skin> getSkin();
   Future<String> accessToken();
 
   AccountType get type;
@@ -20,7 +22,7 @@ abstract class Account {
   Future<AccountLoginInfo> login() async => AccountLoginInfo(
       username: displayName, uuid: uuid, accessToken: await accessToken());
 
-  factory Account.fromJson(Map<String, dynamic> json) {
+  factory Account.fromJson(JsonMap json) {
     switch (json['type']) {
       case "offline":
         return OfflineAccount.fromJson(json);
@@ -31,7 +33,7 @@ abstract class Account {
     }
   }
 
-  Map<String, dynamic> toJson() => _$AccountToJson(this);
+  JsonMap toJson() => _$AccountToJson(this);
 }
 
 @JsonEnum()

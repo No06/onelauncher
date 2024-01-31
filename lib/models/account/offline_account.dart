@@ -1,6 +1,8 @@
 import 'package:one_launcher/models/account/account.dart';
+import 'package:one_launcher/models/account/local_skin.dart';
 import 'package:one_launcher/models/account/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 import 'package:uuid/uuid.dart';
 
 part 'offline_account.g.dart';
@@ -10,7 +12,7 @@ class OfflineAccount extends Account {
   OfflineAccount(
     String displayName, {
     String? uuid,
-    Skin? skin,
+    LocalSkin? skin,
   }) : _displayName = displayName {
     _uuid = uuid ?? uuidFromName;
     _skin = skin;
@@ -18,18 +20,18 @@ class OfflineAccount extends Account {
 
   final String _displayName;
   late final String _uuid;
-  late Skin? _skin;
+  LocalSkin? _skin;
 
   set displayName(String newVal) {
     displayName = newVal;
     _uuid = const Uuid().v4();
   }
 
-  factory OfflineAccount.fromJson(Map<String, dynamic> json) =>
+  factory OfflineAccount.fromJson(JsonMap json) =>
       _$OfflineAccountFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() => _$OfflineAccountToJson(this);
+  JsonMap toJson() => _$OfflineAccountToJson(this);
 
   @JsonKey(includeToJson: true)
   @override
@@ -41,10 +43,14 @@ class OfflineAccount extends Account {
   @override
   String get displayName => _displayName;
 
+  Skin? get skin => _skin;
+
   @override
-  Skin get skin =>
-      _skin ??
-      Skin(type: _uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve);
+  Future<Skin> getSkin() async {
+    return _skin ??
+        LocalSkin(
+            type: _uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve);
+  }
 
   @override
   Future<String> accessToken() async => "0";
