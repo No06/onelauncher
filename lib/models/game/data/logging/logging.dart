@@ -1,5 +1,6 @@
 import 'package:one_launcher/models/game/data/logging/client_logging.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'logging.g.dart';
 
@@ -9,6 +10,5 @@ class Logging {
 
   final ClientLogging client;
 
-  factory Logging.fromJson(Map<String, dynamic> json) =>
-      _$LoggingFromJson(json);
+  factory Logging.fromJson(JsonMap json) => _$LoggingFromJson(json);
 }

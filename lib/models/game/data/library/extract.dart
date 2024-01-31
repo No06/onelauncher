@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'extract.g.dart';
 
@@ -8,6 +9,5 @@ class ExtractRule {
 
   final List<String>? exclude;
 
-  factory ExtractRule.fromJson(Map<String, dynamic> json) =>
-      _$ExtractRuleFromJson(json);
+  factory ExtractRule.fromJson(JsonMap json) => _$ExtractRuleFromJson(json);
 }

@@ -4,6 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/data/library/common_library.dart';
 import 'package:one_launcher/models/game/data/library/maven_library.dart';
 import 'package:one_launcher/models/game/data/library/natives_library.dart';
+import 'package:one_launcher/models/json_map.dart';
 import 'package:path/path.dart';
 
 part 'library.g.dart';
@@ -55,7 +56,7 @@ class Library {
     return parts;
   }
 
-  factory Library.fromJson(Map<String, dynamic> json) {
+  factory Library.fromJson(JsonMap json) {
     if (json['natives'] != null) {
       return NativesLibrary.fromJson(json);
     }

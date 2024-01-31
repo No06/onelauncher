@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'theme_config.g.dart';
 
@@ -63,10 +64,10 @@ final class AppThemeConfig extends ChangeNotifier {
     ).useSystemChineseFont(Brightness.dark);
   }
 
-  factory AppThemeConfig.fromJson(Map<String, dynamic> json) =>
+  factory AppThemeConfig.fromJson(JsonMap json) =>
       _$AppThemeConfigFromJson(json);
 
-  Map<String, dynamic> toJson() => _$AppThemeConfigToJson(this);
+  JsonMap toJson() => _$AppThemeConfigToJson(this);
 }
 
 @JsonEnum()

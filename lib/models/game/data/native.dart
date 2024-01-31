@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'native.g.dart';
 
@@ -10,8 +11,7 @@ class Natives {
   final Native? osx;
   final Native? windows;
 
-  factory Natives.fromJson(Map<String, dynamic> json) =>
-      _$NativesFromJson(json);
+  factory Natives.fromJson(JsonMap json) => _$NativesFromJson(json);
 }
 
 @JsonEnum()

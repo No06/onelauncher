@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'download_file.g.dart';
 
@@ -16,6 +17,5 @@ class DownloadFile {
   final String sha1;
   final int size;
 
-  factory DownloadFile.fromJson(Map<String, dynamic> json) =>
-      _$DownloadFileFromJson(json);
+  factory DownloadFile.fromJson(JsonMap json) => _$DownloadFileFromJson(json);
 }

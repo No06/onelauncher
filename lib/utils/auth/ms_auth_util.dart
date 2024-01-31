@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/http.dart';
 
 class MicrosoftAuthUtil {
@@ -90,7 +91,7 @@ class MicrosoftAuthUtil {
   Future<void> getXSTSToken() async {
     const url = 'https://xsts.auth.xboxlive.com/xsts/authorize';
     const Map<String, String> header = {"Content-Type": "application/json"};
-    final Map<String, dynamic> params = {
+    final JsonMap params = {
       "Properties": {
         "SandboxId": "RETAIL",
         "UserTokens": [

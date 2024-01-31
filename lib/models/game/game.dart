@@ -7,6 +7,7 @@ import 'package:one_launcher/models/game/data/game_data.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/game_version.dart';
+import 'package:one_launcher/models/json_map.dart';
 import 'package:path/path.dart';
 
 import '../config/game_setting_config.dart';
@@ -33,7 +34,7 @@ class Game {
   factory Game.fromJson(
     String librariesPath,
     String versionPath,
-    Map<String, dynamic> json,
+    JsonMap json,
   ) {
     json.addAll({"librariesPath": librariesPath});
     json.addAll({"versionPath": versionPath});
@@ -137,7 +138,7 @@ class Game {
     config.writeAsStringSync(json);
   }
 
-  Map<String, dynamic> toJson() => _$GameToJson(this);
+  JsonMap toJson() => _$GameToJson(this);
 
   /// 从指定路径读取文件序列化为 [GameData]
   static GameData _getDataFromPath(String path) {

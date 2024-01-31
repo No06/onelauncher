@@ -6,6 +6,7 @@ import 'package:one_launcher/models/game/data/game_downloads.dart';
 import 'package:one_launcher/models/game/data/java_version.dart';
 import 'package:one_launcher/models/game/data/logging/logging.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'game_data.g.dart';
 
@@ -44,6 +45,5 @@ class GameData {
 
   String get jarFile => jar == null ? "$id.jar" : "$jar.jar";
 
-  factory GameData.fromJson(Map<String, dynamic> json) =>
-      _$GameDataFromJson(json);
+  factory GameData.fromJson(JsonMap json) => _$GameDataFromJson(json);
 }

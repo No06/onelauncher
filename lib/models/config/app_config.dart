@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 import 'package:path/path.dart';
 
 part 'app_config.g.dart';
@@ -273,8 +274,7 @@ final class AppConfig extends ChangeNotifier {
     super.notifyListeners();
   }
 
-  factory AppConfig.fromJson(Map<String, dynamic> json) =>
-      _$AppConfigFromJson(json);
+  factory AppConfig.fromJson(JsonMap json) => _$AppConfigFromJson(json);
 
-  Map<String, dynamic> toJson() => _$AppConfigToJson(this);
+  JsonMap toJson() => _$AppConfigToJson(this);
 }

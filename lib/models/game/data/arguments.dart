@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'arguments.g.dart';
 
@@ -9,8 +10,7 @@ class Arguments {
   final List<dynamic> game;
   final List<dynamic> jvm;
 
-  factory Arguments.fromJson(Map<String, dynamic> json) =>
-      _$ArgumentsFromJson(json);
+  factory Arguments.fromJson(JsonMap json) => _$ArgumentsFromJson(json);
 
-  Map<String, dynamic> toJson() => _$ArgumentsToJson(this);
+  JsonMap toJson() => _$ArgumentsToJson(this);
 }

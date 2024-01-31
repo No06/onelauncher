@@ -1,5 +1,6 @@
 import 'package:one_launcher/models/game/data/download_file.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'game_downloads.g.dart';
 
@@ -9,6 +10,5 @@ class GameDownloads {
 
   final DownloadFile client;
 
-  factory GameDownloads.fromJson(Map<String, dynamic> json) =>
-      _$GameDownloadsFromJson(json);
+  factory GameDownloads.fromJson(JsonMap json) => _$GameDownloadsFromJson(json);
 }

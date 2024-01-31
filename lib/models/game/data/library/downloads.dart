@@ -1,5 +1,6 @@
 import 'package:one_launcher/models/game/data/library/artifact.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'downloads.g.dart';
 
@@ -10,6 +11,5 @@ class Downloads {
   final Artifact? artifact;
   final Map<String, Artifact>? classifiers;
 
-  factory Downloads.fromJson(Map<String, dynamic> json) =>
-      _$DownloadsFromJson(json);
+  factory Downloads.fromJson(JsonMap json) => _$DownloadsFromJson(json);
 }

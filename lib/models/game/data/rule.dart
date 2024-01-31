@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/data/os_rule.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'rule.g.dart';
 
@@ -9,7 +10,7 @@ class Rule {
 
   final RuleAction action;
 
-  factory Rule.fromJson(Map<String, dynamic> json) {
+  factory Rule.fromJson(JsonMap json) {
     if (json['os'] != null) {
       return OsRule.fromJson(json);
     }

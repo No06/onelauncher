@@ -6,6 +6,7 @@ import 'package:one_launcher/models/game/data/os.dart';
 import 'package:one_launcher/models/game/data/os_rule.dart';
 import 'package:one_launcher/models/game/data/rule.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'common_library.g.dart';
 
@@ -47,6 +48,5 @@ class CommonLibrary extends Library {
     return true;
   }
 
-  factory CommonLibrary.fromJson(Map<String, dynamic> json) =>
-      _$CommonLibraryFromJson(json);
+  factory CommonLibrary.fromJson(JsonMap json) => _$CommonLibraryFromJson(json);
 }

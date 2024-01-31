@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:get/utils.dart';
 import 'package:one_launcher/models/game/java_version.dart';
+import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/models/version.dart';
 import 'package:one_launcher/utils/exceptions/java_release_file_not_found.dart';
 import 'package:one_launcher/utils/java_util.dart';
@@ -100,9 +101,9 @@ class Java {
     }
   }
 
-  factory Java.fromJson(Map<String, dynamic> json) => _$JavaFromJson(json);
+  factory Java.fromJson(JsonMap json) => _$JavaFromJson(json);
 
-  Map<String, dynamic> toJson() => _$JavaToJson(this);
+  JsonMap toJson() => _$JavaToJson(this);
 
   @override
   int get hashCode => path.hashCode;

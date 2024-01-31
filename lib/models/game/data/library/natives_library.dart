@@ -6,6 +6,7 @@ import 'package:one_launcher/models/game/data/library/downloads.dart';
 import 'package:one_launcher/models/game/data/library/extract.dart';
 import 'package:one_launcher/models/game/data/os.dart';
 import 'package:one_launcher/models/game/data/rule.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'natives_library.g.dart';
 
@@ -27,6 +28,6 @@ class NativesLibrary extends CommonLibrary {
 
   String? get osNameString => natives[currentOsName];
 
-  factory NativesLibrary.fromJson(Map<String, dynamic> json) =>
+  factory NativesLibrary.fromJson(JsonMap json) =>
       _$NativesLibraryFromJson(json);
 }

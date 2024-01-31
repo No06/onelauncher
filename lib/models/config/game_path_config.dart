@@ -6,6 +6,7 @@ import 'package:get/utils.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 import 'package:path/path.dart';
 
 import '../game/game.dart';
@@ -71,10 +72,9 @@ class GamePath extends ChangeNotifier {
     }
   }
 
-  factory GamePath.fromJson(Map<String, dynamic> json) =>
-      _$GamePathFromJson(json);
+  factory GamePath.fromJson(JsonMap json) => _$GamePathFromJson(json);
 
-  Map<String, dynamic> toJson() => _$GamePathToJson(this);
+  JsonMap toJson() => _$GamePathToJson(this);
 
   @override
   int get hashCode {

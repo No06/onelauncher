@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'os.g.dart';
 
@@ -8,7 +9,7 @@ class Os {
 
   final OsName name;
 
-  factory Os.fromJson(Map<String, dynamic> json) => _$OsFromJson(json);
+  factory Os.fromJson(JsonMap json) => _$OsFromJson(json);
 }
 
 @JsonEnum()

@@ -3,6 +3,7 @@ import 'package:one_launcher/app.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 import 'account_page/account_page.dart';
 import 'game_library_page/game_library_page.dart';
@@ -15,7 +16,7 @@ final _currentRoutePath = _kDefaultRoutePath.obs;
 class HomePage extends StatelessWidget {
   HomePage({super.key});
 
-  final routes = <String, Map<String, dynamic>>{
+  final routes = <String, JsonMap>{
     "/account": {
       "name": "账户",
       "icon": Icons.people_outline,
