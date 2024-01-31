@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:one_launcher/models/account/profile.dart';
 
 class AccountInfoUtil {
   AccountInfoUtil(String jwtToken)
@@ -6,14 +7,10 @@ class AccountInfoUtil {
 
   final Dio dio;
 
-  late String uuid;
-  late String name;
-
-  Future<void> getProfile() async {
+  Future<Profile> getProfile() async {
     //TODO: 解析皮肤
     const url = "https://api.minecraftservices.com/minecraft/profile";
     var response = await dio.get(url);
-    uuid = response.data['id'];
-    name = response.data['name'];
+    return Profile.fromJson(response.data);
   }
 }
