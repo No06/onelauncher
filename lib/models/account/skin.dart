@@ -1,41 +1,20 @@
 import 'package:flutter/services.dart';
 import 'package:image/image.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'skin.g.dart';
 
-@JsonSerializable(includeIfNull: false)
-class Skin {
-  const Skin({
-    this.type = SkinType.steve,
-    this.textureModel = TextureModel.def,
-    this.localSkinPath,
-    this.localCapePath,
-  });
+@JsonSerializable(includeIfNull: false, createFactory: false)
+abstract class Skin {
+  const Skin();
 
-  final SkinType type;
-  final TextureModel textureModel;
-  final String? localSkinPath;
-  final String? localCapePath;
+  TextureModel get variant;
 
-  Future<Uint8List> get u8l async {
-    const steve = "assets/images/skins/steve.png";
-    const alex = "assets/images/skins/alex.png";
-
-    late final String? path;
-    switch (type) {
-      case SkinType.steve:
-        path = steve;
-      case SkinType.alex:
-        path = alex;
-      case SkinType.localFile:
-        path = localCapePath;
-    }
-    return (await rootBundle.load(path ?? steve)).buffer.asUint8List();
-  }
+  Future<Uint8List> u8l();
 
   Future<Uint8List> drawAvatar() async {
-    final source = decodePng(await u8l);
+    final source = decodePng(await u8l());
     final wratio = source!.width ~/ 64;
     final lratio =
         (source.height == source.width) ? wratio : source.height ~/ 32;
@@ -54,25 +33,15 @@ class Skin {
     return encodePng(head);
   }
 
-  factory Skin.fromJson(Map<String, dynamic> json) => _$SkinFromJson(json);
-
-  Map<String, dynamic> toJson() => _$SkinToJson(this);
-}
-
-@JsonEnum()
-enum SkinType {
-  steve("steve"),
-  alex("alex"),
-  localFile("local_file");
-
-  const SkinType(this.type);
-  final String type;
+  JsonMap toJson() => _$SkinToJson(this);
 }
 
 @JsonEnum()
 enum TextureModel {
-  def("default"),
-  slim("slim");
+  @JsonValue('CLASSIC')
+  classic('CLASSIC'),
+  @JsonValue('SLIM')
+  slim('SLIM');
 
   const TextureModel(this.textureModel);
   final String textureModel;
