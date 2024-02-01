@@ -73,7 +73,7 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
 
     // 监听子进程
     subscription = process!.stdout.transform(utf8.decoder).listen((data) {
-      if (data.contains("Setting user")) {
+      if (data.contains("Sound engine started")) {
         completer.complete();
       }
       if (kDebugMode) print("$white$data");

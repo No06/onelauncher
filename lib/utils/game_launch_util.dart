@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:get/state_manager.dart';
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/main.dart';
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/game/game.dart';
@@ -160,33 +160,47 @@ class GameLaunchUtil {
   }
 
   /// 获取游戏拼接资源 -cp 字符串
-  String get argCp => [
+  String get classPathsArgs => [
         ...allowedLibraries.map((lib) => join(game.librariesPath, lib.jarPath)),
         game.clientPath
       ].join(';');
 
-  /// 替换参数中 ${} 的内容
+  /// 批量替换参数中 ${} 的内容
   List<String> replaceVariables(
     Iterable<String>? input,
     Map<String, String?> valueMap,
   ) {
     if (input == null) return [];
     final results = <String>[];
-    // 正则用于解析出 ${xxx} 内容
-    final argumentRegex = RegExp(r"\${(\w+)}");
+
     results.addAll(
-      input.map(
-        (arg) => arg.replaceFirstMapped(argumentRegex, (match) {
-          final name = match[1];
-          return valueMap[name] ?? match[0]!;
-        }),
-      ),
+      input.map((arg) => replaceVariable(arg, valueMap, true)),
     );
     return results;
   }
 
+  /// 替换参数中 ${} 的内容
+  /// [replaceFirst] 为 [true] 时只匹配一次
+  String replaceVariable(
+    String value,
+    Map<String, String?> valueMap, [
+    bool replaceFirst = false,
+  ]) {
+    // 正则用于解析出 ${xxx} 内容
+    final argumentRegex = RegExp(r"\${(\w+)}");
+    String replace(Match match) => valueMap[match[1]] ?? match[0]!;
+    return replaceFirst
+        ? value.replaceFirstMapped(argumentRegex, replace)
+        : value.replaceAllMapped(argumentRegex, replace);
+  }
+
   /// 获取游戏启动项
-  List<String> get gameArgs {
+  String get gameArgs {
+    if (loginInfo == null) {
+      throw Exception("必须要有登录信息");
+    }
+
+    /// 一个映射，用来存储变量名和对应的值
     final gameArgsMap = <String, String?>{
       "auth_player_name": loginInfo!.username,
       "version_name": game.data.id,
@@ -197,30 +211,49 @@ class GameLaunchUtil {
       "auth_access_token": loginInfo!.accessToken,
       "user_type": "msa",
       "version_type": '"$appName"',
+      "user_properties": "{}",
     };
-    return replaceVariables(game.data.arguments?.gameFilterString, gameArgsMap)
-      ..add("--width ${game.setting.width}")
-      ..add("--height ${game.setting.height}");
+    dynamic arguments = game.data.arguments?.gameFilterString;
+    // 高版本
+    if (arguments != null) {
+      return (replaceVariables(
+              game.data.arguments?.gameFilterString, gameArgsMap)
+            ..add("--width ${game.setting.width}")
+            ..add("--height ${game.setting.height}")
+            ..addIf(game.setting.fullScreen, "--fullscreen"))
+          .join(' ');
+    }
+    // 低版本
+    arguments = game.data.minecraftArguments;
+    if (arguments != null) {
+      return replaceVariable(arguments, gameArgsMap);
+    }
+    throw Exception("未在游戏中找到JVM参数");
   }
 
   /// 获取JVM参数
-  List<String> get jvmArgs {
+  String get jvmArgs {
     /// 一个映射，用来存储变量名和对应的值
     /// TODO: 待补充
-    final jvmArgsMap = {
+    final jvmArgsMap = <String, String>{
       "natives_directory": game.nativesPath,
-      "launcher_name": appInfo.appName,
+      "launcher_name": appName,
       "launcher_version": "114514",
-      "classpath": argCp
+      "classpath": classPathsArgs,
+      "clientpath": game.clientPath,
     };
-    return replaceVariables(game.data.arguments?.jvmFilterString, jvmArgsMap);
+    if (game.data.arguments == null) {
+      return replaceVariable(
+        "-Djava.library.path=\${natives_directory} -cp \${classpath}",
+        jvmArgsMap,
+      );
+    }
+    return replaceVariables(game.data.arguments?.jvmFilterString, jvmArgsMap)
+        .join(' ');
   }
 
   /// 获取启动参数
   Future<Iterable<String>> getLaunchArguments() async {
-    if (loginInfo == null) {
-      throw Exception("必须有登录信息");
-    }
     final setting = game.setting;
     final version = game.data;
     // 命令行参数
@@ -244,11 +277,10 @@ class GameLaunchUtil {
         const GameArgument("-XX:HeapDumpPath",
             "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"),
       // JVM 启动参数
-      GameArgument(jvmArgs.join(' ')),
+      GameArgument(jvmArgs),
       GameArgument(version.mainClass),
       // 游戏参数
-      GameArgument(gameArgs.join(' ')),
-      if (setting.fullScreen) const GameArgument("--fullscreen"),
+      GameArgument(gameArgs),
     ];
 
     return args.map((arg) => arg.toString());

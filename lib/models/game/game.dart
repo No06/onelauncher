@@ -69,7 +69,8 @@ class Game {
     final minor = split.elementAtOrNull(1);
     final revision = split.elementAtOrNull(2);
 
-    int? toInt(String? value) => value != null ? int.parse(value) : null;
+    int? toInt(String? value) => value != null ? int.tryParse(value) : null;
+    if (int.tryParse(major) == null) return null;
     return GameVersion(
       major: int.parse(major),
       minor: toInt(minor),
