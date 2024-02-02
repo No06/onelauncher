@@ -7,7 +7,7 @@ import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/game_setting_config.dart';
 import 'package:one_launcher/models/config/theme_config.dart';
 import 'package:one_launcher/utils/java_util.dart';
-import 'package:one_launcher/utils/sys_info/sys_info.dart';
+import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/textfield.dart';
 import 'package:one_launcher/widgets/widget_group.dart';

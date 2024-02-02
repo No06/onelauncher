@@ -1,6 +1,8 @@
 import 'dart:ffi';
 
-import 'package:one_launcher/utils/sys_info/sys_info.dart';
+import 'package:one_launcher/utils/platform/architecture.dart';
+import 'package:one_launcher/utils/platform/processor_architecture.dart';
+import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
 
 class MacOSSysInfo implements SysInfo {
   @override
@@ -22,4 +24,12 @@ class MacOSSysInfo implements SysInfo {
   @override
   // TODO: implement usedPhyMem
   int get usedPhyMem => throw UnimplementedError();
+
+  @override
+  // TODO: implement architecture
+  ProcessorArchitecture get processorArchitecture => throw UnimplementedError();
+
+  @override
+  // TODO: implement architecture
+  Architecture get architecture => throw UnimplementedError();
 }

@@ -14,7 +14,7 @@ import 'package:one_launcher/models/game/data/library/maven_library.dart';
 import 'package:one_launcher/models/game/data/library/natives_library.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/random_string.dart';
-import 'package:one_launcher/utils/sys_info/sys_info.dart';
+import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -25,7 +25,7 @@ class GameLaunchUtil {
   }
 
   final Game game;
-  final List<NativesLibrary> _extractLibraries = [];
+  final List<NativesLibrary> _nativesLibraries = [];
   final List<String> warningMessages = [];
   AccountLoginInfo? loginInfo;
   Iterable<Library>? _allowedLibraries;
@@ -69,7 +69,6 @@ class GameLaunchUtil {
 
   /// 自动设置 Java
   /// 数据来源：https://minecraft.fandom.com/zh/wiki/%E6%95%99%E7%A8%8B/%E6%9B%B4%E6%96%B0Java?variant=zh
-  /// TODO: 异常处理
   Java? autoJava() {
     int? minimumVersion = game.data.javaVersion?.majorVersion; // 最低版本
     int? highestVersion; // 最高支持版本
@@ -142,14 +141,23 @@ class GameLaunchUtil {
 
   /// 检索游戏资源 返回游戏资源库中不存在的资源
   Stream<Library> get retrieveLibraries async* {
-    _extractLibraries.clear();
     for (var lib in allowedLibraries) {
       if (lib is NativesLibrary) {
-        _extractLibraries.add(lib);
+        _nativesLibraries.add(lib);
       } else if (!await lib.exists(game.librariesPath)) {
         yield lib;
       }
     }
+  }
+
+  /// 解压natives资源
+  Future<void> extractNativesLibraries() async {
+    final outputDirectory = Directory(game.nativesPath);
+    if (outputDirectory.existsSync()) {
+      outputDirectory.deleteSync(recursive: true);
+    }
+    await Future.wait(_nativesLibraries
+        .map((e) => e.extract(game.librariesPath, game.nativesPath)));
   }
 
   /// 生成随机本地存储的路径
@@ -161,7 +169,9 @@ class GameLaunchUtil {
 
   /// 获取游戏拼接资源 -cp 字符串
   String get classPathsArgs => [
-        ...allowedLibraries.map((lib) => join(game.librariesPath, lib.jarPath)),
+        ...allowedLibraries
+            .where((element) => element is! NativesLibrary)
+            .map((lib) => join(game.librariesPath, lib.jarPath)),
         game.clientPath
       ].join(';');
 

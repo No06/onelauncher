@@ -2,7 +2,8 @@
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
-import 'package:one_launcher/utils/sys_info/sys_info.dart';
+import 'package:one_launcher/utils/platform/processor_architecture.dart';
+import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
 
 // 定义一个C语言的sysinfo函数类型
 typedef SysInfoFunc = Int32 Function(Pointer<NativeType> info);
@@ -81,4 +82,8 @@ final class LinuxSysInfo extends SysInfo with Debounce {
 
   @override
   int Function(Pointer<NativeType> p1) get status => _status;
+
+  @override
+  // TODO: implement processorArchitecture
+  ProcessorArchitecture get processorArchitecture => throw UnimplementedError();
 }

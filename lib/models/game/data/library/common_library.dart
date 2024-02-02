@@ -21,6 +21,7 @@ class CommonLibrary extends Library {
   final Downloads downloads;
   final List<Rule>? rules;
 
+  /// 根据规则判断是否需要
   bool get isAllowed {
     if (rules != null) {
       final osRules = <OsName>{};

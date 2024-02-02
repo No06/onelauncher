@@ -1,9 +1,11 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:one_launcher/utils/sys_info/sys_info_linux.dart';
-import 'package:one_launcher/utils/sys_info/sys_info_macos.dart';
-import 'package:one_launcher/utils/sys_info/sys_info_windows.dart';
+import 'package:one_launcher/utils/platform/architecture.dart';
+import 'package:one_launcher/utils/platform/processor_architecture.dart';
+import 'package:one_launcher/utils/platform/sys_info/sys_info_linux.dart';
+import 'package:one_launcher/utils/platform/sys_info/sys_info_macos.dart';
+import 'package:one_launcher/utils/platform/sys_info/sys_info_windows.dart';
 
 typedef GetLastErrorFunc = Int32 Function();
 typedef GetLastError = int Function();
@@ -13,6 +15,12 @@ SysInfo get sysinfo => SysInfo.instance;
 abstract class SysInfo {
   Pointer<NativeType> get pointer;
   int Function(Pointer<NativeType>) get status;
+
+  /// 处理器架构
+  ProcessorArchitecture get processorArchitecture;
+
+  /// 系统架构
+  Architecture get architecture => processorArchitecture.architecture;
 
   static final instance = Platform.isWindows
       ? WindowsSysInfo()

@@ -12,8 +12,7 @@ import 'package:one_launcher/widgets/dialog.dart';
 
 typedef _TaskFutureFunction<T> = Future<T>? Function()?;
 
-typedef _TaskDoneCallBack<T> = FutureOr Function(
-    AsyncSnapshot<T> snapshot, bool? hasError)?;
+typedef _TaskDoneCallBack<T> = bool? Function(T)?;
 
 class GameStartupDialog extends StatefulWidget {
   GameStartupDialog({super.key, required this.game})
@@ -62,6 +61,7 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
       await widget.launchUtil.launchCommand,
       [],
       workingDirectory: widget.game.mainPath,
+      runInShell: (widget.game.versionNumber?.minor ?? 9) <= 8,
     );
 
     // 监听子进程的错误
@@ -73,8 +73,13 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
 
     // 监听子进程
     subscription = process!.stdout.transform(utf8.decoder).listen((data) {
-      if (data.contains("Sound engine started")) {
-        completer.complete();
+      try {
+        if (data.startsWith("Setting user", 33) ||
+            data.startsWith("Stopping!", 33)) {
+          completer.complete();
+        }
+      } catch (e) {
+        e.printError();
       }
       if (kDebugMode) print("$white$data");
     });
@@ -99,21 +104,17 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
                   _Task(
                     future: widget.launchUtil.retrieveLibraries.toList,
                     title: const Text("检索资源"),
-                    onDone: (snapshot, hasError) {
-                      if (snapshot.data!.isNotEmpty) {
-                        hasError = true;
-                      }
-                    },
+                    onDone: (value) => value.isNotEmpty,
+                  ),
+                  _Task(
+                    future: widget.launchUtil.extractNativesLibraries,
+                    title: const Text("解压资源"),
                   ),
                   _Task(
                     future: () =>
                         widget.launchUtil.login(appConfig.selectedAccount!),
                     title: const Text("登录"),
-                    onDone: (snapshot, hasError) {
-                      if (snapshot.data == null) {
-                        hasError = true;
-                      }
-                    },
+                    onDone: (value) => value == null,
                   ),
                   _Task(
                     future: launchGame,
@@ -126,7 +127,7 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
             onConfirmed: () {
               if (!completer.isCompleted) {
                 // 强制关闭
-                process?.kill(ProcessSignal.sigkill);
+                process?.kill();
               }
               dialogPop();
             },
@@ -174,7 +175,7 @@ class _SequenceTaskItemsState extends State<_SequenceTaskItems> {
   void initState() {
     super.initState();
     for (int i = 0; i < widget.tasks.length; i++) {
-      final currentTaskFuture = widget.tasks[i].future;
+      final currentTask = widget.tasks[i];
       final next = i + 1;
       final nextTask = widget.tasks.elementAtOrNull(next);
       // 跳过第一个
@@ -183,12 +184,15 @@ class _SequenceTaskItemsState extends State<_SequenceTaskItems> {
       }
       // 串联 Future
       futures.add(
-        currentTaskFuture == null
+        currentTask.future == null
             ? null
-            : () => currentTaskFuture()!.then(
+            : () => currentTask.future!()!.then(
                   (value) {
                     // 当还有下一个任务时
-                    if (nextTask != null) {
+                    if (currentTask.onDone != null) {
+                      currentTask.hasError = currentTask.onDone!(value)!;
+                    }
+                    if (nextTask != null && !(currentTask.hasError ?? false)) {
                       listenables[i].value = futures[next];
                     }
                     return value;
@@ -204,21 +208,11 @@ class _SequenceTaskItemsState extends State<_SequenceTaskItems> {
       children: List<Widget>.generate(widget.tasks.length, (index) {
         final task = widget.tasks[index];
         if (index == 0) {
-          return _TaskItem(
-            title: task.title,
-            future: futures[index],
-            onDone: task.onDone,
-            hasError: task.hasError,
-          );
+          return _TaskItem(task, future: futures[index]);
         }
         return ValueListenableBuilder(
           valueListenable: listenables[index - 1],
-          builder: (context, value, child) => _TaskItem(
-            title: task.title,
-            future: value,
-            onDone: task.onDone,
-            hasError: task.hasError,
-          ),
+          builder: (context, value, child) => _TaskItem(task, future: value),
         );
       }),
     );
@@ -226,7 +220,7 @@ class _SequenceTaskItemsState extends State<_SequenceTaskItems> {
 }
 
 class _Task<T> {
-  const _Task({
+  _Task({
     this.future,
     required this.title,
     this.onDone,
@@ -236,21 +230,14 @@ class _Task<T> {
   final _TaskFutureFunction<T> future;
   final Widget title;
   final _TaskDoneCallBack<T> onDone;
-  final bool? hasError;
+  bool? hasError;
 }
 
 class _TaskItem<T> extends StatelessWidget {
-  const _TaskItem({
-    this.future,
-    required this.title,
-    this.onDone,
-    this.hasError,
-  });
+  const _TaskItem(this.task, {this.future});
 
-  final _TaskFutureFunction<T> future;
-  final Widget title;
-  final _TaskDoneCallBack<T> onDone;
-  final bool? hasError;
+  final _Task task;
+  final _TaskFutureFunction<T>? future;
 
   static const _errorIconColor = Colors.red;
   static const _doneIconColor = Colors.green;
@@ -276,10 +263,7 @@ class _TaskItem<T> extends StatelessWidget {
                       case ConnectionState.waiting || ConnectionState.active:
                         return const CircularProgressIndicator();
                       case ConnectionState.done:
-                        if (onDone != null) {
-                          onDone!(snapshot, hasError);
-                        }
-                        if (hasError ?? false) {
+                        if (task.hasError ?? false) {
                           return const Icon(Icons.error,
                               color: _errorIconColor);
                         }
@@ -289,7 +273,7 @@ class _TaskItem<T> extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              title,
+              task.title,
             ],
           );
         },

@@ -10,9 +10,9 @@ Downloads _$DownloadsFromJson(Map<String, dynamic> json) => Downloads(
       artifact: json['artifact'] == null
           ? null
           : Artifact.fromJson(json['artifact'] as Map<String, dynamic>),
-      classifiers: (json['classifiers'] as Map<String, dynamic>?)?.map(
-        (k, e) => MapEntry(k, Artifact.fromJson(e as Map<String, dynamic>)),
-      ),
+      classifiers: json['classifiers'] == null
+          ? null
+          : Classifiers.fromJson(json['classifiers'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DownloadsToJson(Downloads instance) => <String, dynamic>{
