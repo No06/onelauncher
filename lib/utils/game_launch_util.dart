@@ -1,7 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:get/get_utils/src/extensions/dynamic_extensions.dart';
 import 'package:get/state_manager.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/account/account.dart';
@@ -32,9 +35,64 @@ class GameLaunchUtil {
   Iterable<Library> get allowedLibraries =>
       _allowedLibraries ??= getAllowedLibraries();
 
+  final completer = Completer();
+  Process? process;
+  StreamSubscription? subscription;
+  StreamSubscription? errSubscription;
   late final int allocateMem;
-
   late final Java? java;
+
+  /// 取消程序监听
+  void cancel() async {
+    subscription?.cancel();
+    errSubscription?.cancel();
+  }
+
+  void killProcess() => process?.kill();
+
+  bool get runInShell => (game.versionNumber?.minor ?? 9) <= 8;
+
+  /// 启动游戏
+  Future<void> launchGame() async {
+    const white = "\u001b[37m";
+    const red = "\u001b[31m";
+
+    Future(() async => await launchCommand
+      ..printInfo());
+
+    process = await Process.start(
+      await launchCommand,
+      [],
+      workingDirectory: game.mainPath,
+      runInShell: runInShell,
+    );
+
+    // 监听子进程的错误
+    errSubscription = process!.stderr.transform(utf8.decoder).listen((data) {
+      if (kDebugMode) print('$red$data'); // 打印错误
+      if (data.isNotEmpty) {
+        try {
+          if (!completer.isCompleted) completer.completeError(data);
+        } catch (e) {
+          e.printError();
+        }
+      }
+    });
+
+    // 监听子进程
+    subscription = process!.stdout.transform(utf8.decoder).listen((data) {
+      try {
+        if (data.startsWith("Setting user", 33) ||
+            data.startsWith("Stopping!", 33)) {
+          completer.complete();
+        }
+      } catch (e) {
+        e.printError();
+      }
+      if (kDebugMode) print("$white$data");
+    });
+    return await completer.future;
+  }
 
   /// 自动设置内存
   int autoMem() {
@@ -167,6 +225,9 @@ class GameLaunchUtil {
         "minecraft-${game.data.id}-natives-$random");
   }
 
+  /// 为字符串添加双引号
+  String addQuote(String string) => "\"$string\"";
+
   /// 获取游戏拼接资源 -cp 字符串
   String get classPathsArgs => [
         ...allowedLibraries
@@ -181,12 +242,7 @@ class GameLaunchUtil {
     Map<String, String?> valueMap,
   ) {
     if (input == null) return [];
-    final results = <String>[];
-
-    results.addAll(
-      input.map((arg) => replaceVariable(arg, valueMap, true)),
-    );
-    return results;
+    return input.map((arg) => replaceVariable(arg, valueMap, true)).toList();
   }
 
   /// 替换参数中 ${} 的内容
@@ -254,12 +310,23 @@ class GameLaunchUtil {
     };
     if (game.data.arguments == null) {
       return replaceVariable(
-        "-Djava.library.path=\${natives_directory} -cp \${classpath}",
+        '-Djava.library.path=\${natives_directory} -cp \${classpath}',
         jvmArgsMap,
       );
     }
     return replaceVariables(game.data.arguments?.jvmFilterString, jvmArgsMap)
+        .map((e) => addQuote(e))
         .join(' ');
+  }
+
+  /// 获取 logging 启动参数
+  /// 根据 [Game.loggingPath] 判断然后生成
+  String? get loggingArg {
+    var arg = game.data.logging?.client.argument;
+    if (arg == null || game.loggingPath == null) return null;
+
+    arg = arg.substring(0, arg.lastIndexOf('=') - 1);
+    return GameArgument(arg, addQuote(game.loggingPath!)).toString();
   }
 
   /// 获取启动参数
@@ -273,13 +340,8 @@ class GameLaunchUtil {
           "-Xmx${setting.autoMemory ? allocateMem : setting.maxMemory}M"),
       const GameArgument(
           "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Djava.rmi.server.useCodebaseOnly=true -Dcom.sun.jndi.rmi.object.trustURLCodebase=false -Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false -Dlog4j2.formatMsgNoLookups=true"),
-      if (version.logging != null)
-        () {
-          var arg = version.logging!.client.argument;
-          arg = arg.substring(0, arg.lastIndexOf('=') - 1);
-          return GameArgument(arg, game.loggingPath);
-        }(),
-      GameArgument("-Dminecraft.client.jar", game.clientRelativePath),
+      if (game.data.logging != null) GameArgument(loggingArg!),
+      GameArgument("-Dminecraft.client.jar", addQuote(game.clientRelativePath)),
       GameArgument(setting.jvmArgs),
       const GameArgument(
           "-XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -XX:-DontCompileHugeMethods -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true"),

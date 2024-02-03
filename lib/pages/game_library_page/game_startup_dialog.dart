@@ -1,10 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/utils.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/utils/game_launch_util.dart';
@@ -27,10 +23,6 @@ class GameStartupDialog extends StatefulWidget {
 
 class _GameStartupDialogState extends State<GameStartupDialog> {
   late final List<String> warningMessages;
-  final completer = Completer();
-  StreamSubscription? subscription;
-  StreamSubscription? errSubscription;
-  Process? process;
   Timer? timer;
   var seconds = 2;
   var _continue = false;
@@ -44,46 +36,8 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
   @override
   void dispose() {
     timer?.cancel();
-    subscription?.cancel();
-    errSubscription?.cancel();
+    widget.launchUtil.cancel();
     super.dispose();
-  }
-
-  /// 启动游戏
-  Future<void> launchGame() async {
-    const white = "\u001b[37m";
-    const red = "\u001b[31m";
-
-    Future(() async => await widget.launchUtil.launchCommand
-      ..printInfo());
-
-    process = await Process.start(
-      await widget.launchUtil.launchCommand,
-      [],
-      workingDirectory: widget.game.mainPath,
-      runInShell: (widget.game.versionNumber?.minor ?? 9) <= 8,
-    );
-
-    // 监听子进程的错误
-    if (kDebugMode) {
-      errSubscription = process!.stderr.transform(utf8.decoder).listen((data) {
-        print('$red$data'); // 打印错误
-      });
-    }
-
-    // 监听子进程
-    subscription = process!.stdout.transform(utf8.decoder).listen((data) {
-      try {
-        if (data.startsWith("Setting user", 33) ||
-            data.startsWith("Stopping!", 33)) {
-          completer.complete();
-        }
-      } catch (e) {
-        e.printError();
-      }
-      if (kDebugMode) print("$white$data");
-    });
-    return await completer.future;
   }
 
   @override
@@ -117,22 +71,23 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
                     onDone: (value) => value == null,
                   ),
                   _Task(
-                    future: launchGame,
+                    future: widget.launchUtil.launchGame,
                     title: const Text("启动"),
                   ),
                 ],
               ),
             ),
             onlyConfirm: true,
-            onConfirmed: () {
-              if (!completer.isCompleted) {
+            onConfirmed: () async {
+              if (!widget.launchUtil.completer.isCompleted) {
                 // 强制关闭
-                process?.kill();
+                widget.launchUtil.cancel();
+                widget.launchUtil.killProcess();
               }
               dialogPop();
             },
             confirmText: FutureBuilder(
-              future: completer.future,
+              future: widget.launchUtil.completer.future,
               builder: (context, snapshot) {
                 return StatefulBuilder(builder: (context, setState) {
                   switch (snapshot.connectionState) {
