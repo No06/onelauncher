@@ -298,57 +298,54 @@ class _GameItem extends StatelessWidget {
           color: colors.outline,
         ),
         trailing: Obx(() {
-          if (isHover.value) {
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  child: FloatingActionButton.extended(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: kDefaultBorderRadius,
-                    ),
-                    backgroundColor: colors.primary,
-                    onPressed: () => showDialog(
-                      barrierDismissible: false,
-                      context: context,
-                      builder: (context) {
-                        if (appConfig.selectedAccount == null) {
-                          return const WarningDialog(
-                            content: Text("先添加一个账号再启动吧"),
-                            onlyConfirm: true,
-                            onConfirmed: dialogPop,
-                          );
-                        }
-                        return GameStartupDialog(game: game);
-                      },
-                    ),
-                    heroTag: null,
-                    icon: Icon(
-                      Icons.play_arrow,
-                      color: colors.onPrimary,
-                    ),
-                    label: Text(
-                      "开始游戏",
-                      style: TextStyle(color: colors.onPrimary),
-                    ),
+          if (!isHover.value) return nil;
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: FloatingActionButton.extended(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: kDefaultBorderRadius,
+                  ),
+                  backgroundColor: colors.primary,
+                  onPressed: () => showDialog(
+                    barrierDismissible: false,
+                    context: context,
+                    builder: (context) {
+                      if (appConfig.selectedAccount == null) {
+                        return const WarningDialog(
+                          content: Text("先添加一个账号再启动吧"),
+                          onlyConfirm: true,
+                          onConfirmed: dialogPop,
+                        );
+                      }
+                      return GameStartupDialog(game: game);
+                    },
+                  ),
+                  heroTag: null,
+                  icon: Icon(
+                    Icons.play_arrow,
+                    color: colors.onPrimary,
+                  ),
+                  label: Text(
+                    "开始游戏",
+                    style: TextStyle(color: colors.onPrimary),
                   ),
                 ),
-                // TODO: 打开游戏目录
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.folder),
-                ),
-                // TODO: 更多操作
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.more_horiz),
-                ),
-              ],
-            );
-          }
-          return nil;
+              ),
+              // TODO: 打开游戏目录
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.folder),
+              ),
+              // TODO: 更多操作
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.more_horiz),
+              ),
+            ],
+          );
         }),
         // TODO: 点击打开游戏配置
         onTap: () {},

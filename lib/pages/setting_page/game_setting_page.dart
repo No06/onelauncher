@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -261,14 +262,16 @@ class GameSettingPage extends SettingBasePage {
                         Padding(
                           padding: const EdgeInsets.only(
                               left: 15, right: 15, bottom: 10),
-                          child: ValueListenableBuilder(
-                            valueListenable: config.maxMemoryNotifier,
-                            builder: (_, maxMemory, __) => _MemoryAllocationBar(
-                              sysinfo.totalPhyMem.toGB(),
-                              sysinfo.freePhyMem.toGB(),
-                              config.maxMemory.toDouble() / 1024,
-                            ),
-                          ),
+                          child: HookBuilder(builder: (context) {
+                            return ValueListenableBuilder(
+                              valueListenable: config.maxMemoryNotifier,
+                              builder: (_, maxMemory, __) {
+                                return _MemoryAllocationBar(
+                                  config.maxMemory.toDouble() / 1024,
+                                );
+                              },
+                            );
+                          }),
                         ),
                       ],
                     ),
@@ -451,20 +454,50 @@ class _TextField extends HookWidget {
   }
 }
 
-class _MemoryAllocationBar extends StatelessWidget {
-  const _MemoryAllocationBar(
-      this.totalMemSize, this.freeMemSize, this.allocationMemSize);
+class _MemoryAllocationBar extends StatefulWidget {
+  const _MemoryAllocationBar(this.allocationMemSize);
 
-  final double totalMemSize;
-  final double freeMemSize;
   final double allocationMemSize;
 
   @override
+  State<_MemoryAllocationBar> createState() => _MemoryAllocationBarState();
+}
+
+class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
+  late final Timer timer;
+  var needUpdate = true;
+  late double totalPhyMem;
+  late double freePhyMem;
+
+  @override
+  void initState() {
+    super.initState();
+    timer = Timer.periodic(
+        const Duration(seconds: 3), (timer) => setState(updateMemInfo));
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  void updateMemInfo() {
+    if (!needUpdate) return;
+    needUpdate = false;
+    totalPhyMem = sysinfo.totalPhyMem.toGB();
+    freePhyMem = sysinfo.freePhyMem.toGB();
+    Future.delayed(Durations.extralong4).then((value) => needUpdate = true);
+    print(1);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    updateMemInfo();
     final colors = Theme.of(context).colorScheme;
-    final allocationMemPercent = allocationMemSize / totalMemSize;
-    final usedMemSize = totalMemSize - freeMemSize;
-    final usedPercent = usedMemSize / totalMemSize;
+    final allocationMemPercent = widget.allocationMemSize / totalPhyMem;
+    final usedMemSize = totalPhyMem - freePhyMem;
+    final usedPercent = usedMemSize / totalPhyMem;
     return Column(
       children: [
         SizedBox(
@@ -498,10 +531,10 @@ class _MemoryAllocationBar extends StatelessWidget {
         Row(
           children: [
             Text(
-                "使用中内存：${_toDecimal(usedMemSize)} / ${_toDecimal(totalMemSize)} GB"),
+                "使用中内存：${_toDecimal(usedMemSize)} / ${_toDecimal(totalPhyMem)} GB"),
             const Spacer(),
             Text(
-                "游戏分配：${_toDecimal(allocationMemSize)} GB ${allocationMemSize > freeMemSize ? "(${_toDecimal(freeMemSize)} GB 可用)" : ""}"),
+                "游戏分配：${_toDecimal(widget.allocationMemSize)} GB ${widget.allocationMemSize > freePhyMem ? "(${_toDecimal(freePhyMem)} GB 可用)" : ""}"),
           ],
         ),
       ],

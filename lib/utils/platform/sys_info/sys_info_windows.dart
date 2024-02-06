@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
+import 'package:one_launcher/utils/platform/architecture.dart';
 import 'package:one_launcher/utils/platform/processor_architecture.dart';
 import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
 
@@ -76,10 +77,10 @@ final class SYSTEMINFO extends Struct {
   external int wProcessorRevision;
 }
 
-final class WindowsSysInfo extends SysInfo with Debounce {
-  static const _libraryPath = 'kernel32.dll';
-  static const _memoryStatus = 'GlobalMemoryStatusEx';
-  static const _getSystemInfo = 'GetSystemInfo';
+final class WindowsSysInfo extends SysInfo {
+  static const _kernel32DylibName = 'kernel32.dll';
+  static const _memoryStatusFuncName = 'GlobalMemoryStatusEx';
+  static const _systemInfoFuncName = 'GetSystemInfo';
 
   // 指针
   final Pointer<MEMORYSTATUSEX> _memoryStatePointer = calloc<MEMORYSTATUSEX>()
@@ -87,30 +88,29 @@ final class WindowsSysInfo extends SysInfo with Debounce {
   final _systemInfoPointer = calloc<SYSTEMINFO>();
 
   // 加载dll
-  final _dylib = DynamicLibrary.open(_libraryPath);
+  final _kernel32 = DynamicLibrary.open(_kernel32DylibName);
 
   // 函数
-  late final _memoryStateFunction =
-      _dylib.lookupFunction<MemoryStatusExFunc, MemoryStatusEx>(_memoryStatus);
-  late final _systemInfoFunction =
-      _dylib.lookupFunction<GetSystemInfoC, GetSystemInfoDart>(_getSystemInfo);
+  late final _memoryStateFunc =
+      _kernel32.lookupFunction<MemoryStatusExFunc, MemoryStatusEx>(
+          _memoryStatusFuncName);
+  late final _systemInfoFunc = _kernel32
+      .lookupFunction<GetSystemInfoC, GetSystemInfoDart>(_systemInfoFuncName);
 
-  @override
-  int get totalPhyMem {
-    freshInstance();
-    return _memoryStatePointer.ref.ullTotalPhys;
+  Pointer<MEMORYSTATUSEX> _getMemoryState() {
+    if (_memoryStateFunc(_memoryStatePointer) == 0) getLastError(this);
+    return _memoryStatePointer;
   }
 
   @override
-  int get freePhyMem {
-    freshInstance();
-    return _memoryStatePointer.ref.ullAvailPhys;
-  }
+  int get totalPhyMem => _getMemoryState().ref.ullTotalPhys;
 
   @override
+  int get freePhyMem => _getMemoryState().ref.ullAvailPhys;
+
   ProcessorArchitecture get processorArchitecture {
     // 调用 GetSystemInfo 函数，将结果写入 systemInfo 指针指向的内存
-    _systemInfoFunction(_systemInfoPointer);
+    _systemInfoFunc(_systemInfoPointer);
 
     switch (_systemInfoPointer.ref.wProcessorArchitecture) {
       case 9:
@@ -129,8 +129,5 @@ final class WindowsSysInfo extends SysInfo with Debounce {
   }
 
   @override
-  Pointer<NativeType> get pointer => _memoryStatePointer;
-
-  @override
-  int Function(Pointer<NativeType> p1) get status => _memoryStateFunction;
+  Architecture get architecture => processorArchitecture.architecture;
 }
