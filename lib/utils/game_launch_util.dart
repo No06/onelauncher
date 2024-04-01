@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:archive/archive.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get_utils/src/extensions/dynamic_extensions.dart';
 import 'package:get/state_manager.dart';
@@ -15,6 +17,7 @@ import 'package:one_launcher/models/game/data/library/common_library.dart';
 import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/library/maven_library.dart';
 import 'package:one_launcher/models/game/data/library/natives_library.dart';
+import 'package:one_launcher/utils/get_file_md5.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/random_string.dart';
 import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
@@ -27,20 +30,21 @@ class GameLaunchUtil {
     autoJava();
   }
 
-  final Game game;
-  final List<NativesLibrary> _nativesLibraries = [];
-  final List<String> warningMessages = [];
-  AccountLoginInfo? loginInfo;
-  Iterable<Library>? _allowedLibraries;
-  Iterable<Library> get allowedLibraries =>
-      _allowedLibraries ??= getAllowedLibraries();
-
+  late final int allocateMem;
   final completer = Completer();
+  StreamSubscription? errSubscription;
+  final Game game;
+  late final Java? java;
+  AccountLoginInfo? loginInfo;
   Process? process;
   StreamSubscription? subscription;
-  StreamSubscription? errSubscription;
-  late final int allocateMem;
-  late final Java? java;
+  final List<String> warningMessages = [];
+
+  Iterable<Library>? _allowedLibraries;
+  final List<NativesLibrary> _nativesLibraries = [];
+
+  Iterable<Library> get allowedLibraries =>
+      _allowedLibraries ??= getAllowedLibraries();
 
   /// 取消程序监听
   void cancel() async {
@@ -83,6 +87,7 @@ class GameLaunchUtil {
     subscription = process!.stdout.transform(utf8.decoder).listen((data) {
       try {
         if (data.startsWith("Setting user", 33) ||
+            data.startsWith("Minecraft reloaded", 33) ||
             data.startsWith("Stopping!", 33)) {
           completer.complete();
         }
@@ -210,9 +215,44 @@ class GameLaunchUtil {
 
   /// 解压natives资源
   Future<void> extractNativesLibraries() async {
+    var needExtract = true;
     final outputDirectory = Directory(game.nativesPath);
-    if (outputDirectory.existsSync()) {
-      outputDirectory.deleteSync(recursive: true);
+    final targetFiles = outputDirectory.listSync();
+    final targerFilesMap = Map.fromIterables(
+      targetFiles.map((e) => e.path.split("/").last),
+      targetFiles,
+    );
+    if (outputDirectory.existsSync() && targetFiles.isNotEmpty) {
+      final archives = _nativesLibraries.map(
+        (e) => ZipDecoder().decodeBytes(
+          File(e.getPath(game.librariesPath)).readAsBytesSync(),
+        ),
+      );
+      final files = archives.map((archive) {
+        for (final file in archive) {
+          return file;
+        }
+      });
+      // 使用MD5比对
+      await () async {
+        for (var i = 0; i < files.length; i++) {
+          final sourceFile = files.elementAt(i)!;
+          final sourceFileMd5 = md5.convert(sourceFile.content as List<int>);
+          final targetFilePath = targerFilesMap[sourceFile.name]?.path;
+          if (targetFilePath == null) {
+            return;
+          }
+          final targetFileMd5 = await getFileMd5(targetFilePath);
+          if (sourceFileMd5 != targetFileMd5) {
+            return;
+          }
+        }
+        needExtract = false;
+      }();
+
+      if (needExtract) {
+        outputDirectory.deleteSync(recursive: true);
+      }
     }
     await Future.wait(_nativesLibraries
         .map((e) => e.extract(game.librariesPath, game.nativesPath)));

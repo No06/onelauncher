@@ -25,9 +25,9 @@ part 'configuration_page.dart';
 _FilterRule get _filterRule => _FilterRule.instance;
 
 class GameLibraryPage extends RoutePage {
-  GameLibraryPage({super.key, required super.pageName});
+  const GameLibraryPage({super.key, required super.pageName});
 
-  late final tabs = {
+  static const tabs = {
     "主页": _HomePage(),
     "配置": _ConfigurationPage(),
   };

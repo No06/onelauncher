@@ -1,11 +1,11 @@
 part of 'game_library_page.dart';
 
 class _ConfigurationPage extends StatelessWidget {
-  _ConfigurationPage();
+  const _ConfigurationPage();
 
-  final formKey = GlobalKey<FormState>();
-  final paths = AppConfig.launcherGamePaths;
-  final indexes = appConfig.launcherGamePathIndexes;
+  static final _formKey = GlobalKey<FormState>();
+  static final _paths = AppConfig.launcherGamePaths;
+  static final _indexes = appConfig.launcherGamePathIndexes;
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +17,13 @@ class _ConfigurationPage extends StatelessWidget {
             (data) => ListView(
               controller: controller,
               physics: physics,
-              children: List<Widget>.generate(paths.length, (index) {
-                    final path = paths[index];
+              children: List<Widget>.generate(_paths.length, (index) {
+                    final path = _paths[index];
                     return ValueBuilder<bool?>(
-                      initialValue: indexes.contains(index),
+                      initialValue: _indexes.contains(index),
                       onUpdate: (value) => value ?? false
-                          ? indexes.add(index)
-                          : indexes.remove(index),
+                          ? _indexes.add(index)
+                          : _indexes.remove(index),
                       builder: (value, updater) => SwitchListTile(
                         selected: value!,
                         title: Text(path.name),
@@ -86,7 +86,7 @@ class _ConfigurationPage extends StatelessWidget {
                         return DefaultDialog(
                           title: const Text("添加游戏目录"),
                           onConfirmed: () {
-                            if (formKey.currentState!.validate()) {
+                            if (_formKey.currentState!.validate()) {
                               if (appConfig.paths.add(GamePath(
                                 name: nameTextCtl.text,
                                 path: pathTextCtl.text,
@@ -103,7 +103,7 @@ class _ConfigurationPage extends StatelessWidget {
                           content: SizedBox(
                             width: 450,
                             child: Form(
-                              key: formKey,
+                              key: _formKey,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
                               child: Column(

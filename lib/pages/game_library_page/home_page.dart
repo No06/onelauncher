@@ -1,9 +1,7 @@
 part of 'game_library_page.dart';
 
 class _HomePage extends StatelessWidget {
-  _HomePage();
-
-  final selectedValue = GameCollation.values.first.obs;
+  const _HomePage();
 
   @override
   Widget build(BuildContext context) {

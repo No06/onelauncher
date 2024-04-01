@@ -54,6 +54,7 @@ dependencies:
   smooth_scroll_multiplatform: ^1.0.8
   handy_window: ^0.3.1
   dio: ^5.4.0
+  crypto: ^3.0.3
 
 dev_dependencies:
 

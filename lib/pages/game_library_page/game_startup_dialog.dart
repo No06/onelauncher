@@ -24,7 +24,7 @@ class GameStartupDialog extends StatefulWidget {
 class _GameStartupDialogState extends State<GameStartupDialog> {
   late final List<String> warningMessages;
   Timer? timer;
-  var seconds = 2;
+  var seconds = 5;
   var _continue = false;
 
   @override
@@ -93,15 +93,18 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
                   switch (snapshot.connectionState) {
                     // 启动成功后倒计时自动关闭窗口
                     case ConnectionState.done:
-                      timer = Timer.periodic(Durations.extralong4, (time) {
-                        if (seconds > 0) {
-                          setState(() => seconds--);
-                          if (seconds == 0) {
-                            // 关闭 Process 并关闭窗口
-                            Future.delayed(Durations.extralong4, dialogPop);
+                      if (timer == null) {
+                        seconds -= 1;
+                        timer = Timer.periodic(Durations.extralong4, (time) {
+                          if (seconds > 0) {
+                            setState(() => seconds--);
+                            if (seconds == 0) {
+                              // 关闭 Process 并关闭窗口
+                              Future.delayed(Durations.extralong4, dialogPop);
+                            }
                           }
-                        }
-                      });
+                        });
+                      }
                     default:
                   }
                   return Text("取消${timer != null ? ' ($seconds)' : ''}");
