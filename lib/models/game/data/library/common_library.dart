@@ -18,8 +18,8 @@ class CommonLibrary extends Library {
     this.rules,
   });
 
-  final Downloads downloads;
-  final List<Rule>? rules;
+  late final Downloads downloads;
+  late final List<Rule>? rules;
 
   /// 根据规则判断是否需要
   bool get isAllowed {

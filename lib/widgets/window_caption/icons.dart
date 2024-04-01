@@ -45,7 +45,8 @@ class _MaximizePainter extends _IconPainter {
   @override
   void paint(Canvas canvas, Size size) {
     Paint p = getPaint(color);
-    canvas.drawRect(Rect.fromLTRB(0, 0, size.width, size.height - 0.2), p);
+    canvas.drawRect(
+        Rect.fromLTRB(0.2, 0.2, size.width - 0.2, size.height - 0.2), p);
   }
 }
 
@@ -91,8 +92,11 @@ class _MinimizePainter extends _IconPainter {
   @override
   void paint(Canvas canvas, Size size) {
     Paint p = getPaint(color);
-    canvas.drawLine(Offset(0, size.height / 2),
-        Offset(size.width + 0.1, size.height / 2), p);
+    canvas.drawLine(
+      Offset(0, size.height / 2),
+      Offset(size.width + 0.1, size.height / 2),
+      p,
+    );
   }
 }
 
@@ -113,8 +117,9 @@ class _AlignedPaint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-        alignment: Alignment.center,
-        child: CustomPaint(size: const Size(10, 10), painter: painter));
+      alignment: Alignment.center,
+      child: CustomPaint(size: const Size(10, 10), painter: painter),
+    );
   }
 }
 
@@ -122,4 +127,4 @@ Paint getPaint(Color color, [bool isAntiAlias = false]) => Paint()
   ..color = color
   ..style = PaintingStyle.stroke
   ..isAntiAlias = isAntiAlias
-  ..strokeWidth = 0.8;
+  ..strokeWidth = 1;

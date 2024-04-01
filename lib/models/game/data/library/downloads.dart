@@ -7,10 +7,10 @@ part 'downloads.g.dart';
 
 @JsonSerializable()
 class Downloads {
-  const Downloads({this.artifact, this.classifiers});
+  Downloads({this.artifact, this.classifiers});
 
-  final Artifact? artifact;
-  final Classifiers? classifiers;
+  late final Artifact? artifact;
+  late final Classifiers? classifiers;
 
   factory Downloads.fromJson(JsonMap json) => _$DownloadsFromJson(json);
 }

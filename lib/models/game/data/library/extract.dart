@@ -5,9 +5,9 @@ part 'extract.g.dart';
 
 @JsonSerializable()
 class ExtractRule {
-  const ExtractRule({this.exclude});
+  ExtractRule({this.exclude});
 
-  final List<String>? exclude;
+  late final List<String>? exclude;
 
   factory ExtractRule.fromJson(JsonMap json) => _$ExtractRuleFromJson(json);
 }

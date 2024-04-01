@@ -24,7 +24,6 @@ class Game {
   })  : _mainPath = mainPath,
         _versionPath = versionPath,
         _useGlobalSetting = ValueNotifier(useGlobalSetting ?? false),
-        _librariesPath = join(mainPath, "libraries"),
         _setting = setting,
         _data = _getDataFromPath(join(mainPath, versionPath)) {
     _useGlobalSetting.addListener(saveConfig);
@@ -51,6 +50,8 @@ class Game {
   /// 游戏文件 1.x.x.json序列化内容
   GameData _data;
   GameData get data => _data;
+
+  // 游戏版本号
   String? get version => data.clientVersion ?? getVersionFromJar();
 
   String? getVersionFromJar() {
@@ -92,9 +93,8 @@ class Game {
 
   /// 游戏资源库路径
   /// 如: /home/onelauncher/.minecraft/libraries
-  final String _librariesPath;
   @JsonKey(includeToJson: false)
-  String get librariesPath => _librariesPath;
+  String get librariesPath => join(mainPath, "libraries");
 
   /// 游戏路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x

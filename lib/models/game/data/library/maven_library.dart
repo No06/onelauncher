@@ -10,9 +10,9 @@ class MavenLibrary extends Library {
       : _nameSplit = name.split(":"),
         super(name: name);
 
-  final String url;
+  late final String url;
 
-  final List<String> _nameSplit;
+  late final List<String> _nameSplit;
   late final List<String> _domainSplit = _nameSplit[0].split('.');
 
   String get domain => _nameSplit[0];

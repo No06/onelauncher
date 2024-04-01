@@ -23,7 +23,7 @@ class Library {
     }
   }
 
-  final String name;
+  late final String name;
 
   late final String _groupId;
   late final String _artifactId;

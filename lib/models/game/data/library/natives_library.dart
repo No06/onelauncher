@@ -28,9 +28,9 @@ class NativesLibrary extends CommonLibrary {
 
   static final currentOsName = OsName.fromName(Platform.operatingSystem);
 
-  final Map<OsName, String> natives;
+  late final Map<OsName, String> natives;
   @JsonKey(name: "extract")
-  final ExtractRule? extractRule;
+  late final ExtractRule? extractRule;
 
   /// 解压 natives 资源
   /// [libraryPath] 应传入如 /home/onelauncher/.minecraft/libraries
