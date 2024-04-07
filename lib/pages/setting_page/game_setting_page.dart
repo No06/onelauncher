@@ -1,40 +1,7 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:get/get.dart';
-import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/config/game_setting_config.dart';
-import 'package:one_launcher/models/config/theme_config.dart';
-import 'package:one_launcher/utils/java_util.dart';
-import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
-import 'package:one_launcher/widgets/dialog.dart';
-import 'package:one_launcher/widgets/textfield.dart';
-import 'package:one_launcher/widgets/widget_group.dart';
-import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
+part of 'setting_page.dart';
 
-abstract class SettingBasePage extends StatelessWidget {
-  const SettingBasePage({super.key});
-
-  Widget body(BuildContext context);
-
-  @override
-  Widget build(BuildContext context) {
-    return DynMouseScroll(
-      animationCurve: kMouseScrollAnimationCurve,
-      builder: (context, controller, physics) => ListView(
-        controller: controller,
-        physics: physics,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        children: [body(context)],
-      ),
-    );
-  }
-}
-
-class GameSettingPage extends SettingBasePage {
-  const GameSettingPage({super.key, required this.config});
+class _GameSettingPage extends _SettingBasePage {
+  const _GameSettingPage({required this.config});
 
   final GameSettingConfig config;
 
@@ -488,7 +455,6 @@ class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
     totalPhyMem = sysinfo.totalPhyMem.toGB();
     freePhyMem = sysinfo.freePhyMem.toGB();
     Future.delayed(Durations.extralong4).then((value) => needUpdate = true);
-    print(1);
   }
 
   @override
@@ -552,6 +518,8 @@ class MemoryTextInputFormatter extends TextInputFormatter {
       TextEditingValue oldValue, TextEditingValue newValue) {
     if (newValue.text.isEmpty ||
         newValue.text.startsWith('0') ||
+        !newValue.text.isNum ||
+        newValue.text.substring(newValue.text.length - 1) == '.' ||
         int.parse(newValue.text) > maxSize) {
       return oldValue;
     }

@@ -28,8 +28,7 @@ class MyWindowCaption extends StatelessWidget {
         children: [
           Expanded(
             child: DragToMoveArea(
-              child: SizedBox(
-                height: double.infinity,
+              child: SizedBox.expand(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 16),
                   child: DefaultTextStyle(

@@ -15,12 +15,12 @@ abstract class Account {
   String get displayName;
 
   Future<Skin> getSkin();
-  Future<String> accessToken();
+  Future<String> getAccessToken();
 
   AccountType get type;
 
   Future<AccountLoginInfo> login() async => AccountLoginInfo(
-      username: displayName, uuid: uuid, accessToken: await accessToken());
+      username: displayName, uuid: uuid, accessToken: await getAccessToken());
 
   factory Account.fromJson(JsonMap json) {
     switch (json['type']) {

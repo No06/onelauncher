@@ -8,9 +8,9 @@ part of 'microsoft_account.dart';
 
 MicrosoftAccount _$MicrosoftAccountFromJson(Map<String, dynamic> json) =>
     MicrosoftAccount(
-      json['uuid'] as String,
-      json['displayName'] as String,
-      json['msRefreshToken'] as String,
+      uuid: json['uuid'] as String,
+      displayName: json['displayName'] as String,
+      refreshToken: json['refreshToken'] as String,
     );
 
 Map<String, dynamic> _$MicrosoftAccountToJson(MicrosoftAccount instance) =>
@@ -18,7 +18,7 @@ Map<String, dynamic> _$MicrosoftAccountToJson(MicrosoftAccount instance) =>
       'uuid': instance.uuid,
       'displayName': instance.displayName,
       'type': _$AccountTypeEnumMap[instance.type]!,
-      'msRefreshToken': instance.msRefreshToken,
+      'refreshToken': instance.refreshToken,
     };
 
 const _$AccountTypeEnumMap = {

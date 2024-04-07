@@ -13,5 +13,3 @@ final kConfigPath = Future(() async => join(
 final kDefaultBorderRadius = BorderRadius.circular(7.5);
 final kMediaBorderRadius = BorderRadius.circular(10);
 final kLagerBorderRadius = BorderRadius.circular(12.5);
-
-const kMouseScrollAnimationCurve = Curves.fastEaseInToSlowEaseOut;

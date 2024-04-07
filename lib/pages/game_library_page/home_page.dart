@@ -7,8 +7,7 @@ class _HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        DynMouseScroll(
-          animationCurve: kMouseScrollAnimationCurve,
+        MyDynMouseScroll(
           builder: (context, controller, physics) => CustomScrollView(
             controller: controller,
             physics: physics,

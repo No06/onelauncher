@@ -17,7 +17,7 @@ import 'package:one_launcher/models/game/data/library/common_library.dart';
 import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/library/maven_library.dart';
 import 'package:one_launcher/models/game/data/library/natives_library.dart';
-import 'package:one_launcher/utils/get_file_md5.dart';
+import 'package:one_launcher/utils/file/get_file_md5.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/random_string.dart';
 import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
@@ -313,7 +313,7 @@ class GameLaunchUtil {
       "game_directory": game.mainPath,
       "assets_root": game.assetsPath,
       "assets_index_name": game.data.assetIndex.id,
-      "auth_uuid": loginInfo!.uuid.replaceAll('-', ''),
+      "auth_uuid": loginInfo!.uuid,
       "auth_access_token": loginInfo!.accessToken,
       "user_type": "msa",
       "version_type": '"$appName"',

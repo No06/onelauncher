@@ -4,23 +4,27 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/auth/account_info_util.dart';
 import 'package:one_launcher/utils/auth/ms_auth_util.dart';
+import 'package:one_launcher/utils/auth/profile.dart';
 
 part 'microsoft_account.g.dart';
 
 @JsonSerializable()
 class MicrosoftAccount extends Account {
-  MicrosoftAccount(String uuid, String displayName, String msRefreshToken,
-      {OnlineSkin? skin})
-      : _uuid = uuid,
+  MicrosoftAccount({
+    required String uuid,
+    required String displayName,
+    required String refreshToken,
+    OnlineSkin? skin,
+  })  : _uuid = uuid,
         _displayName = displayName,
-        _msRefreshToken = msRefreshToken,
+        _refreshToken = refreshToken,
         _skin = skin;
 
   final String _uuid;
   String _displayName;
-  String _msRefreshToken;
+  String _refreshToken; // MicrosoftRefreshToken
   OnlineSkin? _skin;
-  String? _jwtToken;
+  String? _accessToken; // MincraftAccessToken
 
   @override
   String get uuid => _uuid;
@@ -32,36 +36,46 @@ class MicrosoftAccount extends Account {
   @JsonKey(includeToJson: true)
   AccountType get type => AccountType.microsoft;
 
-  String get msRefreshToken => _msRefreshToken;
+  String get refreshToken => _refreshToken;
 
-  Future<OnlineSkin> getSkin() async {
-    return _skin ?? await _refreshSkin();
+  /// 通过微软OAuth授权码登录返回一个 [MicrosoftAccount] 对象
+  static Future<MicrosoftAccount> generateByOAuthCode(String code) async {
+    final oauthResponse = await MicrosoftAuthUtil.getOAuthToken(code);
+    final msAccessToken = oauthResponse.accessToken;
+    final refreshToken = oauthResponse.refreshToken;
+    final mcAccessToken =
+        await MicrosoftAuthUtil.doGetMCAccessToken(msAccessToken);
+    final profileUtil = AccountInfoUtil(mcAccessToken);
+    final profile = await profileUtil.getProfile();
+    final uuid = profile.id;
+    final username = profile.name;
+    return MicrosoftAccount(
+      uuid: uuid,
+      displayName: username,
+      refreshToken: refreshToken,
+      skin: profile.skins.first,
+    );
   }
 
-  Future<OnlineSkin> _refreshSkin() async {
-    var aiu = AccountInfoUtil(await accessToken());
-    var p = await aiu.getProfile();
-    _skin = p.skins.first;
-    return p.skins.first;
+  Future<OnlineSkin> _getSkin() async => (await getProfile()).skins.first;
+
+  Future<String> _getAccessToken() async {
+    final res = await MicrosoftAuthUtil.refreshAuthToken(_refreshToken);
+    return await MicrosoftAuthUtil.doGetMCAccessToken(res.accessToken);
+  }
+
+  Future<Profile> getProfile() async {
+    final util = AccountInfoUtil(await getAccessToken());
+    return await util.getProfile();
   }
 
   @override
-  Future<String> accessToken() async {
-    return _jwtToken ?? await _refreshAccessToken();
-  }
+  Future<OnlineSkin> getSkin() async => _skin ??= await _getSkin();
 
-  Future<String> _refreshAccessToken() async {
-    var mau = MicrosoftAuthUtil();
-    _msRefreshToken = await mau.doRefreshTokens(_msRefreshToken);
-    var result = await mau.doGetJWT();
-    _jwtToken = result;
-    return result;
-  }
-
-  Future<void> refreshProfile() async {
-    var aiu = AccountInfoUtil(await accessToken());
-    await aiu.getProfile();
-  }
+  /// 获取 MinecraftAccessToken
+  @override
+  Future<String> getAccessToken() async =>
+      _accessToken ??= await _getAccessToken();
 
   factory MicrosoftAccount.fromJson(JsonMap json) =>
       _$MicrosoftAccountFromJson(json);

@@ -1,9 +1,13 @@
 import 'package:dio/dio.dart';
-import 'package:one_launcher/models/account/profile.dart';
+import 'package:one_launcher/utils/auth/profile.dart';
 
 class AccountInfoUtil {
-  AccountInfoUtil(String jwtToken)
-      : dio = Dio(BaseOptions(headers: {"Authorization": "Bearer $jwtToken"}));
+  AccountInfoUtil(String minecraftAccessToken)
+      : dio = Dio(
+          BaseOptions(
+            headers: {"Authorization": "Bearer $minecraftAccessToken"},
+          ),
+        );
 
   final Dio dio;
 

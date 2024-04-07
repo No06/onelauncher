@@ -6,9 +6,11 @@ part 'profile.g.dart';
 @JsonSerializable(includeIfNull: false, createFactory: true)
 class Profile {
   Profile(this.id, this.name, this.skins);
-  String id;
-  String name;
-  List<OnlineSkin> skins;
+
+  final String id;
+  final String name;
+  final List<OnlineSkin> skins;
+
   //capes
   factory Profile.fromJson(JsonMap json) => _$ProfileFromJson(json);
 }

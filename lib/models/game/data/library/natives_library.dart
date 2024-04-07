@@ -9,7 +9,7 @@ import 'package:one_launcher/models/game/data/library/extract.dart';
 import 'package:one_launcher/models/game/data/os.dart';
 import 'package:one_launcher/models/game/data/rule.dart';
 import 'package:one_launcher/models/json_map.dart';
-import 'package:one_launcher/utils/extract_file_to_disk_and_exclude.dart';
+import 'package:one_launcher/utils/file/extract_file_to_disk_and_exclude.dart';
 import 'package:one_launcher/utils/platform/architecture.dart';
 import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
 import 'package:path/path.dart';

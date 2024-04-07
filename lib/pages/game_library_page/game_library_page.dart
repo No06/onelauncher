@@ -12,11 +12,11 @@ import 'package:one_launcher/models/config/game_path_config.dart';
 import 'package:one_launcher/models/read_write_value_notifier.dart';
 import 'package:one_launcher/pages/game_library_page/game_startup_dialog.dart';
 import 'package:one_launcher/widgets/build_widgets_with_divider.dart';
-import 'package:one_launcher/utils/file_picker.dart';
+import 'package:one_launcher/utils/file/file_picker.dart';
 import 'package:one_launcher/widgets/dialog.dart';
+import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
 import 'package:one_launcher/widgets/route_page.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
-import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
 part 'filter_rule.dart';
 part 'home_page.dart';

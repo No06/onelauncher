@@ -1,15 +1,29 @@
+import 'dart:async';
+import 'dart:math';
+
+import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:get/get.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
-import 'package:one_launcher/pages/setting_page/game_setting_page.dart';
+import 'package:one_launcher/models/config/game_setting_config.dart';
+import 'package:one_launcher/models/config/theme_config.dart';
+import 'package:one_launcher/utils/java_util.dart';
+import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
+import 'package:one_launcher/widgets/dialog.dart';
+import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
 import 'package:one_launcher/widgets/route_page.dart';
 import 'package:flutter/material.dart' hide Dialog;
-import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
+import 'package:one_launcher/widgets/textfield.dart';
+import 'package:one_launcher/widgets/widget_group.dart';
+
+part 'game_setting_page.dart';
 
 class SettingPage extends RoutePage {
-  SettingPage({super.key, required super.pageName});
+  const SettingPage({super.key, required super.pageName});
 
-  final tabs = {
-    "全局游戏设置": GameSettingPage(config: appConfig.gameSetting),
+  static final tabs = {
+    "全局游戏设置": _GameSettingPage(config: appConfig.gameSetting),
     "启动器": const _LauncherSettingPage(),
   };
 
@@ -49,8 +63,7 @@ abstract class _SettingBasePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DynMouseScroll(
-      animationCurve: kMouseScrollAnimationCurve,
+    return MyDynMouseScroll(
       builder: (context, controller, physics) => ListView(
         controller: controller,
         physics: physics,

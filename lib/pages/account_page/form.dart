@@ -1,12 +1,16 @@
 part of 'account_page.dart';
 
-abstract mixin class _AccountLoginForm {
-  Future<Account> submit();
-}
-
-class _OfflineLoginForm extends HookWidget with _AccountLoginForm {
+class _OfflineLoginForm extends HookWidget {
   late final TextEditingController uuidTextController;
   late final TextEditingController usernameTextController;
+
+  static String getUuidFromName(String name) =>
+      const Uuid().v5(Uuid.NAMESPACE_NIL, name);
+
+  OfflineAccount submit() => OfflineAccount(
+        displayName: usernameTextController.text,
+        uuid: uuidTextController.text.replaceAll('-', ''),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +23,7 @@ class _OfflineLoginForm extends HookWidget with _AccountLoginForm {
     // uuid 监听 用户名变化
     usernameTextController.addListener(
       () => uuidTextController.text =
-          OfflineAccount.getUuidFromName(usernameTextController.text),
+          getUuidFromName(usernameTextController.text),
     );
 
     return Column(
@@ -75,44 +79,14 @@ class _OfflineLoginForm extends HookWidget with _AccountLoginForm {
       ],
     );
   }
-
-  @override
-  Future<Account> submit() async => OfflineAccount(
-        usernameTextController.text,
-        uuid: uuidTextController.text,
-      );
 }
 
-class _MicosoftLoginForm extends HookWidget with _AccountLoginForm {
-  late final TextEditingController usernameTextController;
-
+class _MicosoftLoginForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    usernameTextController = useTextEditingController();
-    return Column(
-      children: [
-        TextFormField(
-          decoration: const InputDecoration(labelText: "oauth link"),
-          obscureText: false,
-          readOnly: false,
-          controller: usernameTextController,
-          validator: noEmpty,
-        ),
-      ],
-    );
+    return nil;
   }
 
-  @override
-  Future<Account> submit() async {
-    var mau = MicrosoftAuthUtil();
-    String refreshToken = await mau.doGetMSToken(usernameTextController.text);
-    String jwt = await mau.doGetJWT();
-    var aiu = AccountInfoUtil(jwt);
-    var p = await aiu.getProfile();
-    String username = p.name;
-    String uuid = p.id;
-
-    // OnlineSkin skin = OnlineSkin(TextureModel.valueOf(str), url)
-    return MicrosoftAccount(uuid, username, refreshToken, skin: p.skins.first);
-  }
+  Future<MicrosoftAccount> submit(String code) async =>
+      await MicrosoftAccount.generateByOAuthCode(code);
 }

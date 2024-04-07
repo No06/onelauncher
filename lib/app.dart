@@ -42,38 +42,6 @@ class AppPage extends StatelessWidget {
   final Widget? body;
   final Widget? background;
 
-  PreferredSize appBar(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kWindowCaptionHeight),
-      child: MyWindowCaption(
-        brightness: Theme.of(context).brightness,
-        title: const Text(appName),
-        backgroundColor: Colors.transparent,
-        icons: [
-          MyWindowCaptionButton.minimize(
-            animated: true,
-            brightness: brightness,
-            onPressed: () async {
-              bool isMinimized = await windowManager.isMinimized();
-              if (isMinimized) {
-                windowManager.restore();
-              } else {
-                windowManager.minimize();
-              }
-            },
-          ),
-          _WindowCaptionMaximizeButton(brightness: brightness),
-          MyWindowCaptionButton.close(
-            animated: true,
-            brightness: brightness,
-            onPressed: windowManager.close,
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -82,8 +50,47 @@ class AppPage extends StatelessWidget {
         Scaffold(
           backgroundColor: background == null ? null : Colors.transparent,
           // TODO: 为 Linux 或 MacOS 定制窗口栏
-          appBar: Platform.isWindows ? appBar(context) : null,
+          appBar: Platform.isWindows
+              ? const PreferredSize(
+                  preferredSize: Size.fromHeight(kWindowCaptionHeight),
+                  child: _AppBar(),
+                )
+              : null,
           body: body,
+        ),
+      ],
+    );
+  }
+}
+
+class _AppBar extends StatelessWidget {
+  const _AppBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    return MyWindowCaption(
+      brightness: Theme.of(context).brightness,
+      title: const Text(appName),
+      backgroundColor: Colors.transparent,
+      icons: [
+        MyWindowCaptionButton.minimize(
+          animated: true,
+          brightness: brightness,
+          onPressed: () async {
+            bool isMinimized = await windowManager.isMinimized();
+            if (isMinimized) {
+              windowManager.restore();
+            } else {
+              windowManager.minimize();
+            }
+          },
+        ),
+        _WindowCaptionMaximizeButton(brightness: brightness),
+        MyWindowCaptionButton.close(
+          animated: true,
+          brightness: brightness,
+          onPressed: windowManager.close,
         ),
       ],
     );

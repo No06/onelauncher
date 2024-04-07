@@ -1,9 +1,8 @@
-import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
 import 'package:one_launcher/widgets/route_page.dart';
-import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
 class AppearancePage extends RoutePage {
   const AppearancePage({super.key, required super.pageName});
@@ -38,8 +37,7 @@ class AppearancePage extends RoutePage {
   @override
   Widget body(BuildContext context) {
     return Expanded(
-      child: DynMouseScroll(
-        animationCurve: kMouseScrollAnimationCurve,
+      child: MyDynMouseScroll(
         builder: (context, controller, physics) => ListView(
           controller: controller,
           physics: physics,

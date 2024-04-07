@@ -46,6 +46,7 @@ class DefaultDialog extends StatelessWidget {
     this.onCanceled,
     this.confirmText,
     this.cancelText,
+    this.actions,
   });
 
   final Widget? title;
@@ -55,6 +56,7 @@ class DefaultDialog extends StatelessWidget {
   final void Function()? onCanceled;
   final Widget? confirmText;
   final Widget? cancelText;
+  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +68,13 @@ class DefaultDialog extends StatelessWidget {
       ),
       title: title,
       content: content,
-      actions: [
-        if (!onlyConfirm)
-          DialogCancelButton(onPressed: onCanceled, cancelText: cancelText),
-        DialogConfirmButton(onPressed: onConfirmed, confirmText: confirmText),
-      ],
+      actions: actions ??
+          [
+            if (!onlyConfirm)
+              DialogCancelButton(onPressed: onCanceled, cancelText: cancelText),
+            DialogConfirmButton(
+                onPressed: onConfirmed, confirmText: confirmText),
+          ],
     );
   }
 }
