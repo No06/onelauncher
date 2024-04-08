@@ -1,18 +1,28 @@
 part of 'account_page.dart';
 
+class _SegmentedItem {
+  const _SegmentedItem({required this.name, required this.icon});
+
+  final String name;
+  final Widget icon;
+}
+
 class _AddAccountDialog extends StatelessWidget {
   _AddAccountDialog({required this.onSubmit});
 
   final void Function(Account account) onSubmit;
 
-  static const _dropdownBtns = {
-    AccountType.offline: "离线账户",
-    AccountType.microsoft: "微软账户",
-    AccountType.custom: "外置登录"
+  static const _accountTypes = {
+    AccountType.offline:
+        _SegmentedItem(name: "离线", icon: Icon(Icons.public_off)),
+    AccountType.microsoft:
+        _SegmentedItem(name: "微软", icon: Icon(Icons.grid_view)),
+    AccountType.custom: _SegmentedItem(name: "自定义", icon: Icon(Icons.tune)),
   };
 
-  final _accountType = Rx<AccountType>(AccountType.offline);
+  final _selectedAccountType = Rx<AccountType>(AccountType.offline);
   final _formKey = GlobalKey<FormState>();
+  final _isLoading = false.obs;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -32,44 +42,27 @@ class _AddAccountDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                const SizedBox(
-                  width: 75,
-                  child: Text("登录方式"),
-                ),
-                SizedBox(
-                  width: 100,
-                  child: Obx(
-                    () => DropdownButton(
-                      borderRadius: BorderRadius.circular(7.5),
-                      isExpanded: true,
-                      value: _accountType.value,
-                      items: _dropdownBtns.entries
-                          .map(
-                            (item) => DropdownMenuItem(
-                              value: item.key,
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(
-                                  item.value,
-                                  style: Get.textTheme.titleSmall,
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) => _accountType.value = value!,
-                    ),
-                  ),
-                ),
-              ],
+            Obx(
+              () => SegmentedButton<AccountType>(
+                onSelectionChanged: (set) =>
+                    _selectedAccountType.value = set.first,
+                segments: List.generate(_accountTypes.length, (index) {
+                  final key = _accountTypes.keys.elementAt(index);
+                  final item = _accountTypes[key]!;
+                  return ButtonSegment(
+                    value: key,
+                    label: Text(item.name),
+                    icon: item.icon,
+                  );
+                }),
+                selected: {_selectedAccountType.value},
+              ),
             ),
             const SizedBox(height: 15),
             Form(
               key: _formKey,
               child: Obx(() {
-                switch (_accountType.value) {
+                switch (_selectedAccountType.value) {
                   case AccountType.offline:
                     return form = _OfflineLoginForm();
                   case AccountType.microsoft:
@@ -86,47 +79,59 @@ class _AddAccountDialog extends StatelessWidget {
       ),
       actions: [
         const DialogCancelButton(onPressed: dialogPop, cancelText: Text("取消")),
-        DialogConfirmButton(
-          onPressed: () async {
-            late String oauthCode; // Microsoft OAuth Code
-            if (_accountType.value == AccountType.microsoft) {
-              await showDialog(
-                context: context,
-                barrierColor: Colors.transparent,
-                barrierDismissible: false,
-                builder: (context) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: kDefaultBorderRadius,
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                  content: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    // TODO: Webview对Linux、MacOS的支持
-                    child: _LoginWebview(
-                      loginSuccess: (code) {
-                        oauthCode = code;
-                        dialogPop();
-                      },
+        Obx(
+          () => DialogConfirmButton(
+            onPressed: _isLoading.value
+                ? null
+                : () async {
+                    _isLoading(true);
+                    switch (_selectedAccountType.value) {
+                      case AccountType.offline:
+                        if (_formKey.currentState!.validate()) {
+                          account = (form as _OfflineLoginForm).submit();
+                          onSubmit(account);
+                        }
+                      case AccountType.microsoft:
+                        String? oauthCode; // Microsoft OAuth Code
+                        await showDialog(
+                          context: context,
+                          barrierColor: Colors.transparent,
+                          barrierDismissible: false,
+                          builder: (context) => AlertDialog(
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: kDefaultBorderRadius,
+                            ),
+                            contentPadding: EdgeInsets.zero,
+                            content: SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              // TODO: Webview对Linux、MacOS的支持
+                              child: _LoginWebview(
+                                onSuccess: (code) {
+                                  oauthCode = code;
+                                  dialogPop();
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                        if (oauthCode == null) return;
+                        account = await (form as _MicosoftLoginForm)
+                            .submit(oauthCode!);
+                        onSubmit(account);
+                      case AccountType.custom:
+                        throw UnimplementedError();
+                    }
+                    _isLoading(false);
+                  },
+            confirmText: _isLoading.value
+                ? Transform.scale(
+                    scale: 0.8,
+                    child: const CircularProgressIndicator(
+                      strokeAlign: CircularProgressIndicator.strokeAlignInside,
                     ),
-                  ),
-                ),
-              );
-            }
-            if (_formKey.currentState!.validate()) {
-              switch (form.runtimeType) {
-                case const (_OfflineLoginForm):
-                  account = (form as _OfflineLoginForm).submit();
-                case const (_MicosoftLoginForm):
-                  account =
-                      await (form as _MicosoftLoginForm).submit(oauthCode);
-                // TODO: 自定义登录
-                default:
-                  throw UnimplementedError();
-              }
-              onSubmit(account);
-            }
-          },
-          confirmText: const Text("确定"),
+                  )
+                : const Text("确定"),
+          ),
         ),
       ],
     );
@@ -134,9 +139,9 @@ class _AddAccountDialog extends StatelessWidget {
 }
 
 class _LoginWebview extends StatefulWidget {
-  const _LoginWebview({this.loginSuccess});
+  const _LoginWebview({this.onSuccess});
 
-  final void Function(String code)? loginSuccess;
+  final void Function(String code)? onSuccess;
 
   @override
   State<_LoginWebview> createState() => _LoginWebviewState();
@@ -193,8 +198,8 @@ class _LoginWebviewState extends State<_LoginWebview> {
         final match = _codeRegex.firstMatch(url);
         if (match != null && match.group(0) != null) {
           final code = match.group(0)!;
-          if (widget.loginSuccess != null) {
-            widget.loginSuccess!(code);
+          if (widget.onSuccess != null) {
+            widget.onSuccess!(code);
           }
           debugPrint("授权码: $code");
         } else {
@@ -287,9 +292,8 @@ class _LoginWebviewState extends State<_LoginWebview> {
                     if (snapshot.hasData &&
                         snapshot.data == LoadingState.loading) {
                       return const LinearProgressIndicator();
-                    } else {
-                      return nil;
                     }
+                    return const SizedBox();
                   },
                 ),
               ],

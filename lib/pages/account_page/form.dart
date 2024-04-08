@@ -26,57 +26,63 @@ class _OfflineLoginForm extends HookWidget {
           getUuidFromName(usernameTextController.text),
     );
 
-    return Column(
-      children: [
-        TextFormField(
-          decoration: const InputDecoration(labelText: "用户名"),
-          obscureText: false,
-          readOnly: false,
-          maxLength: 20,
-          controller: usernameTextController,
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(
-              RegExp("[\u4e00-\u9fa5_a-zA-Z0-9]"),
-            ),
-          ],
-          validator: noEmpty,
-        ),
-        ObxValue(
-          (p0) => ExpansionListTile(
-            isExpaned: p0.value,
-            title: ListTile(
-              dense: true,
-              title: Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  const Text("高级"),
-                  RotationTransition(
-                    turns: rotationAnimationController.view,
-                    child: const Icon(Icons.expand_more),
-                  ),
-                ],
+    return Theme(
+      data: simpleInputDecorationThemeData(context),
+      child: Column(
+        children: [
+          TextFormField(
+            decoration: const InputDecoration(labelText: "用户名"),
+            obscureText: false,
+            readOnly: false,
+            maxLength: 20,
+            controller: usernameTextController,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(
+                RegExp("[\u4e00-\u9fa5_a-zA-Z0-9]"),
               ),
-              onTap: () {
-                p0(!p0.value);
-                if (p0.value) {
-                  rotationAnimationController.forward();
-                } else {
-                  rotationAnimationController.reverse();
-                }
-              },
-            ),
-            expandTile: ListTile(
-              dense: true,
-              leading: const Text("UUID"),
-              title: TextFormField(
-                controller: uuidTextController,
-                validator: noEmpty,
-              ),
-            ),
+            ],
+            validator: noEmpty,
           ),
-          false.obs,
-        ),
-      ],
+          ObxValue(
+            (isExpaned) => ExpansionListTile(
+              isExpaned: isExpaned.value,
+              title: ListTile(
+                dense: true,
+                title: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    const Text("高级"),
+                    RotationTransition(
+                      turns: rotationAnimationController.view,
+                      child: const Icon(Icons.expand_more),
+                    ),
+                  ],
+                ),
+                onTap: () {
+                  isExpaned(!isExpaned.value);
+                  if (isExpaned.value) {
+                    rotationAnimationController.forward();
+                  } else {
+                    rotationAnimationController.reverse();
+                  }
+                },
+              ),
+              expandTile: ListTile(
+                dense: true,
+                leading: const Text("UUID"),
+                title: TextFormField(
+                  decoration: const InputDecoration(
+                    constraints: BoxConstraints(maxHeight: 36),
+                  ),
+                  controller: uuidTextController,
+                  validator: noEmpty,
+                ),
+              ),
+            ),
+            false.obs,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -10,6 +10,6 @@ final kConfigDirectoryName = appInfo.appName;
 final kConfigPath = Future(() async => join(
     (await getApplicationDocumentsDirectory()).path, kConfigDirectoryName));
 
-final kDefaultBorderRadius = BorderRadius.circular(7.5);
-final kMediaBorderRadius = BorderRadius.circular(10);
-final kLagerBorderRadius = BorderRadius.circular(12.5);
+const kDefaultBorderRadius = BorderRadius.all(Radius.circular(7.5));
+const kMediaBorderRadius = BorderRadius.all(Radius.circular(10));
+const kLagerBorderRadius = BorderRadius.all(Radius.circular(12.5));

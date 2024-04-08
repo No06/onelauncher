@@ -125,7 +125,7 @@ class _GameSettingPage extends _SettingBasePage {
                           SizedBox(
                             width: 400,
                             child: Theme(
-                              data: simpleInputDecorationTheme(context),
+                              data: simpleInputDecorationThemeData(context),
                               child: TextField(
                                 controller: controller,
                               ),
@@ -197,7 +197,8 @@ class _GameSettingPage extends _SettingBasePage {
                                   width: 100,
                                   height: 36,
                                   child: Theme(
-                                    data: simpleInputDecorationTheme(context),
+                                    data:
+                                        simpleInputDecorationThemeData(context),
                                     child: TextField(
                                       controller: textController,
                                       inputFormatters: [
@@ -269,7 +270,7 @@ class _GameSettingPage extends _SettingBasePage {
                   trailing: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 7.5),
                     child: Theme(
-                      data: simpleInputDecorationTheme(context),
+                      data: simpleInputDecorationThemeData(context),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -319,7 +320,7 @@ class _GameSettingPage extends _SettingBasePage {
               trailing: SizedBox(
                 width: 300,
                 child: Theme(
-                  data: simpleInputDecorationTheme(context),
+                  data: simpleInputDecorationThemeData(context),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5),
                     child: _TextField(
@@ -337,7 +338,7 @@ class _GameSettingPage extends _SettingBasePage {
               trailing: SizedBox(
                 width: 300,
                 child: Theme(
-                  data: simpleInputDecorationTheme(context),
+                  data: simpleInputDecorationThemeData(context),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5),
                     child: _TextField(

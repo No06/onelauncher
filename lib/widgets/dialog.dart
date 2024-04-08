@@ -11,10 +11,6 @@ class DialogConfirmButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FilledButton(
-      style: ButtonStyle(
-        side: MaterialStateProperty.all(BorderSide(
-            color: Theme.of(context).colorScheme.primary, width: 1.0)),
-      ),
       onPressed: onPressed,
       child: confirmText ?? const Text("确定", style: TextStyle(fontSize: 16)),
     );
