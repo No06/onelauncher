@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       darkTheme: theme.darkTheme(),
       themeMode: theme.mode,
       debugShowCheckedModeBanner: false,
-      home: DragToResizeArea(child: HomePage()),
+      home: const DragToResizeArea(child: HomePage()),
     );
   }
 }

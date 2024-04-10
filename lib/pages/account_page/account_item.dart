@@ -137,7 +137,7 @@ class _Avatar extends StatelessWidget {
       width: 40,
       height: 40,
       child: HookBuilder(
-        builder: (_) {
+        builder: (context) {
           final future =
               useMemoized(() async => (await account.getSkin()).drawAvatar());
           final snapshot = useFuture(future);
@@ -145,9 +145,10 @@ class _Avatar extends StatelessWidget {
             if (snapshot.hasError) {
               if (kDebugMode) throw snapshot.error!;
               return const Icon(Icons.error);
-            } else {
-              return Container(
-                margin: const EdgeInsets.all(1),
+            }
+            return Padding(
+              padding: const EdgeInsets.all(1),
+              child: DecoratedBox(
                 decoration: const BoxDecoration(
                   color: Colors.transparent,
                   boxShadow: [
@@ -161,16 +162,15 @@ class _Avatar extends StatelessWidget {
                   snapshot.data!,
                   fit: BoxFit.contain,
                 ),
-              );
-            }
-          } else {
-            return Padding(
-              padding: const EdgeInsets.all(4),
-              child: CircularProgressIndicator(
-                color: isSelected ? colors.onPrimary : null,
               ),
             );
           }
+          return Padding(
+            padding: const EdgeInsets.all(4),
+            child: CircularProgressIndicator(
+              color: isSelected ? colors.onPrimary : null,
+            ),
+          );
         },
       ),
     );

@@ -14,9 +14,9 @@ const _kDefaultRoutePath = "/home";
 final _currentRoutePath = _kDefaultRoutePath.obs;
 
 class HomePage extends StatelessWidget {
-  HomePage({super.key});
+  const HomePage({super.key});
 
-  final routes = <String, JsonMap>{
+  static const routes = <String, JsonMap>{
     "/account": {
       "name": "账户",
       "icon": Icons.people_outline,
@@ -41,15 +41,15 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppPage(
+    return const AppPage(
       body: Column(
         children: [
-          const Divider(height: 1),
+          Divider(height: 1),
           Expanded(
             child: Row(
               children: [
                 _Navigation(routes: routes),
-                const VerticalDivider(width: 1),
+                VerticalDivider(width: 1),
                 _NavigationView(routes: routes),
               ],
             ),
