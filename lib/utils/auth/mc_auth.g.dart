@@ -1,15 +1,14 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'ms_oauth.dart';
+part of 'mc_auth.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-MicrosoftOAuthResponse _$MicrosoftOAuthResponseFromJson(
+MinecraftAuthResponse _$MinecraftAuthResponseFromJson(
         Map<String, dynamic> json) =>
-    MicrosoftOAuthResponse(
+    MinecraftAuthResponse(
       json['access_token'] as String,
-      json['refresh_token'] as String,
       json['expires_in'] as int,
     );

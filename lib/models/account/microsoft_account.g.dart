@@ -10,15 +10,19 @@ MicrosoftAccount _$MicrosoftAccountFromJson(Map<String, dynamic> json) =>
     MicrosoftAccount(
       uuid: json['uuid'] as String,
       displayName: json['displayName'] as String,
+      accessToken: json['accessToken'] as String,
       refreshToken: json['refreshToken'] as String,
+      notAfter: json['notAfter'] as int,
     );
 
 Map<String, dynamic> _$MicrosoftAccountToJson(MicrosoftAccount instance) =>
     <String, dynamic>{
-      'uuid': instance.uuid,
-      'displayName': instance.displayName,
       'type': _$AccountTypeEnumMap[instance.type]!,
+      'displayName': instance.displayName,
+      'accessToken': instance.accessToken,
       'refreshToken': instance.refreshToken,
+      'notAfter': instance.notAfter,
+      'uuid': instance.uuid,
     };
 
 const _$AccountTypeEnumMap = {

@@ -42,7 +42,11 @@ abstract class MicrosoftOAuth {
 
 @JsonSerializable(createToJson: false)
 class MicrosoftOAuthResponse {
-  const MicrosoftOAuthResponse(this.accessToken, this.refreshToken);
+  const MicrosoftOAuthResponse(
+    this.accessToken,
+    this.refreshToken,
+    this.expiresIn,
+  );
 
   factory MicrosoftOAuthResponse.fromJson(JsonMap json) =>
       _$MicrosoftOAuthResponseFromJson(json);
@@ -52,4 +56,7 @@ class MicrosoftOAuthResponse {
 
   @JsonKey(name: "refresh_token")
   final String refreshToken;
+
+  @JsonKey(name: "expires_in")
+  final int expiresIn;
 }

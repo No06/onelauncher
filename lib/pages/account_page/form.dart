@@ -164,6 +164,8 @@ class _MicosoftLoginForm extends StatelessWidget {
       });
     } on HttpException catch (e) {
       _whenRequestException(e);
+    } catch (e) {
+      _whenRequestException(e);
     }
   }
 
@@ -173,21 +175,18 @@ class _MicosoftLoginForm extends StatelessWidget {
   ) async {
     _showMcLoginDialog(context);
     try {
-      MicrosoftAccount.generateByToken(
-        response.accessToken,
-        response.refreshToken,
-      ).then((account) {
+      MicrosoftAccount.generateByMsOAuthResponse(response).then((account) {
         dialogPop();
         onSubmit(account);
       });
-    } on HttpException catch (e) {
+    } catch (e) {
       _whenRequestException(e);
     }
   }
 
-  void _whenRequestException(HttpException e) {
+  void _whenRequestException(Object e) {
     dialogPop();
-    Get.showSnackbar(errorSnackBar("请求错误：${e.message}"));
+    Get.showSnackbar(errorSnackBar("请求错误：${e.toString()}"));
   }
 
   void _showMcLoginDialog(BuildContext context) {
