@@ -71,7 +71,7 @@ class MicrosoftDeviceCodeOAuth {
     final response = await http.post(Uri.parse(deviceCodeUrl), body: body);
 
     if (response.statusCode != 200) {
-      throw HttpException('获取设备码失败：${response.body}');
+      throw HttpException('获取设备码失败：${response.reasonPhrase}');
     }
 
     return DeviceCodeResponse.fromJson(jsonDecode(response.body));

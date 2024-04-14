@@ -123,7 +123,6 @@ class _AccountItem extends StatelessWidget {
 }
 
 // FIXME: 头像第一次加载卡顿
-// FIXME: 处理头像加载时可能出现的异常
 class _Avatar extends StatelessWidget {
   const _Avatar(this.account, this.isSelected);
 

@@ -155,12 +155,16 @@ class _MicosoftLoginForm extends StatelessWidget {
 
   Future<void> webViewSubmit(BuildContext context, String code) async {
     _showMcLoginDialog(context);
-    MicrosoftAccount.generateByOAuthCode(code).then((account) {
-      if (account != null) {
-        dialogPop();
-        onSubmit(account);
-      }
-    });
+    try {
+      MicrosoftAccount.generateByOAuthCode(code).then((account) {
+        if (account != null) {
+          dialogPop();
+          onSubmit(account);
+        }
+      });
+    } on HttpException catch (e) {
+      _whenRequestException(e);
+    }
   }
 
   Future<void> deviceCodeSubmit(
@@ -168,13 +172,22 @@ class _MicosoftLoginForm extends StatelessWidget {
     MicrosoftOAuthResponse response,
   ) async {
     _showMcLoginDialog(context);
-    MicrosoftAccount.generateByToken(
-      response.accessToken,
-      response.refreshToken,
-    ).then((account) {
-      dialogPop();
-      onSubmit(account);
-    });
+    try {
+      MicrosoftAccount.generateByToken(
+        response.accessToken,
+        response.refreshToken,
+      ).then((account) {
+        dialogPop();
+        onSubmit(account);
+      });
+    } on HttpException catch (e) {
+      _whenRequestException(e);
+    }
+  }
+
+  void _whenRequestException(HttpException e) {
+    dialogPop();
+    Get.showSnackbar(errorSnackBar("请求错误：${e.message}"));
   }
 
   void _showMcLoginDialog(BuildContext context) {
