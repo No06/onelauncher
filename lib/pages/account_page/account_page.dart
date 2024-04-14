@@ -9,11 +9,14 @@ import 'package:flutter/material.dart' hide Dialog;
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/utils/auth/ms_device_code_oauth.dart';
+import 'package:one_launcher/utils/auth/ms_oauth.dart';
 import 'package:one_launcher/utils/form_validator.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
 import 'package:one_launcher/widgets/route_page.dart';
 import 'package:one_launcher/widgets/textfield.dart';
 import 'package:one_launcher/widgets/widget_group.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'package:webview_windows/webview_windows.dart';
 import 'package:window_manager/window_manager.dart';
@@ -80,6 +83,18 @@ class AccountPage extends RoutePage {
             child: Padding(
               padding: const EdgeInsets.all(32),
               child: FloatingActionButton(
+                // onPressed: () => showDialog(
+                //   context: context,
+                //   barrierDismissible: false,
+                //   builder: (context) => _DeviceCodeLoginDialog(
+                //     response: (accessToken) {
+                //       dialogPop();
+                //       if (accessToken != null) {
+
+                //       }
+                //     },
+                //   ),
+                // ),
                 onPressed: () => showDialog(
                   context: Get.context!,
                   builder: (context) => _AddAccountDialog(

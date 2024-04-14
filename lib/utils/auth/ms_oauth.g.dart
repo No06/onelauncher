@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'ms_oauth_response.dart';
+part of 'ms_oauth.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

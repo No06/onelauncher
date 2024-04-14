@@ -147,6 +147,33 @@ class WarningDialog extends StatelessWidget {
   }
 }
 
-void dialogPop() {
-  Navigator.of(Get.context!).pop();
+class FutureDialog<T> extends StatelessWidget {
+  const FutureDialog({
+    super.key,
+    this.title,
+    this.content,
+    this.onCanceled,
+    required this.future,
+    this.autoClose = true,
+  });
+
+  final Widget? title;
+  final Widget? content;
+  final VoidCallback? onCanceled;
+  final Future<T> future;
+  final bool autoClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultDialog(
+      title: title,
+      content: content,
+      actions: [
+        if (onCanceled != null) DialogCancelButton(onPressed: onCanceled),
+      ],
+    );
+  }
 }
+
+void dialogPop([BuildContext? context]) =>
+    Navigator.of(context ?? Get.context!).pop();

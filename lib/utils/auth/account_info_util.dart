@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:one_launcher/utils/auth/profile.dart';
 
 class AccountInfoUtil {
-  AccountInfoUtil(String minecraftAccessToken)
+  AccountInfoUtil(String mcAccessToken)
       : dio = Dio(
           BaseOptions(
-            headers: {"Authorization": "Bearer $minecraftAccessToken"},
+            headers: {"Authorization": "Bearer $mcAccessToken"},
           ),
         );
 

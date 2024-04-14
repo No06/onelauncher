@@ -62,7 +62,7 @@ class _AccountItem extends StatelessWidget {
                     : EdgeInsets.zero,
                 child: Material(
                   elevation: isTapDown.value ? 0 : 3,
-                  shape: RoundedRectangleBorder(
+                  shape: const RoundedRectangleBorder(
                       borderRadius: kDefaultBorderRadius),
                   clipBehavior: Clip.antiAlias,
                   child: AnimatedContainer(
@@ -122,7 +122,8 @@ class _AccountItem extends StatelessWidget {
   }
 }
 
-// FIXME:头像第一次加载卡顿
+// FIXME: 头像第一次加载卡顿
+// FIXME: 处理头像加载时可能出现的异常
 class _Avatar extends StatelessWidget {
   const _Avatar(this.account, this.isSelected);
 
@@ -143,7 +144,7 @@ class _Avatar extends StatelessWidget {
           final snapshot = useFuture(future);
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
-              if (kDebugMode) throw snapshot.error!;
+              if (kDebugMode) debugPrint(snapshot.error!.toString());
               return const Icon(Icons.error);
             }
             return Padding(
