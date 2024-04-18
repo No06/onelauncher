@@ -3,8 +3,7 @@ import 'dart:convert';
 import 'package:one_launcher/utils/http.dart';
 
 abstract class XboxAuth {
-  static const xboxLiveAuthUrl =
-      'https://user.auth.xboxlive.com/user/authenticate';
+  static const xboxLiveAuthUrl = 'https://user.auth.xboxlive.com/user/authenticate';
   static const xstsAuthUrl = 'https://xsts.auth.xboxlive.com/xsts/authorize';
   static const _header = {
     "Content-Type": "application/json",
@@ -15,9 +14,10 @@ abstract class XboxAuth {
   ///
   /// 随后返回 Xbox Live 的 Token 和 UserHash.
   ///
+  /// 如果是使用设备码登录则需在 [msAccessToken] 前加上 "d=" 字符串
+  ///
   /// 返回Map，keys: "token", "uhs".
-  static Future<Map<String, String>> getXboxLiveToken(
-      String msAccessToken) async {
+  static Future<Map<String, String>> getXboxLiveToken(String msAccessToken) async {
     final body = {
       "Properties": {
         "AuthMethod": "RPS",
@@ -27,12 +27,8 @@ abstract class XboxAuth {
       "RelyingParty": "http://auth.xboxlive.com",
       "TokenType": "JWT"
     };
-    final response = await httpPost(xboxLiveAuthUrl,
-        body: jsonEncode(body), header: _header);
-    return {
-      "token": response['Token'],
-      "uhs": response['DisplayClaims']['xui'][0]['uhs']
-    };
+    final response = await httpPost(xboxLiveAuthUrl, body: jsonEncode(body), header: _header);
+    return {"token": response['Token'], "uhs": response['DisplayClaims']['xui'][0]['uhs']};
   }
 
   /// 获取XSTS令牌
@@ -51,8 +47,7 @@ abstract class XboxAuth {
       "RelyingParty": "rp://api.minecraftservices.com/",
       "TokenType": "JWT"
     };
-    final response =
-        await httpPost(xstsAuthUrl, body: jsonEncode(params), header: _header);
+    final response = await httpPost(xstsAuthUrl, body: jsonEncode(params), header: _header);
     return response['Token'];
   }
 }

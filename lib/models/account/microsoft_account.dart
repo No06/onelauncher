@@ -22,9 +22,7 @@ class MicrosoftAccount extends Account {
   })  : _uuid = uuid,
         _displayName = displayName,
         _minecraftAccessToken = MinecraftAccessToken(
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-            notAfter: notAfter),
+            accessToken: accessToken, refreshToken: refreshToken, notAfter: notAfter),
         _skin = skin;
 
   String _displayName;
@@ -73,15 +71,18 @@ class MicrosoftAccount extends Account {
     String code,
   ) async {
     final response = await MicrosoftOAuth.getAccessToken(code);
-    return await generateByMsOAuthResponse(response);
+    return await generateByMsToken(
+      msAccessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    );
   }
 
   /// 使用 Microsoft AccessToken 与 RefreshToken 生成一个 [MicrosoftAccount] 对象
-  static Future<MicrosoftAccount> generateByMsOAuthResponse(
-    MicrosoftOAuthResponse msResponse,
-  ) async {
-    final response =
-        await MinecraftAuth.loginWithMsAccessToken(msResponse.accessToken);
+  static Future<MicrosoftAccount> generateByMsToken({
+    required String msAccessToken,
+    required String refreshToken,
+  }) async {
+    final response = await MinecraftAuth.loginWithMsAccessToken(msAccessToken);
     final profileUtil = AccountInfoUtil(response.accessToken);
     final profile = await profileUtil.getProfile();
     final uuid = profile.id;
@@ -90,19 +91,17 @@ class MicrosoftAccount extends Account {
       uuid: uuid,
       displayName: username,
       accessToken: response.accessToken,
-      refreshToken: msResponse.refreshToken,
+      refreshToken: refreshToken,
       notAfter: MinecraftAccessToken.validityToExpiredTime(response.expiresIn),
       skin: profile.skins.first,
     );
   }
 
-  Future<Profile> getProfile() async =>
-      AccountInfoUtil(await getAccessToken()).getProfile();
+  Future<Profile> getProfile() async => AccountInfoUtil(await getAccessToken()).getProfile();
 
   Future<OnlineSkin> _getSkin() async => (await getProfile()).skins.first;
 
-  factory MicrosoftAccount.fromJson(JsonMap json) =>
-      _$MicrosoftAccountFromJson(json);
+  factory MicrosoftAccount.fromJson(JsonMap json) => _$MicrosoftAccountFromJson(json);
 
   @override
   JsonMap toJson() => _$MicrosoftAccountToJson(this);

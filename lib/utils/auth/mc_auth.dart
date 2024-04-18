@@ -18,8 +18,7 @@ class MinecraftAuthResponse {
   @JsonKey(name: "expires_in")
   final int expiresIn;
 
-  factory MinecraftAuthResponse.fromJson(JsonMap json) =>
-      _$MinecraftAuthResponseFromJson(json);
+  factory MinecraftAuthResponse.fromJson(JsonMap json) => _$MinecraftAuthResponseFromJson(json);
 }
 
 abstract class MinecraftAuth {
@@ -30,8 +29,7 @@ abstract class MinecraftAuth {
     required String uhs,
     required String xstsToken,
   }) async {
-    const url =
-        'https://api.minecraftservices.com/authentication/login_with_xbox';
+    const url = 'https://api.minecraftservices.com/authentication/login_with_xbox';
     const header = {"Content-Type": "application/json"};
     final params = {"identityToken": "XBL3.0 x=$uhs;$xstsToken"};
     final response = MinecraftAuthResponse.fromJson(

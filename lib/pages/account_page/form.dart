@@ -4,8 +4,7 @@ class _OfflineLoginForm extends HookWidget {
   late final TextEditingController uuidTextController;
   late final TextEditingController usernameTextController;
 
-  static String getUuidFromName(String name) =>
-      const Uuid().v5(Uuid.NAMESPACE_NIL, name);
+  static String getUuidFromName(String name) => const Uuid().v5(Uuid.NAMESPACE_NIL, name);
 
   OfflineAccount submit() => OfflineAccount(
         displayName: usernameTextController.text,
@@ -22,8 +21,7 @@ class _OfflineLoginForm extends HookWidget {
     );
     // uuid 监听 用户名变化
     usernameTextController.addListener(
-      () => uuidTextController.text =
-          getUuidFromName(usernameTextController.text),
+      () => uuidTextController.text = getUuidFromName(usernameTextController.text),
     );
 
     return Theme(
@@ -175,7 +173,10 @@ class _MicosoftLoginForm extends StatelessWidget {
   ) async {
     _showMcLoginDialog(context);
     try {
-      MicrosoftAccount.generateByMsOAuthResponse(response).then((account) {
+      MicrosoftAccount.generateByMsToken(
+        msAccessToken: "d=${response.accessToken}",
+        refreshToken: response.refreshToken,
+      ).then((account) {
         dialogPop();
         onSubmit(account);
       });
@@ -269,8 +270,7 @@ class _LoginWebviewState extends State<_LoginWebview> {
     try {
       await _controller.initialize();
 
-      _subscriptions
-          .add(_controller.containsFullScreenElementChanged.listen((flag) {
+      _subscriptions.add(_controller.containsFullScreenElementChanged.listen((flag) {
         debugPrint('Contains fullscreen element: $flag');
         windowManager.setFullScreen(flag);
       }));
@@ -339,9 +339,7 @@ class _LoginWebviewState extends State<_LoginWebview> {
                 stream: _controller.historyChanged,
                 builder: (context, snapshot) => IconButton(
                   icon: const Icon(Icons.chevron_left),
-                  onPressed: snapshot.data?.canGoBack ?? false
-                      ? _controller.goBack
-                      : null,
+                  onPressed: snapshot.data?.canGoBack ?? false ? _controller.goBack : null,
                 ),
               ),
               IconButton(
@@ -372,8 +370,7 @@ class _LoginWebviewState extends State<_LoginWebview> {
                 StreamBuilder<LoadingState>(
                   stream: _controller.loadingState,
                   builder: (context, snapshot) {
-                    if (snapshot.hasData &&
-                        snapshot.data == LoadingState.loading) {
+                    if (snapshot.hasData && snapshot.data == LoadingState.loading) {
                       return const LinearProgressIndicator();
                     }
                     return const SizedBox();
@@ -519,8 +516,7 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
                                     () => Text(
                                       visible.value
                                           ? _deviceCode!
-                                          : _deviceCode!
-                                              .replaceAll(RegExp(r'.'), '∗'),
+                                          : _deviceCode!.replaceAll(RegExp(r'.'), '∗'),
                                       style: textTheme.titleLarge?.copyWith(
                                         letterSpacing: 8,
                                         color: colors.onSecondaryContainer,
