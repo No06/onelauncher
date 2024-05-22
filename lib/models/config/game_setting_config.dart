@@ -70,7 +70,7 @@ class GameSettingConfig extends ChangeNotifier {
   /// java 序列化函数
   static Java? _javaFromJson(Java? item) {
     if (item == null) return null;
-    if (JavaUtil.set.contains(item)) {
+    if (JavaManager.set.contains(item)) {
       return item;
     }
     return null;

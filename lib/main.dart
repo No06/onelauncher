@@ -39,7 +39,7 @@ Future<void> init() async {
   }
 
   await Future.wait([
-    JavaUtil.init(),
+    JavaManager.init(),
     initWindow(),
     GetStorage.init().then((value) => AppConfig.init()),
   ]);

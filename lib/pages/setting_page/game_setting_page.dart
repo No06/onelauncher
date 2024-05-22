@@ -55,7 +55,7 @@ class _GameSettingPage extends _SettingBasePage {
                                     onChanged: (value) => config.java = value,
                                   ),
                                 ] +
-                                JavaUtil.set
+                                JavaManager.set
                                     .map(
                                       (e) => RadioListTile(
                                         value: e,

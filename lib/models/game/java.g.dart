@@ -8,10 +8,8 @@ part of 'java.dart';
 
 Java _$JavaFromJson(Map<String, dynamic> json) => Java(
       json['path'] as String,
-      args: json['args'] as String? ?? "",
     );
 
 Map<String, dynamic> _$JavaToJson(Java instance) => <String, dynamic>{
       'path': instance.path,
-      'args': instance.args,
     };

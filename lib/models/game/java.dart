@@ -4,8 +4,6 @@ import 'package:get/utils.dart';
 import 'package:one_launcher/models/game/java_version.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/models/version.dart';
-import 'package:one_launcher/utils/exceptions/java_release_file_not_found.dart';
-import 'package:one_launcher/utils/java_util.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart';
 
@@ -13,14 +11,14 @@ part 'java.g.dart';
 
 @JsonSerializable()
 class Java {
-  Java(this.path, {this.args = ""}) {
-    version = _getVersion();
-  }
+  Java(this.path);
+
+  static final binName = Platform.isWindows ? "java.exe" : "java";
 
   final String path;
 
   @JsonKey(includeFromJson: false, includeToJson: false)
-  late final String version;
+  late final String version = _getVersion();
 
   JavaVersion get versionNumber {
     final split = version.split('.');
@@ -46,8 +44,6 @@ class Java {
         split.reduce((value, element) => "$value.$element"));
   }
 
-  final String args;
-
   String _getVersion() {
     try {
       return _getVersionByReleaseFile();
@@ -65,26 +61,20 @@ class Java {
   /// 从 Java 路径中的 release 文件中获取版本号
   String _getVersionByReleaseFile() {
     const javaVersionLine = "JAVA_VERSION=";
-    final parentPath =
-        path.substring(0, path.length - "/bin/$kJavaBinName".length);
+    final parentPath = path.substring(0, path.length - "/bin/$binName".length);
     final releaseFile = File('$parentPath/release');
 
-    try {
-      final versionLine = releaseFile
-          .readAsLinesSync()
-          .firstWhere((line) => line.startsWith(javaVersionLine))
-          .substring(javaVersionLine.length);
-      const quoteLength = '"'.length;
-      return versionLine.substring(
-          quoteLength, versionLine.length - quoteLength);
-    } catch (e) {
-      throw JavaReleaseFileNotFound(path);
-    }
+    final versionLine = releaseFile
+        .readAsLinesSync()
+        .firstWhere((line) => line.startsWith(javaVersionLine))
+        .substring(javaVersionLine.length);
+    const quoteLength = '"'.length;
+    return versionLine.substring(quoteLength, versionLine.length - quoteLength);
   }
 
   /// 通过运行二进制文件获取版本号
   String _getVersionByRun() {
-    final parentPath = path.substring(0, path.length - kJavaBinName.length);
+    final parentPath = path.substring(0, path.length - binName.length);
     final javacBinName = Platform.isWindows ? "javac.exe" : "javac";
     final javacPath = join(parentPath, javacBinName);
     ProcessResult result = Process.runSync(javacPath, ["-version"]);
@@ -93,12 +83,9 @@ class Java {
     if (result.exitCode != 0) {
       throw Exception("Command Error: $stderr");
     }
-    try {
-      final resultStr = (stdout.isEmpty ? stderr : stdout);
-      return resultStr.substring("javac ".length).trim();
-    } catch (e) {
-      return "unknown";
-    }
+
+    final resultStr = (stdout.isEmpty ? stderr : stdout);
+    return resultStr.substring("javac ".length).trim();
   }
 
   factory Java.fromJson(JsonMap json) => _$JavaFromJson(json);

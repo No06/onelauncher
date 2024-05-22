@@ -158,7 +158,7 @@ class GameLaunchUtil {
     if (game.setting.java == null) {
       // 自动搜寻与游戏版本最佳的 Java
       final targetList = <Java>[];
-      for (var java in JavaUtil.set) {
+      for (var java in JavaManager.set) {
         if (java.versionNumber.major >= minimumVersion &&
                 highestVersion == null ||
             highestVersion != null &&
@@ -168,7 +168,7 @@ class GameLaunchUtil {
       }
       if (targetList.isNotEmpty) {
         // 从低到高排序
-        targetList.sort((a, b) => a.versionNumber.compareTo(b.versionNumber));
+        targetList.sort((a, b) => (a.versionNumber).compareTo(b.versionNumber));
         java = targetList.first;
         if (kDebugMode) {
           print(targetList.map((e) => e.version));
@@ -178,7 +178,7 @@ class GameLaunchUtil {
     } else {
       java = game.setting.java;
       // 检查选择的Java版本是否兼容
-      final majorVersion = java!.versionNumber.major;
+      final majorVersion = (java!.versionNumber).major;
       if (majorVersion < minimumVersion) {
         warningMessages
             .add("选择的Java版本为：$majorVersion, 此游戏版本最低要求为：$minimumVersion。");
@@ -302,9 +302,7 @@ class GameLaunchUtil {
 
   /// 获取游戏启动项
   String get gameArgs {
-    if (loginInfo == null) {
-      throw Exception("必须要有登录信息");
-    }
+    assert(loginInfo != null);
 
     /// 一个映射，用来存储变量名和对应的值
     final gameArgsMap = <String, String?>{
@@ -331,10 +329,11 @@ class GameLaunchUtil {
     }
     // 低版本
     arguments = game.data.minecraftArguments;
-    if (arguments != null) {
-      return replaceVariable(arguments, gameArgsMap);
+    if (arguments == null) {
+      throw Exception("未在游戏中找到JVM参数");
     }
-    throw Exception("未在游戏中找到JVM参数");
+
+    return replaceVariable(arguments, gameArgsMap);
   }
 
   /// 获取JVM参数
