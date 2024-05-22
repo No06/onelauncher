@@ -4,9 +4,8 @@ import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_launcher/widgets/window_caption/window_caption.dart';
-import 'package:one_launcher/widgets/window_caption/button.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:windows_titlebar/windows_titlebar.dart';
 
 import 'pages/home_page.dart';
 
@@ -69,15 +68,13 @@ class _AppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    return MyWindowCaption(
-      brightness: Theme.of(context).brightness,
+    return WindowTitleBar(
       title: const Text(appName),
-      backgroundColor: Colors.transparent,
-      icons: [
-        MyWindowCaptionButton.minimize(
+      actions: [
+        WindowButton.minimize(
           animated: true,
           brightness: brightness,
-          onPressed: () async {
+          onTap: () async {
             bool isMinimized = await windowManager.isMinimized();
             if (isMinimized) {
               windowManager.restore();
@@ -86,29 +83,27 @@ class _AppBar extends StatelessWidget {
             }
           },
         ),
-        _WindowCaptionMaximizeButton(brightness: brightness),
-        MyWindowCaptionButton.close(
+        _MaximizeButton(brightness: brightness),
+        WindowButton.close(
           animated: true,
           brightness: brightness,
-          onPressed: windowManager.close,
+          onTap: windowManager.close,
         ),
       ],
     );
   }
 }
 
-class _WindowCaptionMaximizeButton extends StatefulWidget {
-  const _WindowCaptionMaximizeButton({this.brightness = Brightness.light});
+class _MaximizeButton extends StatefulWidget {
+  const _MaximizeButton({this.brightness = Brightness.light});
 
   final Brightness brightness;
 
   @override
-  State<_WindowCaptionMaximizeButton> createState() =>
-      _WindowCaptionMaximizeButtonState();
+  State<_MaximizeButton> createState() => _MaximizeButtonState();
 }
 
-class _WindowCaptionMaximizeButtonState
-    extends State<_WindowCaptionMaximizeButton> with WindowListener {
+class _MaximizeButtonState extends State<_MaximizeButton> with WindowListener {
   @override
   void initState() {
     super.initState();
@@ -127,16 +122,16 @@ class _WindowCaptionMaximizeButtonState
       future: windowManager.isMaximized(),
       builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
         if (snapshot.data == true) {
-          return MyWindowCaptionButton.unmaximize(
+          return WindowButton.unmaximize(
             animated: true,
             brightness: widget.brightness,
-            onPressed: windowManager.unmaximize,
+            onTap: windowManager.unmaximize,
           );
         }
-        return MyWindowCaptionButton.maximize(
+        return WindowButton.maximize(
           animated: true,
           brightness: widget.brightness,
-          onPressed: windowManager.maximize,
+          onTap: windowManager.maximize,
         );
       },
     );
