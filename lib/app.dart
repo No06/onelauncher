@@ -12,8 +12,10 @@ import 'package:one_launcher/pages/setting_page/setting_page.dart';
 import 'package:one_launcher/widgets/window_caption.dart';
 import 'package:window_manager/window_manager.dart';
 
+final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+BuildContext? get rootScaffoldMessengerContext =>
+    rootScaffoldMessengerKey.currentContext;
 final rootNavigatorKey = GlobalKey<NavigatorState>();
-BuildContext? get rootContext => rootNavigatorKey.currentContext;
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 class SharedAxisPage extends Page {
@@ -50,10 +52,36 @@ class SharedAxisPage extends Page {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  static final _router = GoRouter(
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WindowListener {
+  var isMaximize = ValueNotifier(false);
+
+  @override
+  void initState() {
+    super.initState();
+    windowManager.addListener(this);
+    windowManager.isMaximized().then((value) => isMaximize.value = value);
+  }
+
+  @override
+  void dispose() {
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onWindowMaximize() => setState(() => isMaximize.value = true);
+
+  @override
+  void onWindowUnmaximize() => setState(() => isMaximize.value = false);
+
+  final _router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/play',
     routes: [
@@ -90,13 +118,33 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AppConfig.instance.theme;
-    return ListenableBuilder(
-      listenable: theme,
-      builder: (context, child) => MaterialApp.router(
-        theme: theme.lightTheme(),
-        darkTheme: theme.darkTheme(),
-        themeMode: theme.mode,
-        routerConfig: _router,
+
+    return ValueListenableBuilder(
+      valueListenable: isMaximize,
+      builder: (context, isMaximize, child) => isMaximize
+          ? child!
+          : Padding(
+              padding: const EdgeInsets.all(8),
+              child: DecoratedBox(
+                decoration: const BoxDecoration(boxShadow: [
+                  BoxShadow(
+                    color: Colors.black38,
+                    blurRadius: 6,
+                    spreadRadius: 0,
+                  ),
+                ]),
+                child: child,
+              ),
+            ),
+      child: ListenableBuilder(
+        listenable: theme,
+        builder: (context, child) => MaterialApp.router(
+          scaffoldMessengerKey: rootScaffoldMessengerKey,
+          theme: theme.lightTheme(),
+          darkTheme: theme.darkTheme(),
+          themeMode: theme.mode,
+          routerConfig: _router,
+        ),
       ),
     );
   }
@@ -141,13 +189,11 @@ class _MainPage extends StatelessWidget {
         children: [
           const Divider(height: 1),
           Expanded(
-            child: Row(
-              children: [
-                const _NavigationBar(),
-                const VerticalDivider(width: 1),
-                Expanded(child: child),
-              ],
-            ),
+            child: Row(children: [
+              const _NavigationBar(),
+              const VerticalDivider(width: 1),
+              Expanded(child: child),
+            ]),
           ),
         ],
       ),
@@ -197,7 +243,7 @@ class _NavigationItem extends StatelessWidget {
           duration: duration(),
           builder: (context, color, child) => Material(
             borderRadius: kDefaultBorderRadius,
-            color: color,
+            color: isSelected ? color : Colors.transparent,
             animationDuration: duration(),
             elevation: isSelected ? 3 : 0,
             clipBehavior: Clip.antiAlias,
@@ -252,37 +298,42 @@ class _NavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    const divider = SizedBox(height: 2);
+    return const SizedBox(
       width: 200,
-      color: Colors.transparent,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-      child: const Column(children: [
-        _NavigationItem(
-          routePath: "/account",
-          title: "账号",
-          iconData: Icons.people_outline,
-          selectedIconData: Icons.people,
-        ),
-        _NavigationItem(
-          routePath: "/play",
-          title: "开始游戏",
-          iconData: Icons.sports_esports_outlined,
-          selectedIconData: Icons.sports_esports,
-        ),
-        _NavigationItem(
-          routePath: "/appearance",
-          title: "外观",
-          iconData: Icons.palette_outlined,
-          selectedIconData: Icons.palette,
-        ),
-        Spacer(),
-        _NavigationItem(
-          routePath: "/setting",
-          title: "设置",
-          iconData: Icons.settings_outlined,
-          selectedIconData: Icons.settings,
-        ),
-      ]),
+      height: double.infinity,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        child: Column(children: [
+          _NavigationItem(
+            routePath: "/account",
+            title: "账号",
+            iconData: Icons.people_outline,
+            selectedIconData: Icons.people,
+          ),
+          divider,
+          _NavigationItem(
+            routePath: "/play",
+            title: "开始游戏",
+            iconData: Icons.sports_esports_outlined,
+            selectedIconData: Icons.sports_esports,
+          ),
+          divider,
+          _NavigationItem(
+            routePath: "/appearance",
+            title: "外观",
+            iconData: Icons.palette_outlined,
+            selectedIconData: Icons.palette,
+          ),
+          Spacer(),
+          _NavigationItem(
+            routePath: "/setting",
+            title: "设置",
+            iconData: Icons.settings_outlined,
+            selectedIconData: Icons.settings,
+          ),
+        ]),
+      ),
     );
   }
 }

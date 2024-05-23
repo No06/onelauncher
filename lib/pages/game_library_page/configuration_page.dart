@@ -117,13 +117,13 @@ class _ConfigurationPage extends StatelessWidget {
                                       }
                                       return null;
                                     },
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                       border: OutlineInputBorder(
                                           borderRadius: kDefaultBorderRadius),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: kDefaultBorderRadius,
-                                        borderSide: const BorderSide(
-                                            color: Colors.grey),
+                                        borderSide:
+                                            BorderSide(color: Colors.grey),
                                       ),
                                       labelText: "别名",
                                     ),
@@ -175,8 +175,8 @@ class _ConfigurationPage extends StatelessWidget {
                   iconSize: 32,
                   icon: const Icon(Icons.refresh),
                   style: const ButtonStyle(
-                    elevation: MaterialStatePropertyAll(5),
-                    shadowColor: MaterialStatePropertyAll(Colors.black87),
+                    elevation: WidgetStatePropertyAll(5),
+                    shadowColor: WidgetStatePropertyAll(Colors.black87),
                   ),
                 ),
               ],

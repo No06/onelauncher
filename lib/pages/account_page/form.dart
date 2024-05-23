@@ -259,12 +259,11 @@ class _LoginWebviewState extends State<_LoginWebview> {
 
   @override
   void dispose() {
-    for (var s in _subscriptions) {
-      s.cancel();
-    }
-    _controller.clearCache();
-    _controller.clearCookies();
-    _controller.dispose();
+    Future.wait([
+      for (var s in _subscriptions) s.cancel(),
+      _controller.clearCache(),
+      _controller.clearCookies(),
+    ]).then((value) => _controller.dispose());
     super.dispose();
   }
 
@@ -364,26 +363,20 @@ class _LoginWebviewState extends State<_LoginWebview> {
           ),
         ),
         Expanded(
-          child: Card(
-            color: Colors.transparent,
-            margin: EdgeInsets.zero,
-            elevation: 0,
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            child: Stack(
-              children: [
-                Webview(_controller),
-                StreamBuilder<LoadingState>(
-                  stream: _controller.loadingState,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData &&
-                        snapshot.data == LoadingState.loading) {
-                      return const LinearProgressIndicator();
-                    }
-                    return const SizedBox();
-                  },
-                ),
-              ],
-            ),
+          child: Stack(
+            children: [
+              Webview(_controller),
+              StreamBuilder<LoadingState>(
+                stream: _controller.loadingState,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData &&
+                      snapshot.data == LoadingState.loading) {
+                    return const LinearProgressIndicator();
+                  }
+                  return const SizedBox();
+                },
+              ),
+            ],
           ),
         ),
       ],
@@ -450,10 +443,7 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
     }
   }
 
-  Future<void> _clip() async {
-    await Clipboard.setData(ClipboardData(text: _deviceCode!));
-    showSnackbar(successSnackBar("复制成功"));
-  }
+  Future<void> _clip() => Clipboard.setData(ClipboardData(text: _deviceCode!));
 
   @override
   void initState() {
