@@ -217,12 +217,14 @@ class GameLaunchUtil {
   Future<void> extractNativesLibraries() async {
     var needExtract = true;
     final outputDirectory = Directory(game.nativesPath);
+    if (!await outputDirectory.exists()) await outputDirectory.create();
+
     final targetFiles = outputDirectory.listSync();
     final targerFilesMap = Map.fromIterables(
       targetFiles.map((e) => e.path.split("/").last),
       targetFiles,
     );
-    if (outputDirectory.existsSync() && targetFiles.isNotEmpty) {
+    if (await outputDirectory.exists() && targetFiles.isNotEmpty) {
       final archives = _nativesLibraries.map(
         (e) => ZipDecoder().decodeBytes(
           File(e.getPath(game.librariesPath)).readAsBytesSync(),
