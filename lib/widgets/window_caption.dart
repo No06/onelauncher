@@ -59,20 +59,19 @@ class _MaximizeButtonState extends State<_MaximizeButton> with WindowListener {
     super.dispose();
   }
 
-  late final unmaximizeButton = WindowButton.unmaximize(
-    animated: true,
-    brightness: Theme.of(context).brightness,
-    onTap: windowManager.unmaximize,
-  );
-
-  late final maximizeButton = WindowButton.maximize(
-    animated: true,
-    brightness: Theme.of(context).brightness,
-    onTap: windowManager.maximize,
-  );
-
   @override
   Widget build(BuildContext context) {
+    final unmaximizeButton = WindowButton.unmaximize(
+      animated: true,
+      brightness: Theme.of(context).brightness,
+      onTap: windowManager.unmaximize,
+    );
+
+    final maximizeButton = WindowButton.maximize(
+      animated: true,
+      brightness: Theme.of(context).brightness,
+      onTap: windowManager.maximize,
+    );
     if (isMaximize == null) {
       return FutureBuilder(
         future: windowManager.isMaximized(),

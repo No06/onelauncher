@@ -13,6 +13,7 @@ import 'package:one_launcher/widgets/window_caption.dart';
 import 'package:window_manager/window_manager.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
+BuildContext? get rootContext => rootNavigatorKey.currentContext;
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 class SharedAxisPage extends Page {
@@ -89,11 +90,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AppConfig.instance.theme;
-    return MaterialApp.router(
-      theme: theme.lightTheme(),
-      darkTheme: theme.darkTheme(),
-      themeMode: theme.mode,
-      routerConfig: _router,
+    return ListenableBuilder(
+      listenable: theme,
+      builder: (context, child) => MaterialApp.router(
+        theme: theme.lightTheme(),
+        darkTheme: theme.darkTheme(),
+        themeMode: theme.mode,
+        routerConfig: _router,
+      ),
     );
   }
 }
