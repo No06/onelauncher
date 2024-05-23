@@ -15,7 +15,7 @@ import 'package:one_launcher/widgets/build_widgets_with_divider.dart';
 import 'package:one_launcher/utils/file/file_picker.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
-import 'package:one_launcher/widgets/route_page.dart';
+import 'package:one_launcher/pages/base_page.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
 
 part 'filter_rule.dart';
@@ -25,7 +25,7 @@ part 'configuration_page.dart';
 _FilterRule get _filterRule => _FilterRule.instance;
 
 class GameLibraryPage extends RoutePage {
-  const GameLibraryPage({super.key, required super.pageName});
+  const GameLibraryPage({super.key, super.pageName = "开始游戏"});
 
   static const tabs = {
     "主页": _HomePage(),

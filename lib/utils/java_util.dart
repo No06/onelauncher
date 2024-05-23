@@ -11,37 +11,25 @@ abstract final class JavaManager {
   static Future<void> init() async {
     _set.clear();
     final envPath = await getAllOnPathEnv();
-    _set.addAll(envPath);
+    _set.addAll(envPath ?? List.empty());
     _set.addAll(await getAllOnJavaEnv());
   }
 
   static get _searchBinName => Platform.isWindows ? "where" : "which";
 
   /// 从环境变量 PATH 中获取
-  static Future<List<Java>> getAllOnPathEnv() async {
+  static Future<Iterable<Java>?> getAllOnPathEnv() async {
     final args =
         Platform.isWindows ? ["\$PATH:java"] : ["-a", "\$PATH", "java"];
     final processResult =
         await Process.run(_searchBinName, args, runInShell: true);
     final result = (processResult.stdout as String).trim();
 
-    var objects = <Java>[];
-    var start = 0;
-
-    for (int i = 0; i <= result.length;) {
-      // 检查是否到达字符串末尾或者遇到换行符
-      if (i == result.length || (result[i] == '\r' && result[i + 1] == '\n')) {
-        // 从上一个起点到当前位置的子字符串
-        String path = result.substring(start, i);
-        objects.add(Java(path));
-        // 更新起点为下一行的开始
-        start = i + 2;
-        // 跳过换行符
-        i++;
-      }
+    final splitStr = result.split("\r\n");
+    if (splitStr.length == 1 && splitStr[0].isEmpty) {
+      return null;
     }
-
-    return objects;
+    return splitStr.map((path) => Java(resolveSymbolicLink(path)));
   }
 
   /// 从 Java 环境变量获取

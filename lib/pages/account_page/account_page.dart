@@ -14,7 +14,7 @@ import 'package:one_launcher/utils/auth/ms_device_code_oauth.dart';
 import 'package:one_launcher/utils/auth/ms_oauth.dart';
 import 'package:one_launcher/utils/form_validator.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
-import 'package:one_launcher/widgets/route_page.dart';
+import 'package:one_launcher/pages/base_page.dart';
 import 'package:one_launcher/widgets/textfield.dart';
 import 'package:one_launcher/widgets/widget_group.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,7 +34,7 @@ part 'account_item.dart';
 part 'add_account_dialog.dart';
 
 class AccountPage extends RoutePage {
-  const AccountPage({super.key, required super.pageName});
+  const AccountPage({super.key, super.pageName = "账号"});
 
   @override
   Widget body(BuildContext context) {

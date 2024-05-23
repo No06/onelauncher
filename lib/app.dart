@@ -1,36 +1,102 @@
 import 'dart:io';
 
+import 'package:animations/animations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:one_launcher/pages/account_page/account_page.dart';
+import 'package:one_launcher/pages/appearance_page.dart';
+import 'package:one_launcher/pages/game_library_page/game_library_page.dart';
+import 'package:one_launcher/pages/setting_page/setting_page.dart';
+import 'package:one_launcher/widgets/window_caption.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:windows_titlebar/windows_titlebar.dart';
 
-import 'pages/home_page.dart';
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+final _shellNavigatorKey = GlobalKey<NavigatorState>();
+
+class SharedAxisPage extends Page {
+  const SharedAxisPage({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Route createRoute(BuildContext context) {
+    return PageRouteBuilder(
+      settings: this,
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          SharedAxisTransition(
+        transitionType: SharedAxisTransitionType.vertical,
+        fillColor: const Color.fromRGBO(0, 0, 0, 0),
+        animation: animation,
+        secondaryAnimation: secondaryAnimation,
+        child: child,
+      ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 0.1);
+        const end = Offset.zero;
+        const curve = Curves.ease;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+  }
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static final _router = GoRouter(
+    navigatorKey: rootNavigatorKey,
+    initialLocation: '/play',
+    routes: [
+      ShellRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        navigatorKey: _shellNavigatorKey,
+        builder: (context, state, child) => _MainPage(child: child),
+        routes: [
+          GoRoute(
+            path: '/account',
+            pageBuilder: (context, state) =>
+                SharedAxisPage(key: state.pageKey, child: const AccountPage()),
+          ),
+          GoRoute(
+            path: '/play',
+            pageBuilder: (context, state) => SharedAxisPage(
+                key: state.pageKey, child: const GameLibraryPage()),
+          ),
+          GoRoute(
+            path: '/appearance',
+            pageBuilder: (context, state) => SharedAxisPage(
+                key: state.pageKey, child: const AppearancePage()),
+          ),
+          GoRoute(
+            path: '/setting',
+            pageBuilder: (context, state) =>
+                SharedAxisPage(key: state.pageKey, child: const SettingPage()),
+          ),
+        ],
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final theme = AppConfig.instance.theme;
-    return GetMaterialApp(
-      builder: (context, widget) {
-        Widget errorWidget(FlutterErrorDetails errorDetails) => Scaffold(
-              body: Center(
-                child: Text('遇到了预料之外的错误：${errorDetails.library}'),
-              ),
-            );
-        ErrorWidget.builder = (errorDetails) => errorWidget(errorDetails);
-        if (widget != null) return widget;
-        throw StateError('widget is null');
-      },
+    return GetMaterialApp.router(
       theme: theme.lightTheme(),
       darkTheme: theme.darkTheme(),
       themeMode: theme.mode,
-      debugShowCheckedModeBanner: false,
-      home: const DragToResizeArea(child: HomePage()),
+      routeInformationParser: _router.routeInformationParser,
+      routeInformationProvider: _router.routeInformationProvider,
+      routerDelegate: _router.routerDelegate,
     );
   }
 }
@@ -52,7 +118,7 @@ class AppPage extends StatelessWidget {
           appBar: Platform.isWindows
               ? const PreferredSize(
                   preferredSize: Size.fromHeight(kWindowCaptionHeight),
-                  child: _AppBar(),
+                  child: MyWindowCaption(),
                 )
               : null,
           body: body,
@@ -62,88 +128,160 @@ class AppPage extends StatelessWidget {
   }
 }
 
-class _AppBar extends StatelessWidget {
-  const _AppBar();
+class _MainPage extends StatelessWidget {
+  const _MainPage({required this.child});
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return WindowTitleBar(
-      title: const Text(appName),
-      actions: [
-        WindowButton.minimize(
-          animated: true,
-          brightness: brightness,
-          onTap: () async {
-            bool isMinimized = await windowManager.isMinimized();
-            if (isMinimized) {
-              windowManager.restore();
-            } else {
-              windowManager.minimize();
-            }
-          },
-        ),
-        _MaximizeButton(brightness: brightness),
-        WindowButton.close(
-          animated: true,
-          brightness: brightness,
-          onTap: windowManager.close,
-        ),
-      ],
+    return AppPage(
+      body: Column(
+        children: [
+          const Divider(height: 1),
+          Expanded(
+            child: Row(
+              children: [
+                const _NavigationBar(),
+                const VerticalDivider(width: 1),
+                Expanded(child: child),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _MaximizeButton extends StatefulWidget {
-  const _MaximizeButton({this.brightness = Brightness.light});
+class _NavigationItem extends StatelessWidget {
+  const _NavigationItem({
+    required this.routePath,
+    required this.title,
+    required this.iconData,
+    required this.selectedIconData,
+  });
 
-  final Brightness brightness;
-
-  @override
-  State<_MaximizeButton> createState() => _MaximizeButtonState();
-}
-
-class _MaximizeButtonState extends State<_MaximizeButton> with WindowListener {
-  @override
-  void initState() {
-    super.initState();
-    windowManager.addListener(this);
-  }
-
-  @override
-  void dispose() {
-    windowManager.removeListener(this);
-    super.dispose();
-  }
+  final String routePath;
+  final String title;
+  final IconData iconData;
+  final IconData selectedIconData;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: windowManager.isMaximized(),
-      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-        if (snapshot.data == true) {
-          return WindowButton.unmaximize(
-            animated: true,
-            brightness: widget.brightness,
-            onTap: windowManager.unmaximize,
-          );
-        }
-        return WindowButton.maximize(
-          animated: true,
-          brightness: widget.brightness,
-          onTap: windowManager.maximize,
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final unSelectedColor = theme.scaffoldBackgroundColor;
+    final selectedColor = colors.primary;
+    final selectedTextColor = colors.onPrimary;
+    final unSelectedTextColor = colors.inverseSurface;
+    final hoverColor = selectedColor.withOpacity(.15);
+
+    return ValueListenableBuilder(
+      valueListenable: GoRouter.of(context).routeInformationProvider,
+      builder: (context, info, child) {
+        final currentRoutePath = info.uri.path;
+        final isSelected = currentRoutePath == routePath;
+
+        tween() => isSelected
+            ? ColorTween(begin: unSelectedColor, end: selectedColor)
+            : ColorTween(begin: selectedColor, end: unSelectedColor);
+
+        duration() => isSelected ? Durations.short3 : Duration.zero;
+
+        iconData() => isSelected ? selectedIconData : this.iconData;
+
+        return TweenAnimationBuilder(
+          tween: tween(),
+          duration: duration(),
+          builder: (context, color, child) => Material(
+            borderRadius: kDefaultBorderRadius,
+            color: color,
+            animationDuration: duration(),
+            elevation: isSelected ? 3 : 0,
+            clipBehavior: Clip.antiAlias,
+            child: child,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: InkWell(
+              onTap: () => GoRouter.of(_shellNavigatorKey.currentState!.context)
+                  .go(routePath),
+              hoverColor: hoverColor,
+              splashColor: selectedColor,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                child: TweenAnimationBuilder(
+                  tween: isSelected
+                      ? ColorTween(
+                          begin: unSelectedTextColor, end: selectedTextColor)
+                      : ColorTween(
+                          begin: selectedTextColor, end: unSelectedTextColor),
+                  duration: Durations.short3,
+                  builder: (context, color, child) => Wrap(
+                    spacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Icon(
+                        key: const ValueKey("icon"),
+                        iconData(),
+                        color: color,
+                      ),
+                      Text(
+                        key: ValueKey(title),
+                        title,
+                        style:
+                            theme.textTheme.labelLarge!.copyWith(color: color),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         );
       },
     );
   }
+}
+
+class _NavigationBar extends StatelessWidget {
+  const _NavigationBar();
 
   @override
-  void onWindowMaximize() {
-    setState(() {});
-  }
-
-  @override
-  void onWindowUnmaximize() {
-    setState(() {});
+  Widget build(BuildContext context) {
+    return Container(
+      width: 200,
+      color: Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+      child: const Column(children: [
+        _NavigationItem(
+          routePath: "/account",
+          title: "账号",
+          iconData: Icons.people_outline,
+          selectedIconData: Icons.people,
+        ),
+        _NavigationItem(
+          routePath: "/play",
+          title: "开始游戏",
+          iconData: Icons.sports_esports_outlined,
+          selectedIconData: Icons.sports_esports,
+        ),
+        _NavigationItem(
+          routePath: "/appearance",
+          title: "外观",
+          iconData: Icons.palette_outlined,
+          selectedIconData: Icons.palette,
+        ),
+        Spacer(),
+        _NavigationItem(
+          routePath: "/setting",
+          title: "设置",
+          iconData: Icons.settings_outlined,
+          selectedIconData: Icons.settings,
+        ),
+      ]),
+    );
   }
 }

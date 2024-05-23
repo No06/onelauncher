@@ -2,10 +2,10 @@ import 'package:one_launcher/models/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
-import 'package:one_launcher/widgets/route_page.dart';
+import 'package:one_launcher/pages/base_page.dart';
 
 class AppearancePage extends RoutePage {
-  const AppearancePage({super.key, required super.pageName});
+  const AppearancePage({super.key, super.pageName = "外观"});
 
   static const radioValues = {
     ThemeMode.system: "跟随系统",
@@ -49,8 +49,7 @@ class AppearancePage extends RoutePage {
                 Text(
                   "主题",
                   style: TextStyle(
-                    fontSize:
-                        Theme.of(Get.context!).textTheme.titleLarge!.fontSize,
+                    fontSize: Theme.of(context).textTheme.titleLarge!.fontSize,
                     height: 1.5,
                   ),
                 ),
