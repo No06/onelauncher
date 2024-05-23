@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:one_launcher/pages/account_page/account_page.dart';
 import 'package:one_launcher/pages/appearance_page.dart';
 import 'package:one_launcher/pages/game_library_page/game_library_page.dart';
@@ -90,13 +89,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AppConfig.instance.theme;
-    return GetMaterialApp.router(
+    return MaterialApp.router(
       theme: theme.lightTheme(),
       darkTheme: theme.darkTheme(),
       themeMode: theme.mode,
-      routeInformationParser: _router.routeInformationParser,
-      routeInformationProvider: _router.routeInformationProvider,
-      routerDelegate: _router.routerDelegate,
+      routerConfig: _router,
     );
   }
 }

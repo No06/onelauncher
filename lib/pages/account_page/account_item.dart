@@ -213,7 +213,7 @@ class _Actions extends StatelessWidget {
           icon: Icon(Icons.delete, color: fontColor),
           onPressed: () {
             showDialog(
-              context: Get.context!,
+              context: context,
               builder: (context) => WarningDialog(
                 title: const Text("删除用户"),
                 content: const Text("你确定要删除这条数据吗？"),

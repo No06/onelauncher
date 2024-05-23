@@ -77,7 +77,7 @@ class _ConfigurationPage extends StatelessWidget {
                 FloatingActionButton(
                   child: const Icon(Icons.add),
                   onPressed: () => showDialog(
-                    context: Get.context!,
+                    context: context,
                     builder: (_) => HookBuilder(
                       builder: (context) {
                         final nameTextCtl = useTextEditingController();

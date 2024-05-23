@@ -97,7 +97,7 @@ class AccountPage extends RoutePage {
                 //   ),
                 // ),
                 onPressed: () => showDialog(
-                  context: Get.context!,
+                  context: context,
                   builder: (context) => _AddAccountDialog(
                     onSubmit: (account) {
                       if (appConfig.accounts.add(account)) {

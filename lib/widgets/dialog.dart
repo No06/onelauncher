@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:nil/nil.dart';
+import 'package:one_launcher/app.dart';
 
 class DialogConfirmButton extends StatelessWidget {
   const DialogConfirmButton({super.key, this.onPressed, this.confirmText});
@@ -176,4 +176,4 @@ class FutureDialog<T> extends StatelessWidget {
 }
 
 void dialogPop([BuildContext? context]) =>
-    Navigator.of(context ?? Get.context!).pop();
+    Navigator.of(context ?? rootNavigatorKey.currentContext!).pop();

@@ -32,7 +32,7 @@ class _GameSettingPage extends _SettingBasePage {
                 );
               }(),
               onTap: () => showDialog(
-                context: Get.context!,
+                context: context,
                 builder: (_) {
                   return DefaultDialog(
                     title: const Text("Java路径"),
@@ -88,7 +88,7 @@ class _GameSettingPage extends _SettingBasePage {
                 },
               ),
               onTap: () => showDialog(
-                context: Get.context!,
+                context: context,
                 builder: (_) => HookBuilder(
                   builder: (context) {
                     final controller = useTextEditingController(
@@ -100,7 +100,7 @@ class _GameSettingPage extends _SettingBasePage {
                           const Text("JVM启动参数"),
                           IconButton(
                             onPressed: () => showDialog(
-                              context: Get.context!,
+                              context: context,
                               builder: (_) => WarningDialog(
                                 content: const Text("你确定要重置吗？"),
                                 onConfirmed: () {
