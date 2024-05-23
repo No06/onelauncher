@@ -7,7 +7,7 @@ import 'package:one_launcher/pages/base_page.dart';
 class AppearancePage extends RoutePage {
   const AppearancePage({super.key, super.pageName = "外观"});
 
-  static const radioValues = {
+  final radioValues = const {
     ThemeMode.system: "跟随系统",
     ThemeMode.light: "浅色",
     ThemeMode.dark: "深色",
@@ -63,7 +63,6 @@ class AppearancePage extends RoutePage {
                             e.key,
                             p0.value,
                             (value) {
-                              Get.changeThemeMode(e.key);
                               p0.value = value!;
                               AppConfig.instance.theme.mode = value;
                             },

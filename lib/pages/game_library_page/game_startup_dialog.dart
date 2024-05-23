@@ -197,9 +197,9 @@ class _TaskItem<T> extends StatelessWidget {
   final _Task task;
   final _TaskFutureFunction<T>? future;
 
-  static const _errorIconColor = Colors.red;
-  static const _doneIconColor = Colors.green;
-  static const _height = 32.0;
+  final _errorIconColor = Colors.red;
+  final _doneIconColor = Colors.green;
+  final _height = 32.0;
 
   @override
   Widget build(BuildContext context) {
@@ -222,10 +222,9 @@ class _TaskItem<T> extends StatelessWidget {
                         return const CircularProgressIndicator();
                       case ConnectionState.done:
                         if (task.hasError ?? false) {
-                          return const Icon(Icons.error,
-                              color: _errorIconColor);
+                          return Icon(Icons.error, color: _errorIconColor);
                         }
-                        return const Icon(Icons.done, color: _doneIconColor);
+                        return Icon(Icons.done, color: _doneIconColor);
                     }
                   }(),
                 ),

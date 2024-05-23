@@ -27,7 +27,7 @@ _FilterRule get _filterRule => _FilterRule.instance;
 class GameLibraryPage extends RoutePage {
   const GameLibraryPage({super.key, super.pageName = "开始游戏"});
 
-  static const tabs = {
+  final tabs = const {
     "主页": _HomePage(),
     "配置": _ConfigurationPage(),
   };

@@ -91,9 +91,9 @@ class _ConfigurationPage extends StatelessWidget {
                                 path: pathTextCtl.text,
                               ))) {
                                 dialogPop();
-                                Get.showSnackbar(successSnackBar("添加成功！"));
+                                showSnackbar(successSnackBar("添加成功！"));
                               } else {
-                                Get.showSnackbar(errorSnackBar("已有重复目录"));
+                                showSnackbar(errorSnackBar("已有重复目录"));
                               }
                             }
                           },

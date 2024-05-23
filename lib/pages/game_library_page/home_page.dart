@@ -7,6 +7,10 @@ class _HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        ColoredBox(
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          child: const SizedBox.expand(),
+        ),
         MyDynMouseScroll(
           builder: (context, controller, physics) => CustomScrollView(
             controller: controller,
@@ -37,13 +41,12 @@ class _SliverTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
     final textThemes = Theme.of(context).textTheme;
     return SliverAppBar(
       pinned: true,
-      stretch: true,
-      scrolledUnderElevation: 5,
-      surfaceTintColor: colors.surface,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      surfaceTintColor: theme.scaffoldBackgroundColor,
       shadowColor: Colors.black87,
       titleTextStyle: textThemes.bodyMedium,
       toolbarHeight: toolbarHeight,
@@ -56,7 +59,7 @@ class _SliverTitle extends StatelessWidget {
               SearchBar(
                 onChanged: (value) => _filterRule.searchValue = value,
                 onSubmitted: (value) => _filterRule.searchValue = value,
-                elevation: const MaterialStatePropertyAll(3),
+                elevation: const WidgetStatePropertyAll(3),
                 hintText: "搜索配置",
                 leading: const Icon(Icons.search),
                 constraints: const BoxConstraints(
@@ -64,7 +67,7 @@ class _SliverTitle extends StatelessWidget {
                   maxWidth: 220,
                   minHeight: 42,
                 ),
-                padding: const MaterialStatePropertyAll<EdgeInsets>(
+                padding: const WidgetStatePropertyAll<EdgeInsets>(
                   EdgeInsets.symmetric(horizontal: 16.0),
                 ),
               ),
@@ -150,8 +153,8 @@ class _SliverTitle extends StatelessWidget {
 class _SliverList extends StatelessWidget {
   const _SliverList();
 
-  static int _compareByName(Game a, Game b) => a.data.id.compareTo(b.data.id);
-  static const _divider = Divider(height: 1, indent: 64, endIndent: 32);
+  int _compareByName(Game a, Game b) => a.data.id.compareTo(b.data.id);
+  final _divider = const Divider(height: 1, indent: 64, endIndent: 32);
 
   bool _where(Game game) => _filterRule.gameTypes.isEmpty
       ? true

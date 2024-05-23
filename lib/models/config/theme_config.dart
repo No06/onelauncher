@@ -1,28 +1,9 @@
-import 'dart:math';
-
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'theme_config.g.dart';
-
-Color colorWithValue(Color color, double value) {
-  final hsvColor = HSVColor.fromColor(color);
-  return hsvColor.withValue(min(max(hsvColor.value + value, -1), 1)).toColor();
-}
-
-Color dynamicColorWithValue(
-  Color color,
-  double value,
-  double opposite,
-  Brightness brightness,
-) {
-  return colorWithValue(
-    color,
-    brightness == Brightness.light ? value : opposite,
-  );
-}
 
 @JsonSerializable()
 final class AppThemeConfig extends ChangeNotifier {

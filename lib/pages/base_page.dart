@@ -11,6 +11,7 @@ abstract class RoutePage extends StatelessWidget {
   final List<Widget>? actions;
 
   Widget appbar() => AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(pageName),
         actions: actions,
       );

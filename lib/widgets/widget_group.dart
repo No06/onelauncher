@@ -1,7 +1,7 @@
 import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_launcher/models/config/theme_config.dart';
+import 'package:one_launcher/widgets/dynamic_color.dart';
 
 class WidgetGroup extends StatelessWidget {
   const WidgetGroup({
@@ -162,7 +162,7 @@ class WidgetGroupBox extends StatelessWidget {
       child: Card(
         clipBehavior: Clip.antiAlias,
         shape: shape,
-        color: color ?? colorWithValue(colors.secondaryContainer, .1),
+        color: color ?? colors.secondaryContainer.withValue(.1),
         elevation: elevation ?? 2,
         shadowColor: enableShadow ? null : Colors.transparent,
         child: widget,

@@ -1,53 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:one_launcher/app.dart';
+import 'package:one_launcher/widgets/dynamic_color.dart';
 
-GetSnackBar defaultSnackBar(String title, {Color? borderColor, Widget? icon}) {
-  final colors = Get.theme.colorScheme;
-  // FIXME: 阴影会影响到边框
-  return GetSnackBar(
-    messageText: Text(title, style: TextStyle(color: colors.onSurface)),
-    backgroundColor: colors.surface,
-    snackStyle: SnackStyle.FLOATING,
-    animationDuration: const Duration(milliseconds: 300),
-    duration: const Duration(milliseconds: 1500),
-    margin: const EdgeInsets.only(bottom: 10),
-    maxWidth: Get.width * 0.5,
-    borderColor: borderColor,
-    borderRadius: 12.5,
-    boxShadows: const [
-      BoxShadow(
-        color: Colors.black12,
-        blurRadius: 5,
-        offset: Offset(0, 2),
-      ),
-    ],
-    icon: Padding(
-      padding: const EdgeInsets.only(left: 5),
-      child: icon,
+ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnackbar(
+  SnackBar snackBar, {
+  BuildContext? context,
+}) =>
+    ScaffoldMessenger.of(context ?? rootContext!).showSnackBar(snackBar);
+
+SnackBar defaultSnackBar(
+  String title, {
+  BuildContext? context,
+  Color? backgroundColor,
+  Color? textColor,
+  IconData? iconData,
+}) {
+  context = context ?? rootContext!;
+
+  final width = MediaQuery.of(context).size.width / 4;
+  final colors = Theme.of(context).colorScheme;
+  textColor ??= colors.onSurface;
+  return SnackBar(
+    behavior: SnackBarBehavior.floating,
+    content: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Icon(iconData, color: textColor),
+        ),
+        Text(title, style: TextStyle(color: textColor)),
+      ],
     ),
+    backgroundColor: backgroundColor ?? colors.surfaceBright,
+    duration: const Duration(milliseconds: 1500),
+    margin: EdgeInsets.symmetric(vertical: 16, horizontal: width),
   );
 }
 
-GetSnackBar successSnackBar(String title) {
+SnackBar successSnackBar(String title, {BuildContext? context}) {
   return defaultSnackBar(
     title,
-    borderColor: Colors.lightGreen,
-    icon: const Icon(Icons.check),
+    context: context,
+    backgroundColor: Colors.green,
+    iconData: Icons.check,
   );
 }
 
-GetSnackBar warningSnackBar(String title) {
+SnackBar warningSnackBar(String title, {BuildContext? context}) {
+  final backgroundColor = Colors.orange[300];
   return defaultSnackBar(
     title,
-    borderColor: Colors.orangeAccent,
-    icon: const Icon(Icons.warning_amber_rounded),
+    context: context,
+    backgroundColor: backgroundColor,
+    textColor: backgroundColor?.withValue(-.8),
+    iconData: Icons.warning,
   );
 }
 
-GetSnackBar errorSnackBar(String title) {
+SnackBar errorSnackBar(String title, {BuildContext? context}) {
+  final colors = Theme.of(context ?? rootContext!).colorScheme;
   return defaultSnackBar(
     title,
-    borderColor: Colors.red,
-    icon: const Icon(Icons.error_outline),
+    context: context,
+    backgroundColor: colors.error,
+    textColor: colors.onError,
+    iconData: Icons.error_outline,
   );
 }

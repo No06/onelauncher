@@ -4,7 +4,8 @@ class _OfflineLoginForm extends HookWidget {
   late final TextEditingController uuidTextController;
   late final TextEditingController usernameTextController;
 
-  static String getUuidFromName(String name) => const Uuid().v5(Uuid.NAMESPACE_NIL, name);
+  static String getUuidFromName(String name) =>
+      const Uuid().v5(Uuid.NAMESPACE_NIL, name);
 
   OfflineAccount submit() => OfflineAccount(
         displayName: usernameTextController.text,
@@ -21,7 +22,8 @@ class _OfflineLoginForm extends HookWidget {
     );
     // uuid 监听 用户名变化
     usernameTextController.addListener(
-      () => uuidTextController.text = getUuidFromName(usernameTextController.text),
+      () => uuidTextController.text =
+          getUuidFromName(usernameTextController.text),
     );
 
     return Theme(
@@ -89,7 +91,7 @@ class _MicosoftLoginForm extends StatelessWidget {
   const _MicosoftLoginForm({required this.onSubmit});
 
   final void Function(MicrosoftAccount account) onSubmit;
-  static const _iconSize = 36.0;
+  final _iconSize = 36.0;
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +146,7 @@ class _MicosoftLoginForm extends StatelessWidget {
             borderRadius: const BorderRadius.all(Radius.circular(12.0)),
             side: BorderSide(color: primaryColor, width: 1.5),
           ),
-          icon: const Icon(Icons.computer, size: _iconSize),
+          icon: Icon(Icons.computer, size: _iconSize),
           text: const Text("设备授权码登录"),
         ),
       ],
@@ -187,7 +189,7 @@ class _MicosoftLoginForm extends StatelessWidget {
 
   void _whenRequestException(Object e) {
     dialogPop();
-    Get.showSnackbar(errorSnackBar("请求错误：${e.toString()}"));
+    showSnackbar(errorSnackBar("请求错误：${e.toString()}"));
   }
 
   void _showMcLoginDialog(BuildContext context) {
@@ -237,17 +239,17 @@ class _LoginWebviewState extends State<_LoginWebview> {
   final _controller = WebviewController();
   final _subscriptions = <StreamSubscription>[];
 
-  static const _backgroundColor = Colors.transparent;
+  final _backgroundColor = Colors.transparent;
 
   // Minecraft微软登录OAuth链接
-  static const _loginUrl = 'https://login.live.com/oauth20_authorize.srf?'
+  final _loginUrl = 'https://login.live.com/oauth20_authorize.srf?'
       'client_id=00000000402b5328'
       '&response_type=code'
       '&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL'
       '&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf';
 
   // 正则用于获取授权码
-  static final _codeRegex = RegExp(r"(?<=code=)[^&]+");
+  final _codeRegex = RegExp(r"(?<=code=)[^&]+");
 
   @override
   void initState() {
@@ -270,7 +272,8 @@ class _LoginWebviewState extends State<_LoginWebview> {
     try {
       await _controller.initialize();
 
-      _subscriptions.add(_controller.containsFullScreenElementChanged.listen((flag) {
+      _subscriptions
+          .add(_controller.containsFullScreenElementChanged.listen((flag) {
         debugPrint('Contains fullscreen element: $flag');
         windowManager.setFullScreen(flag);
       }));
@@ -339,7 +342,9 @@ class _LoginWebviewState extends State<_LoginWebview> {
                 stream: _controller.historyChanged,
                 builder: (context, snapshot) => IconButton(
                   icon: const Icon(Icons.chevron_left),
-                  onPressed: snapshot.data?.canGoBack ?? false ? _controller.goBack : null,
+                  onPressed: snapshot.data?.canGoBack ?? false
+                      ? _controller.goBack
+                      : null,
                 ),
               ),
               IconButton(
@@ -370,7 +375,8 @@ class _LoginWebviewState extends State<_LoginWebview> {
                 StreamBuilder<LoadingState>(
                   stream: _controller.loadingState,
                   builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data == LoadingState.loading) {
+                    if (snapshot.hasData &&
+                        snapshot.data == LoadingState.loading) {
                       return const LinearProgressIndicator();
                     }
                     return const SizedBox();
@@ -440,13 +446,13 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      Get.showSnackbar(errorSnackBar('跳转链接失败 $url'));
+      showSnackbar(errorSnackBar('跳转链接失败 $url'));
     }
   }
 
   Future<void> _clip() async {
     await Clipboard.setData(ClipboardData(text: _deviceCode!));
-    Get.showSnackbar(successSnackBar("复制成功"));
+    showSnackbar(successSnackBar("复制成功"));
   }
 
   @override
@@ -516,7 +522,8 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
                                     () => Text(
                                       visible.value
                                           ? _deviceCode!
-                                          : _deviceCode!.replaceAll(RegExp(r'.'), '∗'),
+                                          : _deviceCode!
+                                              .replaceAll(RegExp(r'.'), '∗'),
                                       style: textTheme.titleLarge?.copyWith(
                                         letterSpacing: 8,
                                         color: colors.onSecondaryContainer,

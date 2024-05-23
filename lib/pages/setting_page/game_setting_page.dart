@@ -158,8 +158,7 @@ class _GameSettingPage extends _SettingBasePage {
                       subtitle: const Text("自动分配"),
                       value: value,
                       selected: value,
-                      hoverColor:
-                          colorWithValue(colors.secondaryContainer, -.05),
+                      hoverColor: colors.secondaryContainer.withValue(-.05),
                       onChanged: (value) {
                         config.autoMemory = value;
                         updater(value);

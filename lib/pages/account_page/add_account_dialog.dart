@@ -12,7 +12,7 @@ class _AddAccountDialog extends StatelessWidget {
 
   final void Function(Account account) onSubmit;
 
-  static const _accountTypes = {
+  final _accountTypes = const {
     AccountType.offline:
         _SegmentedItem(name: "离线", icon: Icon(Icons.public_off)),
     // FIXME: 微软图标替换

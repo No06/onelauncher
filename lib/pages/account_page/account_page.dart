@@ -15,6 +15,7 @@ import 'package:one_launcher/utils/auth/ms_oauth.dart';
 import 'package:one_launcher/utils/form_validator.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
 import 'package:one_launcher/pages/base_page.dart';
+import 'package:one_launcher/widgets/dynamic_color.dart';
 import 'package:one_launcher/widgets/textfield.dart';
 import 'package:one_launcher/widgets/widget_group.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -22,7 +23,6 @@ import 'package:uuid/uuid.dart';
 import 'package:webview_windows/webview_windows.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../../models/config/theme_config.dart';
 import '../../models/account/microsoft_account.dart';
 import '../../models/account/offline_account.dart';
 import '../../models/account/account.dart';
@@ -67,7 +67,7 @@ class AccountPage extends RoutePage {
                               } on StateError {
                                 appConfig.selectedAccount = null;
                               }
-                              Get.showSnackbar(successSnackBar("删除成功"));
+                              showSnackbar(successSnackBar("删除成功"));
                             },
                           ),
                         ),
@@ -103,9 +103,9 @@ class AccountPage extends RoutePage {
                       if (appConfig.accounts.add(account)) {
                         appConfig.selectedAccount ??= account;
                         dialogPop();
-                        Get.showSnackbar(successSnackBar("添加成功！"));
+                        showSnackbar(successSnackBar("添加成功！"));
                       } else {
-                        Get.showSnackbar(errorSnackBar("已有重复账号"));
+                        showSnackbar(errorSnackBar("已有重复账号"));
                       }
                     },
                   ),
