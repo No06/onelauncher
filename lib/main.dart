@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:one_launcher/utils/java_util.dart';
@@ -11,7 +12,7 @@ import 'app.dart';
 
 void main() async {
   await init();
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 Future<void> init() async {

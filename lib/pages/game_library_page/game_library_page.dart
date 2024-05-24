@@ -1,14 +1,13 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/config/app_config.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game/data/game_type.dart';
 import 'package:one_launcher/models/config/game_path_config.dart';
-import 'package:one_launcher/models/read_write_value_notifier.dart';
 import 'package:one_launcher/pages/game_library_page/game_startup_dialog.dart';
 import 'package:one_launcher/widgets/build_widgets_with_divider.dart';
 import 'package:one_launcher/utils/file/file_picker.dart';
@@ -20,8 +19,6 @@ import 'package:one_launcher/widgets/snackbar.dart';
 part 'filter_rule.dart';
 part 'home_page.dart';
 part 'configuration_page.dart';
-
-_FilterRule get _filterRule => _FilterRule.instance;
 
 class GameLibraryPage extends RoutePage {
   const GameLibraryPage({super.key, super.pageName = "开始游戏"});

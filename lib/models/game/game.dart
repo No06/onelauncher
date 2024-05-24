@@ -55,6 +55,9 @@ class Game {
   String? get version => data.clientVersion ?? getVersionFromJar();
 
   String? getVersionFromJar() {
+    final jarFile = File("$mainPath/$versionPath/${_data.jarFile}");
+    if (!jarFile.existsSync()) return null;
+
     return jsonDecode(utf8.decode(ZipDecoder()
         .decodeBytes(
             File("$mainPath/$versionPath/${_data.jarFile}").readAsBytesSync())

@@ -30,15 +30,16 @@ class _HomePage extends StatelessWidget {
   }
 }
 
-class _SliverTitle extends StatelessWidget {
+class _SliverTitle extends ConsumerWidget {
   const _SliverTitle();
 
   final toolbarHeight = 70.0;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final textThemes = Theme.of(context).textTheme;
+
     return SliverAppBar(
       pinned: true,
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -53,8 +54,8 @@ class _SliverTitle extends StatelessWidget {
           children: buildWidgetsWithDivider(
             [
               SearchBar(
-                onChanged: (value) => _filterRule.searchValue = value,
-                onSubmitted: (value) => _filterRule.searchValue = value,
+                onChanged: ref.read(_filterStateProvider.notifier).updateName,
+                onSubmitted: ref.read(_filterStateProvider.notifier).updateName,
                 elevation: const WidgetStatePropertyAll(3),
                 hintText: "搜索配置",
                 leading: const Icon(Icons.search),
@@ -71,70 +72,59 @@ class _SliverTitle extends StatelessWidget {
               _OptionItem(
                 title: "排序方式",
                 child: DropdownButtonHideUnderline(
-                  child: ValueBuilder<GameCollation?>(
-                    initialValue: _filterRule.collation,
-                    onUpdate: (value) {
-                      _filterRule.collation = value!;
-                    },
-                    builder: (snapshot, updater) {
-                      return DropdownButton2<GameCollation>(
-                        value: snapshot,
-                        dropdownStyleData:
-                            const DropdownStyleData(useRootNavigator: true),
-                        items: [
-                          for (var item in GameCollation.values)
-                            DropdownMenuItem(
-                              value: item,
-                              child: Text(
-                                item.name,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ),
-                        ],
-                        onChanged: updater,
-                        buttonStyleData: const ButtonStyleData(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          height: 35,
-                          width: 120,
-                        ),
-                        menuItemStyleData: MenuItemStyleData(
-                          height: 40,
-                          selectedMenuItemBuilder: (context, child) =>
-                              Container(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .secondaryContainer,
-                            child: child,
+                  child: DropdownButton2(
+                    value: ref.read(_filterStateProvider).collation,
+                    dropdownStyleData:
+                        const DropdownStyleData(useRootNavigator: true),
+                    items: [
+                      for (var item in _GameCollation.values)
+                        DropdownMenuItem(
+                          value: item,
+                          child: Text(
+                            item.name,
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ),
-                      );
-                    },
+                    ],
+                    onChanged: (value) => ref
+                        .read(_filterStateProvider.notifier)
+                        .updateCollation(value!),
+                    buttonStyleData: const ButtonStyleData(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      height: 35,
+                      width: 120,
+                    ),
+                    menuItemStyleData: MenuItemStyleData(
+                      height: 40,
+                      selectedMenuItemBuilder: (context, child) => Container(
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        child: child,
+                      ),
+                    ),
                   ),
                 ),
               ),
               _OptionItem(
                 title: "版本",
-                child: Row(
-                  children: () {
-                    final list = ["正式版", "快照", "Mod版"];
-                    return List.generate(_GameType.values.length, (index) {
+                child: Consumer(
+                  builder: (context, ref, child) => Row(
+                    children: List.generate(_GameType.values.length, (index) {
                       final type = _GameType.values[index];
-                      final types = _filterRule.gameTypes;
-                      return ValueBuilder<bool?>(
-                        initialValue: types.contains(type),
-                        onUpdate: (value) => value ?? false
-                            ? types.add(type)
-                            : types.remove(type),
-                        builder: (value, updater) => _GameTypeCheckbox(
-                          isSelected: value,
-                          label: list[index],
-                          type: type,
-                          ruleSet: types,
-                          onChanged: updater,
-                        ),
+                      final types = ref.watch(_filterStateProvider).types;
+                      final isSelected = types.contains(type);
+                      return _GameTypeCheckbox(
+                        isSelected: isSelected,
+                        label: type.name,
+                        type: type,
+                        ruleSet: types,
+                        onChanged: (value) {
+                          ref
+                              .read(_filterStateProvider.notifier)
+                              .updateTypeWithSelectedValue(type, value!);
+                        },
                       );
-                    });
-                  }(),
+                    }),
+                  ),
                 ),
               )
             ],
@@ -146,33 +136,43 @@ class _SliverTitle extends StatelessWidget {
   }
 }
 
-class _SliverList extends StatelessWidget {
+class _SliverList extends ConsumerWidget {
   const _SliverList();
 
-  int _compareByName(Game a, Game b) => a.data.id.compareTo(b.data.id);
   final _divider = const Divider(height: 1, indent: 64, endIndent: 32);
 
-  bool _where(Game game) => _filterRule.gameTypes.isEmpty
-      ? true
-      : _filterRule.gameTypes.contains(_GameType.fromGame(game));
+  // 比对配置名
+  int _compareByName(Game a, Game b) => a.data.id.compareTo(b.data.id);
 
-  List<Widget> _buildGameItems(List<Game> gameList) {
-    switch (_filterRule.collation) {
+  // 筛选游戏类型
+  bool _typeFilter(Game game, Set<_GameType> types) =>
+      types.isEmpty ? true : types.contains(_GameType.fromGame(game));
+
+  // 将 Game 转换为 _GameItem
+  List<Widget> _gameListToItems(Iterable<Game> games) => List.generate(
+        games.length,
+        (i) => _GameItem(games.elementAt(i)),
+      );
+
+  List<Widget> _buildItemList(
+    List<Game> gameList,
+    _GameCollation collation,
+    Set<_GameType> types,
+  ) {
+    var typeFiltedList = gameList.where((game) => _typeFilter(game, types));
+    switch (collation) {
       // TODO: 最近游玩排序
-      case GameCollation.recentlyPlayed:
-        return [for (final game in gameList.where(_where)) _GameItem(game)];
-      case GameCollation.byName:
-        return [
-          for (final game
-              in gameList.where(_where).toList(growable: false)
-                ..sort(_compareByName))
-            _GameItem(game)
-        ];
+      case _GameCollation.recentlyPlayed:
+        return _gameListToItems(typeFiltedList);
+
+      case _GameCollation.byName:
+        var filtedGameList = typeFiltedList.toList()..sort(_compareByName);
+        return _gameListToItems(filtedGameList);
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder(
       future: appConfig.searchGamesOnPaths(),
       builder: (context, snapshot) {
@@ -180,23 +180,19 @@ class _SliverList extends StatelessWidget {
           return const SliverFillRemaining(
             child: Center(child: CircularProgressIndicator()),
           );
-        } else {
-          if (snapshot.hasError) {
-            snapshot.error.printError();
-          }
-          return ListenableBuilder(
-            listenable: _filterRule,
-            builder: (context, child) {
-              final gameList = snapshot.data!;
-              return SliverList.list(
-                children: buildWidgetsWithDivider(
-                  _buildGameItems(gameList),
-                  _divider,
-                ),
-              );
-            },
-          );
         }
+        if (snapshot.hasError) {
+          snapshot.error.printError();
+        }
+        final gameList = snapshot.data!;
+        return Consumer(builder: (context, ref, child) {
+          final filterRule = ref.watch(_filterStateProvider);
+          return SliverList.list(
+            children:
+                _buildItemList(gameList, filterRule.collation, filterRule.types)
+                    .joinWith(_divider),
+          );
+        });
       },
     );
   }
@@ -223,6 +219,7 @@ class _OptionItem extends StatelessWidget {
 
 class _GameTypeCheckbox extends StatelessWidget {
   const _GameTypeCheckbox({
+    super.key,
     required this.label,
     required this.type,
     required this.ruleSet,

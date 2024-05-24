@@ -175,5 +175,5 @@ class FutureDialog<T> extends StatelessWidget {
   }
 }
 
-void dialogPop([BuildContext? context]) =>
-    Navigator.of(context ?? rootNavigatorKey.currentContext!).pop();
+void dialogPop<T extends Object?>({BuildContext? context, T? result}) =>
+    Navigator.of(context ?? rootNavigatorKey.currentContext!).pop<T>(result);
