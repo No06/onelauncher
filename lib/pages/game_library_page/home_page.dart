@@ -329,9 +329,11 @@ class _GameItem extends StatelessWidget {
                     ),
                   ),
                 ),
-                // TODO: 打开游戏目录
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // TODO:Linux、MacOS待检验是否正常可用
+                    OpenFile.open(game.path);
+                  },
                   icon: const Icon(Icons.folder),
                 ),
                 // TODO: 更多操作

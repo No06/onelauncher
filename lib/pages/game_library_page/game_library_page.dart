@@ -17,6 +17,7 @@ import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
 import 'package:one_launcher/pages/base_page.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
+import 'package:open_file/open_file.dart';
 
 part 'filter_rule.dart';
 part 'home_page.dart';
