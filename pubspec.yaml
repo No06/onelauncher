@@ -62,7 +62,7 @@ dependencies:
       url: https://github.com/No06/windows_titlebar
   go_router: ^14.1.3
   flutter_riverpod: ^2.5.1
-  open_file:
+  open_file: ^3.3.2
 
 dev_dependencies:
 

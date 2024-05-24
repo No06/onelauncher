@@ -274,6 +274,25 @@ class _GameItem extends StatelessWidget {
 
   final Game game;
 
+  final Map<String,IconData> menu = const {
+    "编辑" : Icons.edit,
+  };
+
+  List<PopupMenuItem<String>> buildMenu() {
+    return menu.keys
+    .toList()
+    .map((el) =>PopupMenuItem<String>(
+        value: el,
+        child: Wrap(
+          spacing: 10,
+          children: [
+            Icon(menu[el]),
+            Text(el)
+          ],
+        ),
+      )).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -337,10 +356,18 @@ class _GameItem extends StatelessWidget {
                   icon: const Icon(Icons.folder),
                 ),
                 // TODO: 更多操作
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.more_horiz),
-                ),
+                // IconButton(
+                //   onPressed: () {},
+                //   icon: const Icon(Icons.more_horiz),
+                // ),
+                PopupMenuButton(
+                  itemBuilder: (context) => buildMenu(),
+                  elevation: 1,
+                  shape: const RoundedRectangleBorder(borderRadius: kDefaultBorderRadius),
+                  onSelected: (el) => {
+
+                  },
+                )
               ],
             ),
           ),
