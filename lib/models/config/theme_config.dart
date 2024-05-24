@@ -1,60 +1,78 @@
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
-import 'package:json_annotation/json_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/utils.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/models/json_map.dart';
 
-part 'theme_config.g.dart';
-
-@JsonSerializable()
-final class AppThemeConfig extends ChangeNotifier {
-  AppThemeConfig({ThemeMode? mode, SeedColor? color})
-      : _mode = ValueNotifier(mode ?? ThemeMode.system),
-        _color = ValueNotifier(color ?? SeedColor.blue),
-        super() {
-    _mode.addListener(notifyListeners);
-    _color.addListener(notifyListeners);
-  }
-
-  ValueNotifier<ThemeMode> _mode;
-
-  ValueNotifier<SeedColor> _color;
-
-  ThemeMode get mode => _mode.value;
-  set mode(ThemeMode newVal) => _mode.value = newVal;
-
-  SeedColor get color => _color.value;
-  set color(SeedColor newVal) => _color.value = newVal;
-
-  ThemeData lightTheme() {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: color.color,
-        brightness: Brightness.light,
-      ),
-      useMaterial3: true,
-    ).useSystemChineseFont(Brightness.light);
-  }
-
-  ThemeData darkTheme() {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: color.color,
-        brightness: Brightness.dark,
-      ),
-      useMaterial3: true,
-    ).useSystemChineseFont(Brightness.dark);
-  }
-
-  factory AppThemeConfig.fromJson(JsonMap json) =>
-      _$AppThemeConfigFromJson(json);
-
-  JsonMap toJson() => _$AppThemeConfigToJson(this);
-}
-
-@JsonEnum()
-enum SeedColor {
-  blue(Colors.blue);
-
-  const SeedColor(this.color);
+class AppThemeState {
+  final ThemeMode mode;
   final Color color;
+
+  AppThemeState({required this.mode, required this.color});
+
+  ThemeData _getTheme(Brightness brightness) => ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: color,
+          brightness: brightness,
+        ),
+        useMaterial3: true,
+      ).useSystemChineseFont(brightness);
+
+  ThemeData get lightTheme => _getTheme(Brightness.light);
+  ThemeData get darkTheme => _getTheme(Brightness.dark);
+
+  AppThemeState copyWith({ThemeMode? mode, Color? color}) {
+    return AppThemeState(
+      mode: mode ?? this.mode,
+      color: color ?? this.color,
+    );
+  }
+
+  JsonMap toJson() => {
+        "mode": mode.index,
+        "color": color.value,
+      };
+
+  factory AppThemeState.fromJson(JsonMap json) => AppThemeState(
+        mode: ThemeMode.values[json['mode']],
+        color: Color(json['color']),
+      );
 }
+
+class AppThemeNotifier extends StateNotifier<AppThemeState> {
+  AppThemeNotifier() : super(_loadInitialState());
+
+  static const storageKey = "appTheme";
+
+  static _loadInitialState() {
+    final box = GetStorage();
+    final storedData = box.read<JsonMap>(storageKey);
+    try {
+      if (storedData != null) return AppThemeState.fromJson(storedData);
+    } catch (e) {
+      e.printError();
+    }
+    return AppThemeState(mode: ThemeMode.system, color: Colors.blue);
+  }
+
+  final _box = GetStorage();
+  void _saveState() {
+    _box.write(storageKey, state.toJson());
+  }
+
+  void updateMode(ThemeMode? mode) {
+    state = state.copyWith(mode: mode);
+    _saveState();
+  }
+
+  void updateColor(Color? color) {
+    state = state.copyWith(color: color);
+    _saveState();
+  }
+}
+
+final appThemeProvider =
+    StateNotifierProvider<AppThemeNotifier, AppThemeState>((ref) {
+  return AppThemeNotifier();
+});

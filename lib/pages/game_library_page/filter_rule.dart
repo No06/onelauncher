@@ -22,15 +22,45 @@ class _FilterState {
       types: types ?? this.types,
     );
   }
+
+  JsonMap toJson() => {
+        'collation': collation.index,
+        'types': types.map((e) => e.index).toList(),
+      };
+
+  factory _FilterState.fromJson(JsonMap json) => _FilterState(
+        name: "",
+        collation: _GameCollation.values[json['collation'] as int],
+        types: (json['types'] as List)
+            .map((index) => _GameType.values[index as int])
+            .toSet(),
+      );
 }
 
 class _FilterStateNotifier extends StateNotifier<_FilterState> {
-  _FilterStateNotifier()
-      : super(_FilterState(
-          name: '',
-          collation: _GameCollation.recentlyPlayed,
-          types: <_GameType>{},
-        ));
+  _FilterStateNotifier() : super(_loadInitialState());
+
+  static const storageKey = "gameFilterRule";
+
+  static _loadInitialState() {
+    final box = GetStorage();
+    final storedData = box.read<JsonMap>(storageKey);
+    try {
+      if (storedData != null) return _FilterState.fromJson(storedData);
+    } catch (e) {
+      e.printError();
+    }
+    return _FilterState(
+      name: '',
+      collation: _GameCollation.recentlyPlayed,
+      types: <_GameType>{},
+    );
+  }
+
+  final _box = GetStorage();
+  void _saveState() {
+    _box.write(storageKey, state.toJson());
+  }
 
   void updateName(String name) {
     state = state.copyWith(name: name);
@@ -38,6 +68,7 @@ class _FilterStateNotifier extends StateNotifier<_FilterState> {
 
   void updateCollation(_GameCollation collation) {
     state = state.copyWith(collation: collation);
+    _saveState();
   }
 
   void updateTypeWithSelectedValue(_GameType type, bool isSelected) {
@@ -48,6 +79,7 @@ class _FilterStateNotifier extends StateNotifier<_FilterState> {
       newTypes.remove(type);
     }
     state = state.copyWith(types: newTypes);
+    _saveState();
   }
 }
 

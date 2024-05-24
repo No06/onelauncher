@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:one_launcher/app.dart';
-import 'package:one_launcher/widgets/dynamic_color.dart';
+import 'package:one_launcher/utils/extension/color_extension.dart';
 
 ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? showSnackbar(
   SnackBar snackBar, {

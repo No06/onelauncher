@@ -7,7 +7,6 @@ import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/config/game_setting_config.dart';
 import 'package:one_launcher/models/config/game_path_config.dart';
-import 'package:one_launcher/models/config/theme_config.dart';
 import 'package:one_launcher/models/account/account.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -30,13 +29,11 @@ const _kAccountDelimiter = "@";
 @JsonSerializable()
 final class AppConfig extends ChangeNotifier {
   AppConfig({
-    AppThemeConfig? theme,
     Set<GamePath>? paths,
     String? selectedAccount,
     Set<Account>? accounts,
     GameSettingConfig? gameSetting,
-  })  : theme = theme ?? AppThemeConfig(),
-        _launcherGamePathIndexes = RxList.from(GetStorage()
+  })  : _launcherGamePathIndexes = RxList.from(GetStorage()
                 .read<List>(_launcherGamePathBoxKey)
                 ?.map((e) => e as int) ??
             List.generate(launcherGamePaths.length, (index) => index)),
@@ -48,7 +45,6 @@ final class AppConfig extends ChangeNotifier {
 
         /// 监听所有对象的变化，做到响应式
         super() {
-    this.theme.addListener(notifyListeners);
     ever(
       _launcherGamePathIndexes,
       (callback) => GetStorage().write(
@@ -69,8 +65,6 @@ final class AppConfig extends ChangeNotifier {
 
   /// 配置文件存储目录
   static late final String _configPath;
-
-  final AppThemeConfig theme;
 
   /// 记录游戏目录在List中的位置，持久化存储索引记录
   final RxList<int> _launcherGamePathIndexes;

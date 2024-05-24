@@ -1,7 +1,7 @@
 import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_launcher/widgets/dynamic_color.dart';
+import 'package:one_launcher/utils/extension/color_extension.dart';
 
 class WidgetGroup extends StatelessWidget {
   const WidgetGroup({

@@ -7,9 +7,6 @@ part of 'app_config.dart';
 // **************************************************************************
 
 AppConfig _$AppConfigFromJson(Map<String, dynamic> json) => AppConfig(
-      theme: json['theme'] == null
-          ? null
-          : AppThemeConfig.fromJson(json['theme'] as Map<String, dynamic>),
       paths: (json['paths'] as List<dynamic>?)
           ?.map((e) => GamePath.fromJson(e as Map<String, dynamic>))
           .toSet(),
@@ -25,7 +22,6 @@ AppConfig _$AppConfigFromJson(Map<String, dynamic> json) => AppConfig(
 
 Map<String, dynamic> _$AppConfigToJson(AppConfig instance) {
   final val = <String, dynamic>{
-    'theme': instance.theme,
     'gameSetting': instance.gameSetting,
     'paths': AppConfig._setToList(instance.paths),
     'accounts': AppConfig._setToList(instance.accounts),

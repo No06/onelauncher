@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:animations/animations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/config/app_config.dart';
 import 'package:flutter/material.dart';
+import 'package:one_launcher/models/config/theme_config.dart';
 import 'package:one_launcher/pages/account_page/account_page.dart';
 import 'package:one_launcher/pages/appearance_page.dart';
 import 'package:one_launcher/pages/game_library_page/game_library_page.dart';
@@ -117,8 +118,6 @@ class _MyAppState extends State<MyApp> with WindowListener {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppConfig.instance.theme;
-
     return ValueListenableBuilder(
       valueListenable: isMaximize,
       builder: (context, isMaximize, child) => isMaximize
@@ -136,16 +135,18 @@ class _MyAppState extends State<MyApp> with WindowListener {
                 child: child,
               ),
             ),
-      child: ListenableBuilder(
-        listenable: theme,
-        builder: (context, child) => MaterialApp.router(
+      child: Consumer(builder: (context, ref, child) {
+        final themeMode = ref.watch(appThemeProvider).mode;
+        final theme = ref.watch(appThemeProvider).lightTheme;
+        final darkTheme = ref.watch(appThemeProvider).darkTheme;
+        return MaterialApp.router(
           scaffoldMessengerKey: rootScaffoldMessengerKey,
-          theme: theme.lightTheme(),
-          darkTheme: theme.darkTheme(),
-          themeMode: theme.mode,
+          theme: theme,
+          darkTheme: darkTheme,
+          themeMode: themeMode,
           routerConfig: _router,
-        ),
-      ),
+        );
+      }),
     );
   }
 }

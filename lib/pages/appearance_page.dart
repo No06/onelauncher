@@ -1,6 +1,6 @@
-import 'package:one_launcher/models/config/app_config.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:one_launcher/models/config/theme_config.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
 import 'package:one_launcher/pages/base_page.dart';
 
@@ -12,27 +12,6 @@ class AppearancePage extends RoutePage {
     ThemeMode.light: "浅色",
     ThemeMode.dark: "深色",
   };
-
-  Widget radio(
-    String text,
-    ThemeMode themeMode,
-    ThemeMode groupValue,
-    void Function(ThemeMode?)? onChanged,
-  ) {
-    return Row(
-      children: [
-        Radio(
-          value: themeMode,
-          groupValue: groupValue,
-          onChanged: onChanged,
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 5),
-          child: Text(text, style: const TextStyle(height: 1)),
-        )
-      ],
-    );
-  }
 
   @override
   Widget body(BuildContext context) {
@@ -54,29 +33,57 @@ class AppearancePage extends RoutePage {
                   ),
                 ),
                 const SizedBox(height: 5),
-                ObxValue(
-                  (p0) => Column(
-                    children: radioValues.entries
-                        .map(
-                          (e) => radio(
-                            e.value,
-                            e.key,
-                            p0.value,
-                            (value) {
-                              p0.value = value!;
-                              AppConfig.instance.theme.mode = value;
-                            },
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  AppConfig.instance.theme.mode.obs,
-                )
+                Consumer(builder: (context, ref, child) {
+                  final themeMode = ref.watch(appThemeProvider).mode;
+                  return Column(
+                    children: List.generate(radioValues.length, (i) {
+                      final radioValue = radioValues.entries.elementAt(i);
+                      return _Radio(
+                        text: radioValue.value,
+                        themeMode: radioValue.key,
+                        groupValue: themeMode,
+                        onChanged:
+                            ref.read(appThemeProvider.notifier).updateMode,
+                      );
+                    }),
+                  );
+                }),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _Radio extends StatelessWidget {
+  const _Radio({
+    required this.text,
+    required this.themeMode,
+    required this.groupValue,
+    required this.onChanged,
+  });
+
+  final String text;
+  final ThemeMode themeMode;
+  final ThemeMode groupValue;
+  final void Function(ThemeMode?)? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Radio(
+          value: themeMode,
+          groupValue: groupValue,
+          onChanged: onChanged,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 5),
+          child: Text(text, style: const TextStyle(height: 1)),
+        )
+      ],
     );
   }
 }

@@ -73,7 +73,7 @@ class _SliverTitle extends ConsumerWidget {
                 title: "排序方式",
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton2(
-                    value: ref.read(_filterStateProvider).collation,
+                    value: ref.watch(_filterStateProvider).collation,
                     dropdownStyleData:
                         const DropdownStyleData(useRootNavigator: true),
                     items: [
