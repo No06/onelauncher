@@ -12,7 +12,7 @@ MicrosoftAccount _$MicrosoftAccountFromJson(Map<String, dynamic> json) =>
       displayName: json['displayName'] as String,
       accessToken: json['accessToken'] as String,
       refreshToken: json['refreshToken'] as String,
-      notAfter: json['notAfter'] as int,
+      notAfter: (json['notAfter'] as num).toInt(),
     );
 
 Map<String, dynamic> _$MicrosoftAccountToJson(MicrosoftAccount instance) =>

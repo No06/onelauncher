@@ -1,46 +1,27 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:get/utils.dart';
 import 'package:one_launcher/consts.dart';
-import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:path/path.dart';
 
-import '../game/game.dart';
+import 'game.dart';
 
-part 'game_path_config.g.dart';
+part 'game_path.g.dart';
 
 /// 游戏路径
 /// 路径应传入如: /home/onelauncher/.minecraft
 @JsonSerializable()
-class GamePath extends ChangeNotifier {
-  GamePath({String? name, String? path})
-      : _name = ValueNotifier(name ?? ""),
-        _path = ValueNotifier(path ?? ""),
-        super() {
-    _name.addListener(notifyListeners);
-    _path.addListener(notifyListeners);
-  }
+class GamePath {
+  const GamePath({required this.name, required this.path});
 
-  ValueNotifier<String> _name;
-  ValueNotifier<String> _path;
-
-  ValueNotifier<String> get nameNotifier => _name;
-  String get name => _name.value;
-  set name(String newVal) => _name.value = newVal;
-
-  ValueNotifier<String> get pathNotifier => _path;
-  String get path => _path.value;
-  set path(String newVal) => _path.value = newVal;
-
-  final _availableGames = <Game>[];
-  List<Game> get availableGames => _availableGames;
+  final String name;
+  final String path;
 
   /// 从 [path] 路径下的 versions 文件夹中搜索游戏
-  Stream<Game> get gamesOnPath async* {
+  Stream<Game> get games async* {
     var directory = Directory(join(path, "versions"));
     // 如果文件夹不存在则直接返回空结果
     if (!directory.existsSync()) return;
@@ -51,8 +32,8 @@ class GamePath extends ChangeNotifier {
       if (await Directory(join(path, dir.path)).exists() &&
           await File(json).exists()) {
         var gameConfig = File(join(dir.path, kGameConfigName));
-        final librariesPath = _path.value;
-        final versionPath = dir.path.substring(_path.value.length + 1);
+        final librariesPath = path;
+        final versionPath = dir.path.substring(path.length + 1);
         // 如果存在启动器生成的单独配置文件
         try {
           if (await gameConfig.exists()) {
@@ -84,6 +65,6 @@ class GamePath extends ChangeNotifier {
   @override
   bool operator ==(Object other) {
     if (other is! GamePath) return false;
-    return path == other.path && other._name == _name;
+    return path == other.path;
   }
 }

@@ -4,15 +4,15 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/config/app_config.dart';
-import 'package:one_launcher/models/config/game_setting_config.dart';
+import 'package:one_launcher/provider/game_setting_provider.dart';
 import 'package:one_launcher/utils/extension/color_extension.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
-import 'package:one_launcher/pages/base_page.dart';
+import 'package:one_launcher/pages/common/base_page.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:one_launcher/widgets/textfield.dart';
 import 'package:one_launcher/widgets/widget_group.dart';
@@ -22,9 +22,9 @@ part 'game_setting_page.dart';
 class SettingPage extends RoutePage {
   const SettingPage({super.key, super.pageName = "设置"});
 
-  static final tabs = {
-    "全局游戏设置": _GameSettingPage(config: appConfig.gameSetting),
-    "启动器": const _LauncherSettingPage(),
+  final tabs = const {
+    "全局游戏设置": _GameSettingPage(),
+    "启动器": _LauncherSettingPage(),
   };
 
   @override

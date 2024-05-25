@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
+typedef DynMouseScrollBuilder = Function(
+    BuildContext context, ScrollController controller, ScrollPhysics physics);
+
 class MyDynMouseScroll extends StatelessWidget {
   const MyDynMouseScroll({
     super.key,
@@ -15,7 +18,7 @@ class MyDynMouseScroll extends StatelessWidget {
   final int durationMS;
   final double scrollSpeed;
   final Curve animationCurve;
-  final Function(BuildContext, ScrollController, ScrollPhysics) builder;
+  final DynMouseScrollBuilder builder;
 
   @override
   Widget build(BuildContext context) {

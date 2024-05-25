@@ -23,7 +23,7 @@ GameData _$GameDataFromJson(Map<String, dynamic> json) => GameData(
           ? null
           : Logging.fromJson(json['logging'] as Map<String, dynamic>),
       $enumDecode(_$GameTypeEnumMap, json['type']),
-      json['minimumLauncherVersion'] as int,
+      (json['minimumLauncherVersion'] as num).toInt(),
       javaVersion: json['javaVersion'] == null
           ? null
           : JavaVersion.fromJson(json['javaVersion'] as Map<String, dynamic>),

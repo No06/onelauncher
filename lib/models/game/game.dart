@@ -2,32 +2,28 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/config/app_config.dart';
 import 'package:one_launcher/models/game/data/game_data.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/game_version.dart';
 import 'package:one_launcher/models/json_map.dart';
+import 'package:one_launcher/provider/game_setting_provider.dart';
 import 'package:path/path.dart';
-
-import '../config/game_setting_config.dart';
 
 part 'game.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class Game {
   Game(
     String mainPath,
     String versionPath, {
     bool? useGlobalSetting,
-    GameSettingConfig? setting,
+    this.setting,
   })  : _mainPath = mainPath,
         _versionPath = versionPath,
         _useGlobalSetting = ValueNotifier(useGlobalSetting ?? false),
-        _setting = setting,
         _data = _getDataFromPath(join(mainPath, versionPath)) {
     _useGlobalSetting.addListener(saveConfig);
-    _setting?.addListener(saveConfig);
   }
 
   factory Game.fromJson(
@@ -41,8 +37,7 @@ class Game {
   }
 
   /// 游戏设置配置文件
-  GameSettingConfig? _setting;
-  GameSettingConfig get setting => _setting ?? appConfig.gameSetting;
+  GameSettingState? setting;
 
   /// 是否使用全局游戏设置
   ValueNotifier<bool> _useGlobalSetting;
@@ -140,8 +135,6 @@ class Game {
     final json = const JsonEncoder.withIndent('  ').convert(this);
     config.writeAsStringSync(json);
   }
-
-  JsonMap toJson() => _$GameToJson(this);
 
   /// 从指定路径读取文件序列化为 [GameData]
   static GameData _getDataFromPath(String path) => GameData.fromJson(

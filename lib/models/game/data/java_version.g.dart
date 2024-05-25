@@ -8,7 +8,7 @@ part of 'java_version.dart';
 
 JavaVersion _$JavaVersionFromJson(Map<String, dynamic> json) => JavaVersion(
       json['component'] as String,
-      json['majorVersion'] as int,
+      (json['majorVersion'] as num).toInt(),
     );
 
 Map<String, dynamic> _$JavaVersionToJson(JavaVersion instance) =>

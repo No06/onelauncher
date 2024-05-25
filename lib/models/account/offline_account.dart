@@ -1,6 +1,6 @@
 import 'package:one_launcher/models/account/account.dart';
-import 'package:one_launcher/models/account/local_skin.dart';
-import 'package:one_launcher/models/account/skin.dart';
+import 'package:one_launcher/models/account/skin/local_skin.dart';
+import 'package:one_launcher/models/account/skin/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 

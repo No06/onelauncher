@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/account/online_skin.dart';
+import 'package:one_launcher/models/account/skin/online_skin.dart';
 import 'package:one_launcher/models/json_map.dart';
 part 'profile.g.dart';
 

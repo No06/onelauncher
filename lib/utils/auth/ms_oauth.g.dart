@@ -11,5 +11,5 @@ MicrosoftOAuthResponse _$MicrosoftOAuthResponseFromJson(
     MicrosoftOAuthResponse(
       json['access_token'] as String,
       json['refresh_token'] as String,
-      json['expires_in'] as int,
+      (json['expires_in'] as num).toInt(),
     );

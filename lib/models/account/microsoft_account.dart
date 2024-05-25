@@ -1,6 +1,6 @@
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/mc_access_token.dart';
-import 'package:one_launcher/models/account/online_skin.dart';
+import 'package:one_launcher/models/account/skin/online_skin.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/auth/account_info_util.dart';
@@ -22,7 +22,9 @@ class MicrosoftAccount extends Account {
   })  : _uuid = uuid,
         _displayName = displayName,
         _minecraftAccessToken = MinecraftAccessToken(
-            accessToken: accessToken, refreshToken: refreshToken, notAfter: notAfter),
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            notAfter: notAfter),
         _skin = skin;
 
   String _displayName;
@@ -97,11 +99,13 @@ class MicrosoftAccount extends Account {
     );
   }
 
-  Future<Profile> getProfile() async => AccountInfoUtil(await getAccessToken()).getProfile();
+  Future<Profile> getProfile() async =>
+      AccountInfoUtil(await getAccessToken()).getProfile();
 
   Future<OnlineSkin> _getSkin() async => (await getProfile()).skins.first;
 
-  factory MicrosoftAccount.fromJson(JsonMap json) => _$MicrosoftAccountFromJson(json);
+  factory MicrosoftAccount.fromJson(JsonMap json) =>
+      _$MicrosoftAccountFromJson(json);
 
   @override
   JsonMap toJson() => _$MicrosoftAccountToJson(this);

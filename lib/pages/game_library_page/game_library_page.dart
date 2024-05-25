@@ -1,27 +1,31 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/config/app_config.dart';
+import 'package:one_launcher/main.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game/data/game_type.dart';
-import 'package:one_launcher/models/config/game_path_config.dart';
+import 'package:one_launcher/models/game/game_path.dart';
 import 'package:one_launcher/models/json_map.dart';
+import 'package:one_launcher/provider/account_provider.dart';
+import 'package:one_launcher/provider/game_path_provider.dart';
 import 'package:one_launcher/pages/game_library_page/game_startup_dialog.dart';
+import 'package:one_launcher/utils/form_validator.dart';
 import 'package:one_launcher/widgets/build_widgets_with_divider.dart';
 import 'package:one_launcher/utils/file/file_picker.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
-import 'package:one_launcher/pages/base_page.dart';
+import 'package:one_launcher/pages/common/base_page.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
 import 'package:open_file/open_file.dart';
 
-part 'filter_rule.dart';
+part 'filter_rule_provider.dart';
 part 'home_page.dart';
 part 'configuration_page.dart';
+part 'game_library_page.g.dart';
 
 class GameLibraryPage extends RoutePage {
   const GameLibraryPage({super.key, super.pageName = "开始游戏"});

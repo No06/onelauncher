@@ -1,7 +1,7 @@
 import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/models/account/offline_account.dart';
-import 'package:one_launcher/models/account/skin.dart';
+import 'package:one_launcher/models/account/skin/skin.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 

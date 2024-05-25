@@ -1,5 +1,6 @@
 part of 'game_library_page.dart';
 
+@CopyWith()
 class _FilterState {
   _FilterState({
     required this.name,
@@ -10,18 +11,6 @@ class _FilterState {
   final String name;
   final _GameCollation collation;
   final Set<_GameType> types;
-
-  _FilterState copyWith({
-    String? name,
-    _GameCollation? collation,
-    Set<_GameType>? types,
-  }) {
-    return _FilterState(
-      name: name ?? this.name,
-      collation: collation ?? this.collation,
-      types: types ?? this.types,
-    );
-  }
 
   JsonMap toJson() => {
         'collation': collation.index,
@@ -42,9 +31,8 @@ class _FilterStateNotifier extends StateNotifier<_FilterState> {
 
   static const storageKey = "gameFilterRule";
 
-  static _loadInitialState() {
-    final box = GetStorage();
-    final storedData = box.read<JsonMap>(storageKey);
+  static _FilterState _loadInitialState() {
+    final storedData = storage.read<JsonMap>(storageKey);
     try {
       if (storedData != null) return _FilterState.fromJson(storedData);
     } catch (e) {
@@ -57,9 +45,8 @@ class _FilterStateNotifier extends StateNotifier<_FilterState> {
     );
   }
 
-  final _box = GetStorage();
   void _saveState() {
-    _box.write(storageKey, state.toJson());
+    storage.write(storageKey, state.toJson());
   }
 
   void updateName(String name) {

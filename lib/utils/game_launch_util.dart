@@ -17,6 +17,7 @@ import 'package:one_launcher/models/game/data/library/common_library.dart';
 import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/library/maven_library.dart';
 import 'package:one_launcher/models/game/data/library/natives_library.dart';
+import 'package:one_launcher/provider/game_setting_provider.dart';
 import 'package:one_launcher/utils/file/get_file_md5.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/random_string.dart';
@@ -25,18 +26,21 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class GameLaunchUtil {
-  GameLaunchUtil(this.game) {
+  GameLaunchUtil(this.game, this.globarSetting) {
     autoMem();
     autoJava();
   }
 
   late final int allocateMem;
   final completer = Completer();
-  StreamSubscription? errSubscription;
+
   final Game game;
+  final GameSettingState globarSetting;
   late final Java? java;
   AccountLoginInfo? loginInfo;
+
   Process? process;
+  StreamSubscription? errSubscription;
   StreamSubscription? subscription;
   final List<String> warningMessages = [];
 
@@ -101,7 +105,7 @@ class GameLaunchUtil {
 
   /// 自动设置内存
   int autoMem() {
-    if (game.setting.autoMemory) {
+    if (globarSetting.autoMemory) {
       final freeMem = sysinfo.freePhyMem.toMB();
       // 内存捉紧按空闲内存一半分配，否则四六开
       final persent = freeMem > 4096 ? 0.6 : 0.5;
@@ -113,7 +117,7 @@ class GameLaunchUtil {
         print(allocateMem);
       }
     } else {
-      allocateMem = game.setting.maxMemory;
+      allocateMem = globarSetting.maxMemory;
     }
     // 检查内存设置
     late final int recommendMinimum;
@@ -155,7 +159,7 @@ class GameLaunchUtil {
           minimumVersion = 6;
       }
     }
-    if (game.setting.java == null) {
+    if (globarSetting.java == null) {
       // 自动搜寻与游戏版本最佳的 Java
       final targetList = <Java>[];
       for (var java in JavaManager.set) {
@@ -176,7 +180,7 @@ class GameLaunchUtil {
       }
       return java;
     } else {
-      java = game.setting.java;
+      java = globarSetting.java;
       // 检查选择的Java版本是否兼容
       final majorVersion = (java!.versionNumber).major;
       if (majorVersion < minimumVersion) {
@@ -324,9 +328,9 @@ class GameLaunchUtil {
     if (arguments != null) {
       return (replaceVariables(
               game.data.arguments?.gameFilterString, gameArgsMap)
-            ..add("--width ${game.setting.width}")
-            ..add("--height ${game.setting.height}")
-            ..addIf(game.setting.fullScreen, "--fullscreen"))
+            ..add("--width ${globarSetting.width}")
+            ..add("--height ${globarSetting.height}")
+            ..addIf(globarSetting.fullScreen, "--fullscreen"))
           .join(' ');
     }
     // 低版本
@@ -372,7 +376,7 @@ class GameLaunchUtil {
 
   /// 获取启动参数
   Future<Iterable<String>> getLaunchArguments() async {
-    final setting = game.setting;
+    final setting = this.globarSetting;
     final version = game.data;
     // 命令行参数
     final args = [

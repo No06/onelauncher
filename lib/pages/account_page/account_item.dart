@@ -1,52 +1,48 @@
 part of 'account_page.dart';
 
-class _AccountItem extends StatelessWidget {
-  _AccountItem({
+class _AccountItem extends ConsumerWidget {
+  const _AccountItem({
+    super.key,
     required this.account,
-    this.isSelected = false,
-    this.onTap,
-    this.onRemoved,
   });
 
   final Account account;
-  final bool isSelected;
-  final void Function()? onTap;
-  final void Function(Account account)? onRemoved;
-
-  final isTapDown = RxBool(false);
-  final isHover = RxBool(false);
-
-  Color getColor({
-    required Color selectedColor,
-    required Color unSelectedColor,
-    required Brightness brightness,
-  }) {
-    if (isSelected) {
-      return selectedColor;
-    }
-    if (isTapDown.value) {
-      return selectedColor.withOpacity(.7);
-    }
-    if (isHover.value) {
-      return dynamicColorWithValue(unSelectedColor, -0.1, 0.1, brightness);
-    }
-    return unSelectedColor;
-  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isSelected = ref.watch(
+        accountProvider.select((state) => state.selectedAccount == account));
+
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final selectedColor = colors.primary;
     final unSelectedColor = colorWithValue(colors.surface, .1);
     final fontColor = isSelected ? colors.onPrimary : colors.onSurface;
 
+    final isTapDown = RxBool(false);
+    final isHover = RxBool(false);
+
+    Color getColor() {
+      if (isSelected) {
+        return selectedColor;
+      }
+      if (isTapDown.value) {
+        return selectedColor.withOpacity(.7);
+      }
+      if (isHover.value) {
+        return dynamicColorWithValue(
+            unSelectedColor, -0.1, 0.1, theme.brightness);
+      }
+      return unSelectedColor;
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
         height: 58,
         child: GestureDetector(
-          onTap: onTap,
+          onTap: () =>
+              ref.read(accountProvider.notifier).updateSelectedAccount(account),
           onTapDown: (details) => isTapDown(true),
           onTapCancel: () => isTapDown(false),
           onTapUp: (details) => isTapDown(false),
@@ -67,11 +63,7 @@ class _AccountItem extends StatelessWidget {
                   clipBehavior: Clip.antiAlias,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 100),
-                    color: getColor(
-                      selectedColor: selectedColor,
-                      unSelectedColor: unSelectedColor,
-                      brightness: theme.brightness,
-                    ),
+                    color: getColor(),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -107,7 +99,7 @@ class _AccountItem extends StatelessWidget {
                             ],
                           ),
                           const Spacer(),
-                          _Actions(account, onRemoved, fontColor),
+                          _Actions(account, fontColor),
                         ],
                       ),
                     ),
@@ -123,7 +115,7 @@ class _AccountItem extends StatelessWidget {
 }
 
 // FIXME: 头像第一次加载卡顿
-class _Avatar extends StatelessWidget {
+class _Avatar extends HookWidget {
   const _Avatar(this.account, this.isSelected);
 
   final Account account;
@@ -177,15 +169,14 @@ class _Avatar extends StatelessWidget {
   }
 }
 
-class _Actions extends StatelessWidget {
-  const _Actions(this.account, this.onRemoved, this.fontColor);
+class _Actions extends ConsumerWidget {
+  const _Actions(this.account, this.fontColor);
 
   final Account account;
-  final void Function(Account account)? onRemoved;
   final Color fontColor;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Wrap(
       spacing: 5,
       children: [
@@ -218,7 +209,8 @@ class _Actions extends StatelessWidget {
                 title: const Text("删除用户"),
                 content: const Text("你确定要删除这条数据吗？"),
                 onConfirmed: () {
-                  (onRemoved ?? () {})(account);
+                  ref.read(accountProvider.notifier).removeAccount(account);
+                  showSnackbar(successSnackBar("删除成功"));
                   dialogPop();
                 },
                 onCanceled: dialogPop,

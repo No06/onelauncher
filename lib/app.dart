@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
-import 'package:one_launcher/models/config/theme_config.dart';
+import 'package:one_launcher/provider/theme_provider.dart';
 import 'package:one_launcher/pages/account_page/account_page.dart';
 import 'package:one_launcher/pages/appearance_page.dart';
 import 'package:one_launcher/pages/game_library_page/game_library_page.dart';
@@ -127,12 +127,20 @@ class _MyAppState extends State<MyApp> with WindowListener {
               child: DecoratedBox(
                 decoration: const BoxDecoration(boxShadow: [
                   BoxShadow(
-                    color: Colors.black38,
+                    color: Colors.black26,
                     blurRadius: 6,
                     spreadRadius: 0,
                   ),
                 ]),
-                child: child,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border.all(width: 1, color: Colors.black26),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(1),
+                    child: child,
+                  ),
+                ),
               ),
             ),
       child: Consumer(builder: (context, ref, child) {

@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/account/skin.dart';
+import 'package:one_launcher/models/account/skin/skin.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'online_skin.g.dart';

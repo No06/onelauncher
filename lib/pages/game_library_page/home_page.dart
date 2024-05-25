@@ -140,41 +140,12 @@ class _SliverList extends ConsumerWidget {
   const _SliverList();
 
   final _divider = const Divider(height: 1, indent: 64, endIndent: 32);
-
-  // 比对配置名
-  int _compareByName(Game a, Game b) => a.data.id.compareTo(b.data.id);
-
-  // 筛选游戏类型
-  bool _typeFilter(Game game, Set<_GameType> types) =>
-      types.isEmpty ? true : types.contains(_GameType.fromGame(game));
-
-  // 将 Game 转换为 _GameItem
-  List<Widget> _gameListToItems(Iterable<Game> games) => List.generate(
-        games.length,
-        (i) => _GameItem(games.elementAt(i)),
-      );
-
-  List<Widget> _buildItemList(
-    List<Game> gameList,
-    _GameCollation collation,
-    Set<_GameType> types,
-  ) {
-    var typeFiltedList = gameList.where((game) => _typeFilter(game, types));
-    switch (collation) {
-      // TODO: 最近游玩排序
-      case _GameCollation.recentlyPlayed:
-        return _gameListToItems(typeFiltedList);
-
-      case _GameCollation.byName:
-        var filtedGameList = typeFiltedList.toList()..sort(_compareByName);
-        return _gameListToItems(filtedGameList);
-    }
-  }
+  final _processor = const _GameProcessor();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder(
-      future: appConfig.searchGamesOnPaths(),
+      future: ref.read(gamePathProvider).getGamesOnPath(),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const SliverFillRemaining(
@@ -186,15 +157,50 @@ class _SliverList extends ConsumerWidget {
         }
         final gameList = snapshot.data!;
         return Consumer(builder: (context, ref, child) {
-          final filterRule = ref.watch(_filterStateProvider);
+          final filterState = ref.watch(_filterStateProvider);
+          final filteredGames =
+              _processor.filterAndSortGames(gameList, filterState);
           return SliverList.list(
-            children:
-                _buildItemList(gameList, filterRule.collation, filterRule.types)
-                    .joinWith(_divider),
+            children: filteredGames.joinWith(_divider),
           );
         });
       },
     );
+  }
+}
+
+class _GameProcessor {
+  const _GameProcessor();
+
+  // 比对配置名
+  int compareByName(Game a, Game b) => a.data.id.compareTo(b.data.id);
+
+  // 筛选游戏类型
+  bool typeFilter(Game game, Set<_GameType> types) =>
+      types.isEmpty ? true : types.contains(_GameType.fromGame(game));
+
+  // 将 Game 转换为 _GameItem
+  List<Widget> gameListToItems(Iterable<Game> games) => List.generate(
+        games.length,
+        (i) => _GameItem(games.elementAt(i)),
+      );
+
+  // 构建过滤和排序后的游戏列表
+  List<Widget> filterAndSortGames(
+    Iterable<Game> gameList,
+    _FilterState filterState,
+  ) {
+    var typeFilteredList =
+        gameList.where((game) => typeFilter(game, filterState.types));
+    switch (filterState.collation) {
+      // TODO: 最近游玩排序
+      case _GameCollation.recentlyPlayed:
+        return gameListToItems(typeFilteredList);
+
+      case _GameCollation.byName:
+        var filteredGameList = typeFilteredList.toList()..sort(compareByName);
+        return gameListToItems(filteredGameList);
+    }
   }
 }
 
@@ -219,7 +225,6 @@ class _OptionItem extends StatelessWidget {
 
 class _GameTypeCheckbox extends StatelessWidget {
   const _GameTypeCheckbox({
-    super.key,
     required this.label,
     required this.type,
     required this.ruleSet,
@@ -269,7 +274,7 @@ class _GameTypeCheckbox extends StatelessWidget {
   }
 }
 
-class _GameItem extends StatelessWidget {
+class _GameItem extends ConsumerWidget {
   const _GameItem(this.game);
 
   final Game game;
@@ -294,7 +299,7 @@ class _GameItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
     final colors = theme.colorScheme;
@@ -327,7 +332,7 @@ class _GameItem extends StatelessWidget {
                       barrierDismissible: false,
                       context: context,
                       builder: (context) {
-                        if (appConfig.selectedAccount == null) {
+                        if (ref.read(accountProvider).selectedAccount == null) {
                           return const WarningDialog(
                             content: Text("先添加一个账号再启动吧"),
                             onlyConfirm: true,

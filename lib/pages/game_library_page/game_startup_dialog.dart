@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:one_launcher/models/config/app_config.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:one_launcher/models/game/game.dart';
+import 'package:one_launcher/provider/account_provider.dart';
+import 'package:one_launcher/provider/game_setting_provider.dart';
 import 'package:one_launcher/utils/game_launch_util.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 
@@ -10,33 +12,33 @@ typedef _TaskFutureFunction<T> = Future<T>? Function()?;
 
 typedef _TaskDoneCallBack<T> = bool? Function(T)?;
 
-class GameStartupDialog extends StatefulWidget {
-  GameStartupDialog({super.key, required this.game})
-      : launchUtil = GameLaunchUtil(game);
+class GameStartupDialog extends ConsumerStatefulWidget {
+  const GameStartupDialog({super.key, required this.game});
 
   final Game game;
-  final GameLaunchUtil launchUtil;
 
   @override
-  State<GameStartupDialog> createState() => _GameStartupDialogState();
+  ConsumerState<GameStartupDialog> createState() => _GameStartupDialogState();
 }
 
-class _GameStartupDialogState extends State<GameStartupDialog> {
-  late final List<String> warningMessages;
+class _GameStartupDialogState extends ConsumerState<GameStartupDialog> {
+  late final GameLaunchUtil launchUtil;
   Timer? timer;
   var seconds = 5;
   var _continue = false;
 
+  List<String> get warningMessages => launchUtil.warningMessages;
+
   @override
   void initState() {
     super.initState();
-    warningMessages = widget.launchUtil.warningMessages;
+    launchUtil = GameLaunchUtil(widget.game, ref.read(gameSettingProvider));
   }
 
   @override
   void dispose() {
     timer?.cancel();
-    widget.launchUtil.cancel();
+    launchUtil.cancel();
     super.dispose();
   }
 
@@ -56,22 +58,22 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
               child: _SequenceTaskItems(
                 tasks: [
                   _Task(
-                    future: widget.launchUtil.retrieveLibraries.toList,
+                    future: launchUtil.retrieveLibraries.toList,
                     title: const Text("检索资源"),
                     onDone: (value) => value.isNotEmpty,
                   ),
                   _Task(
-                    future: widget.launchUtil.extractNativesLibraries,
+                    future: launchUtil.extractNativesLibraries,
                     title: const Text("解压资源"),
                   ),
                   _Task(
-                    future: () =>
-                        widget.launchUtil.login(appConfig.selectedAccount!),
+                    future: () => launchUtil
+                        .login(ref.read(accountProvider).selectedAccount!),
                     title: const Text("登录"),
                     onDone: (value) => value == null,
                   ),
                   _Task(
-                    future: widget.launchUtil.launchGame,
+                    future: launchUtil.launchGame,
                     title: const Text("启动"),
                   ),
                 ],
@@ -79,15 +81,15 @@ class _GameStartupDialogState extends State<GameStartupDialog> {
             ),
             onlyConfirm: true,
             onConfirmed: () async {
-              if (!widget.launchUtil.completer.isCompleted) {
+              if (!launchUtil.completer.isCompleted) {
                 // 强制关闭
-                widget.launchUtil.cancel();
-                widget.launchUtil.killProcess();
+                launchUtil.cancel();
+                launchUtil.killProcess();
               }
               dialogPop();
             },
             confirmText: FutureBuilder(
-              future: widget.launchUtil.completer.future,
+              future: launchUtil.completer.future,
               builder: (context, snapshot) {
                 return StatefulBuilder(builder: (context, setState) {
                   switch (snapshot.connectionState) {

@@ -11,7 +11,7 @@ DeviceCodeResponse _$DeviceCodeResponseFromJson(Map<String, dynamic> json) =>
       json['device_code'] as String,
       json['user_code'] as String,
       json['verification_uri'] as String,
-      json['expires_in'] as int,
-      json['interval'] as int,
+      (json['expires_in'] as num).toInt(),
+      (json['interval'] as num).toInt(),
       json['message'] as String,
     );

@@ -41,7 +41,7 @@ class _OfflineLoginForm extends HookWidget {
                 RegExp("[\u4e00-\u9fa5_a-zA-Z0-9]"),
               ),
             ],
-            validator: noEmpty,
+            validator: FormValidator.noEmpty,
           ),
           ObxValue(
             (isExpaned) => ExpansionListTile(
@@ -75,7 +75,7 @@ class _OfflineLoginForm extends HookWidget {
                     constraints: BoxConstraints(maxHeight: 36),
                   ),
                   controller: uuidTextController,
-                  validator: noEmpty,
+                  validator: FormValidator.noEmpty,
                 ),
               ),
             ),

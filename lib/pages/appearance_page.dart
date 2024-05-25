@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:one_launcher/models/config/theme_config.dart';
+import 'package:one_launcher/provider/theme_provider.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
-import 'package:one_launcher/pages/base_page.dart';
+import 'package:one_launcher/pages/common/base_page.dart';
 
 class AppearancePage extends RoutePage {
   const AppearancePage({super.key, super.pageName = "外观"});
