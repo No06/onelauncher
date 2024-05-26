@@ -6,7 +6,6 @@ import 'dart:math';
 import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
-import 'package:get/get_utils/src/extensions/dynamic_extensions.dart';
 import 'package:get/state_manager.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/account/account.dart';
@@ -18,6 +17,7 @@ import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/library/maven_library.dart';
 import 'package:one_launcher/models/game/data/library/natives_library.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/utils/file/get_file_md5.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:one_launcher/utils/random_string.dart';
@@ -62,9 +62,6 @@ class GameLaunchUtil {
 
   /// 启动游戏
   Future<void> launchGame() async {
-    const white = "\u001b[37m";
-    const red = "\u001b[31m";
-
     Future(() async => await launchCommand
       ..printInfo());
 
@@ -77,7 +74,7 @@ class GameLaunchUtil {
 
     // 监听子进程的错误
     errSubscription = process!.stderr.transform(utf8.decoder).listen((data) {
-      if (kDebugMode) print('$red$data'); // 打印错误
+      data.printError("Process error message");
       if (data.isNotEmpty) {
         try {
           if (!completer.isCompleted) completer.completeError(data);
@@ -89,6 +86,7 @@ class GameLaunchUtil {
 
     // 监听子进程
     subscription = process!.stdout.transform(utf8.decoder).listen((data) {
+      data.printInfo("Process message");
       try {
         if (data.startsWith("Setting user", 33) ||
             data.startsWith("Minecraft reloaded", 33) ||
@@ -98,7 +96,6 @@ class GameLaunchUtil {
       } catch (e) {
         e.printError();
       }
-      if (kDebugMode) print("$white$data");
     });
     return await completer.future;
   }

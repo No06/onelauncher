@@ -1,9 +1,9 @@
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get/utils.dart';
 import 'package:one_launcher/main.dart';
 import 'package:one_launcher/models/json_map.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 
 class AppThemeState {
   final ThemeMode mode;
@@ -56,6 +56,7 @@ class AppThemeNotifier extends StateNotifier<AppThemeState> {
   }
 
   void _saveState() {
+    storageKey.printInfo("Save storage");
     storage.write(storageKey, state.toJson());
   }
 

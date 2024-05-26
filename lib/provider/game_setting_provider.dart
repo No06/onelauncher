@@ -1,10 +1,10 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get/utils.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/main.dart';
 import 'package:one_launcher/models/game/java.dart';
 import 'package:one_launcher/models/json_map.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 
 part 'game_setting_provider.g.dart';
 
@@ -62,7 +62,10 @@ class GameSettingNotifier extends StateNotifier<GameSettingState> {
     return GameSettingState();
   }
 
-  void _saveState() => storage.write(storageKey, state.toJson());
+  void _saveState() {
+    storageKey.printInfo("Save storage");
+    storage.write(storageKey, state.toJson());
+  }
 
   void update({
     Java? java,

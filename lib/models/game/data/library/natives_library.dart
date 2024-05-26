@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:get/get.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/data/library/artifact.dart';
 import 'package:one_launcher/models/game/data/library/common_library.dart';
@@ -9,6 +8,7 @@ import 'package:one_launcher/models/game/data/library/extract.dart';
 import 'package:one_launcher/models/game/data/os.dart';
 import 'package:one_launcher/models/game/data/rule.dart';
 import 'package:one_launcher/models/json_map.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/utils/file/extract_file_to_disk_and_exclude.dart';
 import 'package:one_launcher/utils/platform/architecture.dart';
 import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';

@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:get/get.dart';
+import 'package:get/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';

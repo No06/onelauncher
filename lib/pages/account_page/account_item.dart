@@ -73,6 +73,7 @@ class _AccountItem extends HookConsumerWidget {
                   final fontColor =
                       isSelected ? colors.onPrimary : colors.onSurface;
                   return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Wrap(
                         spacing: 15,
@@ -102,7 +103,6 @@ class _AccountItem extends HookConsumerWidget {
                           ),
                         ],
                       ),
-                      const Spacer(),
                       _Actions(account, fontColor: fontColor),
                     ],
                   );

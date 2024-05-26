@@ -1,10 +1,10 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get/utils.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/main.dart';
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/json_map.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 
 part 'account_provider.g.dart';
 
@@ -45,11 +45,16 @@ class AccountStateNotifier extends StateNotifier<AccountState> {
     );
   }
 
-  void _saveState() => storage.write(storageKey, state.toJson());
+  void _saveState() {
+    storageKey.printInfo("Save storage");
+    storage.write(storageKey, state.toJson());
+  }
 
   void updateSelectedAccount(Account account) {
-    state = state.copyWith(selectedAccount: account);
-    _saveState();
+    if (state.selectedAccount != account) {
+      state = state.copyWith(selectedAccount: account);
+      _saveState();
+    }
   }
 
   bool addAccount(Account value) {
