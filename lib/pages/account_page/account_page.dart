@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,7 +29,9 @@ import '../../models/account/account.dart';
 import '/widgets/dialog.dart';
 import '../../widgets/snackbar.dart';
 
-part 'form.dart';
+part './form/offline_login_form.dart';
+part './form/microsoft_login_form.dart';
+part './form/custom_login_form.dart';
 part 'account_item.dart';
 part 'add_account_dialog.dart';
 

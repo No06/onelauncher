@@ -279,23 +279,21 @@ class _GameItem extends ConsumerWidget {
 
   final Game game;
 
-  final Map<String,IconData> menu = const {
-    "编辑" : Icons.edit,
+  final Map<String, IconData> menu = const {
+    "编辑": Icons.edit,
   };
 
   List<PopupMenuItem<String>> buildMenu() {
     return menu.keys
-    .toList()
-    .map((el) =>PopupMenuItem<String>(
-        value: el,
-        child: Wrap(
-          spacing: 10,
-          children: [
-            Icon(menu[el]),
-            Text(el)
-          ],
-        ),
-      )).toList();
+        .toList()
+        .map((el) => PopupMenuItem<String>(
+              value: el,
+              child: Wrap(
+                spacing: 10,
+                children: [Icon(menu[el]), Text(el)],
+              ),
+            ))
+        .toList();
   }
 
   @override
@@ -356,7 +354,7 @@ class _GameItem extends ConsumerWidget {
                 IconButton(
                   onPressed: () {
                     // TODO:Linux、MacOS待检验是否正常可用
-                    OpenFile.open(game.path);
+                    OpenFile.open(game.mainPath);
                   },
                   icon: const Icon(Icons.folder),
                 ),
@@ -368,10 +366,9 @@ class _GameItem extends ConsumerWidget {
                 PopupMenuButton(
                   itemBuilder: (context) => buildMenu(),
                   elevation: 1,
-                  shape: const RoundedRectangleBorder(borderRadius: kDefaultBorderRadius),
-                  onSelected: (el) => {
-
-                  },
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: kDefaultBorderRadius),
+                  onSelected: (el) => {},
                 )
               ],
             ),

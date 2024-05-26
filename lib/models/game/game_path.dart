@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:get/utils.dart';
-import 'package:one_launcher/consts.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:path/path.dart';
@@ -31,20 +29,11 @@ class GamePath {
       // 如果该文件夹存在且存在相同命名的json文件
       if (await Directory(join(path, dir.path)).exists() &&
           await File(json).exists()) {
-        var gameConfig = File(join(dir.path, kGameConfigName));
         final librariesPath = path;
         final versionPath = dir.path.substring(path.length + 1);
         // 如果存在启动器生成的单独配置文件
         try {
-          if (await gameConfig.exists()) {
-            yield Game.fromJson(
-              librariesPath,
-              versionPath,
-              jsonDecode(gameConfig.readAsStringSync()),
-            );
-          } else {
-            yield Game(librariesPath, versionPath);
-          }
+          yield Game(librariesPath, versionPath);
           // 如有异常则跳过
         } catch (e) {
           e.printError(info: "path: ${dir.path}");

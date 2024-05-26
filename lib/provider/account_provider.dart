@@ -54,10 +54,7 @@ class AccountStateNotifier extends StateNotifier<AccountState> {
 
   bool addAccount(Account value) {
     final updated = state.accounts.add(value);
-    state = state.copyWith(
-      selectedAccount: state.selectedAccount ?? value,
-      accounts: state.accounts,
-    );
+    state = state.copyWith(selectedAccount: value, accounts: state.accounts);
     _saveState();
     return updated;
   }

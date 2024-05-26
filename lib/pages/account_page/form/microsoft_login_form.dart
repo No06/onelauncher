@@ -1,91 +1,4 @@
-part of 'account_page.dart';
-
-class _OfflineLoginForm extends HookWidget {
-  late final TextEditingController uuidTextController;
-  late final TextEditingController usernameTextController;
-
-  static String getUuidFromName(String name) =>
-      const Uuid().v5(Uuid.NAMESPACE_NIL, name);
-
-  OfflineAccount submit() => OfflineAccount(
-        displayName: usernameTextController.text,
-        uuid: uuidTextController.text.replaceAll('-', ''),
-      );
-
-  @override
-  Widget build(BuildContext context) {
-    uuidTextController = useTextEditingController();
-    usernameTextController = useTextEditingController();
-    final rotationAnimationController = useAnimationController(
-      upperBound: 0.5,
-      duration: const Duration(milliseconds: 250),
-    );
-    // uuid 监听 用户名变化
-    usernameTextController.addListener(
-      () => uuidTextController.text =
-          getUuidFromName(usernameTextController.text),
-    );
-
-    return Theme(
-      data: simpleInputDecorationThemeData(context),
-      child: Column(
-        children: [
-          TextFormField(
-            decoration: const InputDecoration(labelText: "用户名"),
-            obscureText: false,
-            readOnly: false,
-            maxLength: 20,
-            controller: usernameTextController,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(
-                RegExp("[\u4e00-\u9fa5_a-zA-Z0-9]"),
-              ),
-            ],
-            validator: FormValidator.noEmpty,
-          ),
-          ObxValue(
-            (isExpaned) => ExpansionListTile(
-              isExpaned: isExpaned.value,
-              title: ListTile(
-                dense: true,
-                title: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Text("高级"),
-                    RotationTransition(
-                      turns: rotationAnimationController.view,
-                      child: const Icon(Icons.expand_more),
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  isExpaned(!isExpaned.value);
-                  if (isExpaned.value) {
-                    rotationAnimationController.forward();
-                  } else {
-                    rotationAnimationController.reverse();
-                  }
-                },
-              ),
-              expandTile: ListTile(
-                dense: true,
-                leading: const Text("UUID"),
-                title: TextFormField(
-                  decoration: const InputDecoration(
-                    constraints: BoxConstraints(maxHeight: 36),
-                  ),
-                  controller: uuidTextController,
-                  validator: FormValidator.noEmpty,
-                ),
-              ),
-            ),
-            false.obs,
-          ),
-        ],
-      ),
-    );
-  }
-}
+part of '../account_page.dart';
 
 class _MicosoftLoginForm extends StatelessWidget {
   const _MicosoftLoginForm({required this.onSubmit});
@@ -102,46 +15,13 @@ class _MicosoftLoginForm extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _SelectionItem(
-          onTap: () async {
-            await showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => AlertDialog(
-                shape: const RoundedRectangleBorder(
-                  borderRadius: kDefaultBorderRadius,
-                ),
-                contentPadding: EdgeInsets.zero,
-                content: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  // TODO: Webview对Linux、MacOS的支持
-                  child: _LoginWebview(
-                    onSuccess: (code) {
-                      dialogPop();
-                      webViewSubmit(context, code);
-                    },
-                    onClose: dialogPop,
-                  ),
-                ),
-              ),
-            );
-          },
+          onTap: () => _onTapWebviewLogin(context),
           cardColor: primaryColor,
           icon: Icon(Icons.public, size: _iconSize, color: primaryTextColor),
           text: Text("Webview 登录", style: TextStyle(color: primaryTextColor)),
         ),
         _SelectionItem(
-          onTap: () => showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => _DeviceCodeLoginDialog(
-              response: (response) {
-                if (response != null) {
-                  dialogPop();
-                  deviceCodeSubmit(context, response);
-                }
-              },
-            ),
-          ),
+          onTap: () => _onTapDeviceCodeLogin(context),
           shape: RoundedRectangleBorder(
             borderRadius: const BorderRadius.all(Radius.circular(12.0)),
             side: BorderSide(color: primaryColor, width: 1.5),
@@ -153,83 +33,129 @@ class _MicosoftLoginForm extends StatelessWidget {
     );
   }
 
-  Future<void> webViewSubmit(BuildContext context, String code) async {
-    _showMcLoginDialog(context);
-    try {
-      MicrosoftAccount.generateByOAuthCode(code).then((account) {
-        if (account != null) {
-          dialogPop();
-          onSubmit(account);
-        }
+  void _onTapWebviewLogin(BuildContext context) => showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          shape: const RoundedRectangleBorder(
+            borderRadius: kDefaultBorderRadius,
+          ),
+          contentPadding: EdgeInsets.zero,
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            // TODO: Webview对Linux、MacOS的支持
+            child: const _LoginWebview(),
+          ),
+        ),
+      ).then((code) {
+        if (code != null) _webViewLoginSubmit(context, code);
       });
-    } on HttpException catch (e) {
-      _whenRequestException(e);
-    } catch (e) {
-      _whenRequestException(e);
-    }
+
+  void _onTapDeviceCodeLogin(BuildContext context) =>
+      showDialog<MicrosoftOAuthResponse>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const _DeviceCodeLoginDialog(),
+      ).then((response) {
+        if (response != null) _deviceCodeLoginSubmit(context, response);
+      });
+
+  Future<void> _webViewLoginSubmit(BuildContext context, String code) async {
+    final account = await _generateAccount(
+      context: context,
+      function: () => MicrosoftAccount.generateByOAuthCode(code),
+    );
+    if (account != null) onSubmit(account);
   }
 
-  Future<void> deviceCodeSubmit(
+  Future<void> _deviceCodeLoginSubmit(
     BuildContext context,
     MicrosoftOAuthResponse response,
   ) async {
-    _showMcLoginDialog(context);
-    try {
-      MicrosoftAccount.generateByMsToken(
+    final account = await _generateAccount(
+      context: context,
+      function: () => MicrosoftAccount.generateByMsToken(
         msAccessToken: "d=${response.accessToken}",
         refreshToken: response.refreshToken,
-      ).then((account) {
-        dialogPop();
-        onSubmit(account);
-      });
-    } catch (e) {
-      _whenRequestException(e);
-    }
+      ),
+    );
+    if (account != null) onSubmit(account);
   }
 
-  void _whenRequestException(Object e) {
-    dialogPop();
-    showSnackbar(errorSnackBar("请求错误：${e.toString()}"));
-  }
-
-  void _showMcLoginDialog(BuildContext context) {
-    showDialog(
+  Future<T?> _generateAccount<T>({
+    required BuildContext context,
+    required Future<T> Function() function,
+  }) {
+    return showDialog<T?>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => DefaultDialog(
-        title: const Text("登录成功"),
-        content: Row(
-          children: [
-            const Text("正在获取游戏授权码"),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Transform.scale(
-                scale: 0.8,
-                child: const CircularProgressIndicator(),
-              ),
+      builder: (context) => FutureBuilder(
+        future: function(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            dialogPop(result: snapshot.data);
+            if (snapshot.hasError) {
+              showSnackbar(errorSnackBar("请求错误：${snapshot.error.toString()}"));
+            }
+          }
+          return DefaultDialog(
+            title: const Text("登录成功"),
+            content: Row(
+              children: [
+                const Text("正在获取游戏授权码"),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Transform.scale(
+                    scale: 0.8,
+                    child: const CircularProgressIndicator(),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: const [DialogCancelButton(onPressed: dialogPop)],
+            actions: const [DialogCancelButton(onPressed: dialogPop)],
+          );
+        },
       ),
     );
   }
 }
 
-class _CustomLoginForm extends StatelessWidget {
-  const _CustomLoginForm();
+class _SelectionItem extends StatelessWidget {
+  const _SelectionItem({
+    this.cardColor,
+    required this.icon,
+    required this.text,
+    required this.onTap,
+    this.shape,
+  });
+
+  final Color? cardColor;
+  final Widget icon;
+  final Widget text;
+  final void Function()? onTap;
+  final ShapeBorder? shape;
 
   @override
   Widget build(BuildContext context) {
-    return nil;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      color: cardColor,
+      shape: shape,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [icon, text],
+          ),
+        ),
+      ),
+    );
   }
 }
 
 class _LoginWebview extends StatefulWidget {
-  const _LoginWebview({required this.onSuccess, required this.onClose});
-
-  final void Function(String code) onSuccess;
-  final VoidCallback onClose;
+  const _LoginWebview();
 
   @override
   State<_LoginWebview> createState() => _LoginWebviewState();
@@ -283,10 +209,10 @@ class _LoginWebviewState extends State<_LoginWebview> {
 
       _controller.url.listen((url) async {
         final match = _codeRegex.firstMatch(url);
-        if (match != null && match.group(0) != null) {
-          final code = match.group(0)!;
-          widget.onSuccess(code);
+        final code = match?.group(0);
+        if (match != null && code != null) {
           debugPrint("授权码: $code");
+          dialogPop(result: code);
         } else {
           debugPrint("未找到授权码");
         }
@@ -355,9 +281,9 @@ class _LoginWebviewState extends State<_LoginWebview> {
                   child: SizedBox.expand(),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: widget.onClose,
+              const IconButton(
+                icon: Icon(Icons.close),
+                onPressed: dialogPop,
               ),
             ]),
           ),
@@ -384,44 +310,8 @@ class _LoginWebviewState extends State<_LoginWebview> {
   }
 }
 
-class _SelectionItem extends StatelessWidget {
-  const _SelectionItem({
-    this.cardColor,
-    required this.icon,
-    required this.text,
-    required this.onTap,
-    this.shape,
-  });
-
-  final Color? cardColor;
-  final Widget icon;
-  final Widget text;
-  final void Function()? onTap;
-  final ShapeBorder? shape;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      color: cardColor,
-      shape: shape,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [icon, text],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _DeviceCodeLoginDialog extends StatefulWidget {
-  const _DeviceCodeLoginDialog({required this.response});
-
-  final void Function(MicrosoftOAuthResponse? accessToken) response;
+  const _DeviceCodeLoginDialog();
 
   @override
   State<_DeviceCodeLoginDialog> createState() => _DeviceCodeLoginDialogState();
@@ -448,6 +338,7 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
   @override
   void initState() {
     super.initState();
+    // 轮询
     util
         .getAccessTokenByUserCode(
       startPolling: (deviceCode, verificationUrl) => setState(() {
@@ -455,9 +346,9 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
         _verificationUrl = verificationUrl;
       }),
     )
-        .then((value) {
-      completer.complete(value);
-      widget.response(value);
+        .then((resp) {
+      completer.complete(resp);
+      dialogPop(result: resp);
     });
   }
 

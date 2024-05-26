@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/game/data/game_data.dart';
-import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/game_version.dart';
 import 'package:one_launcher/models/json_map.dart';
@@ -21,10 +20,7 @@ class Game {
     this.setting,
   })  : _mainPath = mainPath,
         _versionPath = versionPath,
-        _useGlobalSetting = ValueNotifier(useGlobalSetting ?? false),
-        _data = _getDataFromPath(join(mainPath, versionPath)) {
-    _useGlobalSetting.addListener(saveConfig);
-  }
+        _data = _getDataFromPath(join(mainPath, versionPath));
 
   factory Game.fromJson(
     String librariesPath,
@@ -36,14 +32,30 @@ class Game {
     return _$GameFromJson(json);
   }
 
+  /// 获取游戏native资源解压路径
+  /// 如: /home/onelauncher/.minecraft/version/1.x.x/natives-windows-x86_64
+  String get nativesPath => join(path, "natives-${Platform.operatingSystem}");
+
   /// 游戏设置配置文件
   GameSettingState? setting;
 
-  /// 是否使用全局游戏设置
-  ValueNotifier<bool> _useGlobalSetting;
-
   /// 游戏文件 1.x.x.json序列化内容
   GameData _data;
+
+  /// 主路径
+  /// 如: /home/onelauncher/.minecraft
+  final String _mainPath;
+
+  /// version文件夹路径
+  /// 如: version/1.x.x
+  final String _versionPath;
+
+  @override
+  bool operator ==(Object other) => other is Game && path == other.path;
+
+  @override
+  int get hashCode => data.id.hashCode;
+
   GameData get data => _data;
 
   // 游戏版本号
@@ -77,15 +89,9 @@ class Game {
     );
   }
 
-  /// 主路径
-  /// 如: /home/onelauncher/.minecraft
-  final String _mainPath;
   @JsonKey(includeToJson: false)
   String get mainPath => _mainPath;
 
-  /// version文件夹路径
-  /// 如: version/1.x.x
-  final String _versionPath;
   @JsonKey(includeToJson: false)
   String get versionPath => _versionPath;
 
@@ -120,33 +126,16 @@ class Game {
 
   String? get assetIndex => data.assetIndex.id;
 
-  /// 获取游戏native资源解压路径
-  /// 如: /home/onelauncher/.minecraft/version/1.x.x/natives-windows-x86_64
-  late final nativesPath = join(path, "natives-${Platform.operatingSystem}");
-
   bool get isModVersion => _data.mainClass != "net.minecraft.client.main.Main";
 
   /// 刷新 [data] 游戏文件内容
   void freshVersion() => _data = _getDataFromPath(path);
-
-  /// 将游戏配置保存至本地
-  void saveConfig() {
-    final config = File(path + kGameConfigName);
-    final json = const JsonEncoder.withIndent('  ').convert(this);
-    config.writeAsStringSync(json);
-  }
 
   /// 从指定路径读取文件序列化为 [GameData]
   static GameData _getDataFromPath(String path) => GameData.fromJson(
         jsonDecode(
             File(join(path, "${basename(path)}.json")).readAsStringSync()),
       );
-
-  @override
-  int get hashCode => data.id.hashCode;
-
-  @override
-  bool operator ==(Object other) => other is Game && path == other.path;
 }
 
 /// 游戏运行的参数
@@ -154,6 +143,7 @@ class GameArgument {
   const GameArgument(this.key, [this.value]);
 
   static const connector = "=";
+
   final String key;
   final String? value;
 

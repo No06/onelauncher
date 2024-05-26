@@ -36,6 +36,7 @@ class _AccountItem extends ConsumerWidget {
       return unSelectedColor;
     }
 
+    // FIXME: 组件树过重
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
