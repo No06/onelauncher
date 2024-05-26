@@ -220,7 +220,7 @@ class _MemorySettingListTileGroup extends HookConsumerWidget {
                     .read(gameSettingProvider.notifier)
                     .update(autoMemory: value),
               ),
-              expandTile: child!,
+              child: child!,
             );
           },
           child: Column(children: [
@@ -314,7 +314,7 @@ class _GameSettingListTileGroup extends ConsumerWidget {
                 title: const Text("全屏"),
                 onChanged: (value) => notifier.update(fullScreen: value),
               ),
-              expandTile: child!,
+              child: child!,
             );
           },
           child: ListTile(

@@ -318,9 +318,9 @@ class _DeviceCodeLoginDialog extends StatefulWidget {
 }
 
 class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
+  var visible = false;
   String? _deviceCode;
   String? _verificationUrl;
-  final visible = false.obs;
   final completer = Completer<MicrosoftOAuthResponse?>(); // 返回 accessToken
   final util = MicrosoftDeviceCodeOAuth();
 
@@ -396,12 +396,13 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
                             onTap: _clip,
                             child: Padding(
                               padding: const EdgeInsets.all(8),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Obx(
-                                    () => Text(
-                                      visible.value
+                              child:
+                                  StatefulBuilder(builder: (context, setState) {
+                                return Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      visible
                                           ? _deviceCode!
                                           : _deviceCode!
                                               .replaceAll(RegExp(r'.'), '∗'),
@@ -410,17 +411,16 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
                                         color: colors.onSecondaryContainer,
                                       ),
                                     ),
-                                  ),
-                                  Obx(
-                                    () => IconButton(
-                                      onPressed: () => visible(!visible.value),
-                                      icon: visible.value
+                                    IconButton(
+                                      onPressed: () =>
+                                          setState(() => visible = !visible),
+                                      icon: visible
                                           ? const Icon(Icons.visibility)
                                           : const Icon(Icons.visibility_off),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                );
+                              }),
                             ),
                           ),
                         ),

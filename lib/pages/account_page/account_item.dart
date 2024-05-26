@@ -1,6 +1,6 @@
 part of 'account_page.dart';
 
-class _AccountItem extends ConsumerWidget {
+class _AccountItem extends HookConsumerWidget {
   const _AccountItem({
     super.key,
     required this.account,
@@ -10,33 +10,19 @@ class _AccountItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isSelected = ref.watch(
-        accountProvider.select((state) => state.selectedAccount == account));
+    final tapDownProvider = StateProvider.autoDispose((ref) => false);
+    final hoverProvider = StateProvider.autoDispose((ref) => false);
+    final tapDownNotifier = ref.read(tapDownProvider.notifier);
+    final hoverNotifier = ref.read(hoverProvider.notifier);
 
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final selectedColor = colors.primary;
     final unSelectedColor = colorWithValue(colors.surface, .1);
-    final fontColor = isSelected ? colors.onPrimary : colors.onSurface;
+    final hoverColor =
+        dynamicColorWithValue(unSelectedColor, -0.1, 0.1, theme.brightness);
+    final tapDownColor = selectedColor.withValue(.15);
 
-    final isTapDown = RxBool(false);
-    final isHover = RxBool(false);
-
-    Color getColor() {
-      if (isSelected) {
-        return selectedColor;
-      }
-      if (isTapDown.value) {
-        return selectedColor.withOpacity(.7);
-      }
-      if (isHover.value) {
-        return dynamicColorWithValue(
-            unSelectedColor, -0.1, 0.1, theme.brightness);
-      }
-      return unSelectedColor;
-    }
-
-    // FIXME: 组件树过重
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
@@ -44,68 +30,83 @@ class _AccountItem extends ConsumerWidget {
         child: GestureDetector(
           onTap: () =>
               ref.read(accountProvider.notifier).updateSelectedAccount(account),
-          onTapDown: (details) => isTapDown(true),
-          onTapCancel: () => isTapDown(false),
-          onTapUp: (details) => isTapDown(false),
+          onTapDown: (details) => tapDownNotifier.state = true,
+          onTapCancel: () => tapDownNotifier.state = false,
+          onTapUp: (details) => tapDownNotifier.state = false,
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
-            onEnter: (event) => isHover(true),
-            onExit: (event) => isHover(false),
-            child: Obx(
-              () => AnimatedContainer(
-                duration: const Duration(milliseconds: 100),
-                padding: isTapDown.value
-                    ? const EdgeInsets.symmetric(vertical: 1, horizontal: 5)
-                    : EdgeInsets.zero,
-                child: Material(
-                  elevation: isTapDown.value ? 0 : 3,
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: kDefaultBorderRadius),
-                  clipBehavior: Clip.antiAlias,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 100),
-                    color: getColor(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Row(
+            onEnter: (event) => hoverNotifier.state = true,
+            onExit: (event) => hoverNotifier.state = false,
+            child: Consumer(
+              builder: (context, ref, child) {
+                final isSelected = ref.watch(accountProvider
+                    .select((state) => state.selectedAccount == account));
+                final isHover = ref.watch(hoverProvider);
+                final isTapDown = ref.watch(tapDownProvider);
+
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 100),
+                  decoration: BoxDecoration(
+                    boxShadow: [if (!isTapDown) ...kElevationToShadow[1]!],
+                    borderRadius: kDefaultBorderRadius,
+                    color: () {
+                      if (isSelected) return selectedColor;
+                      if (isTapDown) return tapDownColor;
+                      if (isHover) return hoverColor;
+                      return unSelectedColor;
+                    }(),
+                  ),
+                  margin: isTapDown
+                      ? const EdgeInsets.symmetric(vertical: 1, horizontal: 5)
+                      : EdgeInsets.zero,
+                  child: child,
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Consumer(builder: (context, ref, child) {
+                  final isSelected = ref.watch(accountProvider
+                      .select((state) => state.selectedAccount == account));
+                  final fontColor =
+                      isSelected ? colors.onPrimary : colors.onSurface;
+                  return Row(
+                    children: [
+                      Wrap(
+                        spacing: 15,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Wrap(
-                            spacing: 15,
-                            crossAxisAlignment: WrapCrossAlignment.center,
+                          _Avatar(account, isSelected: isSelected),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _Avatar(account, isSelected),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    account.displayName,
-                                    style: TextStyle(
-                                      color: fontColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    account is OfflineAccount
-                                        ? "离线账号"
-                                        : account is MicrosoftAccount
-                                            ? "微软账号"
-                                            : "未知账号",
-                                    style: TextStyle(color: fontColor),
-                                  ),
-                                ],
+                              Text(
+                                account.displayName,
+                                style: TextStyle(
+                                  color: fontColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                account is OfflineAccount
+                                    ? "离线账号"
+                                    : account is MicrosoftAccount
+                                        ? "微软账号"
+                                        : "未知账号",
+                                style: TextStyle(color: fontColor),
                               ),
                             ],
                           ),
-                          const Spacer(),
-                          _Actions(account, fontColor),
                         ],
                       ),
-                    ),
-                  ),
-                ),
+                      const Spacer(),
+                      _Actions(account, fontColor: fontColor),
+                    ],
+                  );
+                }),
               ),
             ),
           ),
@@ -117,7 +118,7 @@ class _AccountItem extends ConsumerWidget {
 
 // FIXME: 头像第一次加载卡顿
 class _Avatar extends HookWidget {
-  const _Avatar(this.account, this.isSelected);
+  const _Avatar(this.account, {required this.isSelected});
 
   final Account account;
   final bool isSelected;
@@ -171,7 +172,7 @@ class _Avatar extends HookWidget {
 }
 
 class _Actions extends ConsumerWidget {
-  const _Actions(this.account, this.fontColor);
+  const _Actions(this.account, {required this.fontColor});
 
   final Account account;
   final Color fontColor;
@@ -191,15 +192,12 @@ class _Actions extends ConsumerWidget {
               color: fontColor,
             ),
           ),
-        ObxValue(
-          (p0) => AbsorbPointer(
-            absorbing: p0.value,
-            child: IconButton(
-              onPressed: () => p0.value = !p0.value,
-              icon: Icon(Icons.checkroom_rounded, color: fontColor),
-            ),
+        AbsorbPointer(
+          absorbing: false,
+          child: IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.checkroom_rounded, color: fontColor),
           ),
-          false.obs,
         ),
         IconButton(
           icon: Icon(Icons.delete, color: fontColor),

@@ -50,12 +50,6 @@ class Game {
   /// 如: version/1.x.x
   final String _versionPath;
 
-  @override
-  bool operator ==(Object other) => other is Game && path == other.path;
-
-  @override
-  int get hashCode => data.id.hashCode;
-
   GameData get data => _data;
 
   // 游戏版本号
@@ -136,6 +130,12 @@ class Game {
         jsonDecode(
             File(join(path, "${basename(path)}.json")).readAsStringSync()),
       );
+
+  @override
+  int get hashCode => data.id.hashCode;
+
+  @override
+  bool operator ==(Object other) => other is Game && path == other.path;
 }
 
 /// 游戏运行的参数

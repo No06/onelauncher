@@ -1,5 +1,7 @@
 part of '../account_page.dart';
 
+final _isExpanedProvider = StateProvider.autoDispose((ref) => false);
+
 class _OfflineLoginForm extends HookWidget {
   late final TextEditingController uuidTextController;
   late final TextEditingController usernameTextController;
@@ -46,43 +48,46 @@ class _OfflineLoginForm extends HookWidget {
             ],
             validator: FormValidator.noEmpty,
           ),
-          ObxValue(
-            (isExpaned) => ExpansionListTile(
-              isExpaned: isExpaned.value,
-              title: ListTile(
-                dense: true,
-                title: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Text("高级"),
-                    RotationTransition(
-                      turns: rotationAnimationController.view,
-                      child: const Icon(Icons.expand_more),
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  isExpaned(!isExpaned.value);
-                  if (isExpaned.value) {
-                    rotationAnimationController.forward();
-                  } else {
-                    rotationAnimationController.reverse();
-                  }
-                },
-              ),
-              expandTile: ListTile(
-                dense: true,
-                leading: const Text("UUID"),
-                title: TextFormField(
-                  decoration: const InputDecoration(
-                    constraints: BoxConstraints(maxHeight: 36),
+          Consumer(
+            builder: (context, ref, child) {
+              final isExpaned = ref.watch(_isExpanedProvider);
+              return ExpansionListTile(
+                isExpaned: isExpaned,
+                title: ListTile(
+                  dense: true,
+                  title: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Text("高级"),
+                      RotationTransition(
+                        turns: rotationAnimationController.view,
+                        child: const Icon(Icons.expand_more),
+                      ),
+                    ],
                   ),
-                  controller: uuidTextController,
-                  validator: FormValidator.noEmpty,
+                  onTap: () {
+                    ref.read(_isExpanedProvider.notifier).state = !isExpaned;
+                    if (!isExpaned) {
+                      rotationAnimationController.forward();
+                    } else {
+                      rotationAnimationController.reverse();
+                    }
+                  },
                 ),
+                child: child!,
+              );
+            },
+            child: ListTile(
+              dense: true,
+              leading: const Text("UUID"),
+              title: TextFormField(
+                decoration: const InputDecoration(
+                  constraints: BoxConstraints(maxHeight: 36),
+                ),
+                controller: uuidTextController,
+                validator: FormValidator.noEmpty,
               ),
             ),
-            false.obs,
           ),
         ],
       ),
