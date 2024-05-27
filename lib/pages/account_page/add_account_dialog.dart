@@ -22,9 +22,8 @@ class _AddAccountDialogState extends State<_AddAccountDialog> {
   final _accountTypes = const {
     AccountType.offline:
         _SegmentedItem(name: "离线", icon: Icon(Icons.public_off)),
-    // FIXME: 微软图标替换
     AccountType.microsoft:
-        _SegmentedItem(name: "微软", icon: Icon(Icons.grid_view)),
+        _SegmentedItem(name: "微软", icon: Icon(Mdi.microsoft)),
     AccountType.custom: _SegmentedItem(name: "自定义", icon: Icon(Icons.tune)),
   };
 
