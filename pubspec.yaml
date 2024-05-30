@@ -66,6 +66,8 @@ dependencies:
   hooks_riverpod: ^2.5.1
   open_file: ^3.3.2
   flutter_mdi_icons: ^0.1.1
+  cached_network_image: ^3.3.1
+  multi_value_listenable_builder: ^0.0.2
 
 dev_dependencies:
 

@@ -1,20 +1,12 @@
 part of 'account_page.dart';
 
 class _AccountItem extends HookConsumerWidget {
-  const _AccountItem({
-    super.key,
-    required this.account,
-  });
+  const _AccountItem({super.key, required this.account});
 
   final Account account;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tapDownProvider = StateProvider.autoDispose((ref) => false);
-    final hoverProvider = StateProvider.autoDispose((ref) => false);
-    final tapDownNotifier = ref.read(tapDownProvider.notifier);
-    final hoverNotifier = ref.read(hoverProvider.notifier);
-
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final selectedColor = colors.primary;
@@ -23,6 +15,9 @@ class _AccountItem extends HookConsumerWidget {
         dynamicColorWithValue(unSelectedColor, -0.1, 0.1, theme.brightness);
     final tapDownColor = selectedColor.withValue(.15);
 
+    final isHover = useValueNotifier(false);
+    final isTapDown = useValueNotifier(false);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
@@ -30,35 +25,37 @@ class _AccountItem extends HookConsumerWidget {
         child: GestureDetector(
           onTap: () =>
               ref.read(accountProvider.notifier).updateSelectedAccount(account),
-          onTapDown: (details) => tapDownNotifier.state = true,
-          onTapCancel: () => tapDownNotifier.state = false,
-          onTapUp: (details) => tapDownNotifier.state = false,
+          onTapDown: (details) => isTapDown.value = true,
+          onTapCancel: () => isTapDown.value = false,
+          onTapUp: (details) => isTapDown.value = false,
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
-            onEnter: (event) => hoverNotifier.state = true,
-            onExit: (event) => hoverNotifier.state = false,
+            onEnter: (event) => isHover.value = true,
+            onExit: (event) => isHover.value = false,
             child: Consumer(
               builder: (context, ref, child) {
                 final isSelected = ref.watch(accountProvider
                     .select((state) => state.selectedAccount == account));
-                final isHover = ref.watch(hoverProvider);
-                final isTapDown = ref.watch(tapDownProvider);
 
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 100),
-                  decoration: BoxDecoration(
-                    boxShadow: [if (!isTapDown) ...kElevationToShadow[1]!],
-                    borderRadius: kDefaultBorderRadius,
-                    color: () {
-                      if (isSelected) return selectedColor;
-                      if (isTapDown) return tapDownColor;
-                      if (isHover) return hoverColor;
-                      return unSelectedColor;
-                    }(),
+                return MultiValueListenableBuilder(
+                  valueListenables: [isHover, isTapDown],
+                  builder: (context, values, child) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 100),
+                    decoration: BoxDecoration(
+                      boxShadow: isTapDown.value ? null : kElevationToShadow[1],
+                      borderRadius: kDefaultBorderRadius,
+                      color: () {
+                        if (isSelected) return selectedColor;
+                        if (isTapDown.value) return tapDownColor;
+                        if (isHover.value) return hoverColor;
+                        return unSelectedColor;
+                      }(),
+                    ),
+                    margin: isTapDown.value
+                        ? const EdgeInsets.symmetric(vertical: 1, horizontal: 5)
+                        : EdgeInsets.zero,
+                    child: child,
                   ),
-                  margin: isTapDown
-                      ? const EdgeInsets.symmetric(vertical: 1, horizontal: 5)
-                      : EdgeInsets.zero,
                   child: child,
                 );
               },
@@ -117,11 +114,21 @@ class _AccountItem extends HookConsumerWidget {
 }
 
 // FIXME: 头像第一次加载卡顿
-class _Avatar extends HookWidget {
+class _Avatar extends StatefulWidget {
   const _Avatar(this.account, {required this.isSelected});
 
   final Account account;
   final bool isSelected;
+
+  @override
+  State<_Avatar> createState() => _AvatarState();
+}
+
+class _AvatarState extends State<_Avatar> {
+  late final drawAvatar = Future(() async {
+    final skin = await widget.account.getSkin();
+    return skin.drawAvatar();
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -130,14 +137,12 @@ class _Avatar extends HookWidget {
     return SizedBox(
       width: 40,
       height: 40,
-      child: HookBuilder(
-        builder: (context) {
-          final future =
-              useMemoized(() async => (await account.getSkin()).drawAvatar());
-          final snapshot = useFuture(future);
+      child: FutureBuilder(
+        future: drawAvatar,
+        builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
-              if (kDebugMode) debugPrint(snapshot.error!.toString());
+              snapshot.error.printError("Account avatar request error");
               return const Icon(Icons.error);
             }
             return Padding(
@@ -162,7 +167,7 @@ class _Avatar extends HookWidget {
           return Padding(
             padding: const EdgeInsets.all(4),
             child: CircularProgressIndicator(
-              color: isSelected ? colors.onPrimary : null,
+              color: widget.isSelected ? colors.onPrimary : null,
             ),
           );
         },

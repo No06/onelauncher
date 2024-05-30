@@ -19,28 +19,31 @@ class LocalSkin extends Skin {
   final String? localSkinPath;
   final String? localCapePath;
 
+  static final steve = _localImgU8l("assets/images/skins/steve.png");
+  static final alex = _localImgU8l("assets/images/skins/alex.png");
+
   @override
   TextureModel get variant => _variant;
 
   @override
   Future<Uint8List> u8l() async {
-    const steve = "assets/images/skins/steve.png";
-    const alex = "assets/images/skins/alex.png";
-
-    late final String? path;
     switch (type) {
       case SkinType.steve:
-        path = steve;
+        return steve;
       case SkinType.alex:
-        path = alex;
+        return alex;
       case SkinType.localFile:
-        path = localCapePath;
+        // TODO: 自定义本地皮肤
+        throw UnimplementedError();
     }
-    return (await rootBundle.load(path ?? steve)).buffer.asUint8List();
   }
 
   factory LocalSkin.fromJson(JsonMap json) => _$LocalSkinFromJson(json);
 }
+
+Future<Uint8List> _localImgU8l(String key) => rootBundle.load(key).then(
+      (data) => data.buffer.asUint8List(),
+    );
 
 @JsonEnum()
 enum SkinType {

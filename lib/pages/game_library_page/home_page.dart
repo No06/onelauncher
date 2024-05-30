@@ -160,6 +160,7 @@ class _SliverList extends ConsumerWidget {
           final filterState = ref.watch(_filterStateProvider);
           final filteredGames =
               _processor.filterAndSortGames(gameList, filterState);
+          // TODO: 异步构建item优化性能
           return SliverList.list(
             children: filteredGames.joinWith(_divider),
           );
@@ -274,102 +275,126 @@ class _GameTypeCheckbox extends StatelessWidget {
   }
 }
 
-class _GameItem extends ConsumerWidget {
+class _GameItem extends ConsumerStatefulWidget {
   const _GameItem(this.game);
 
   final Game game;
 
-  final Map<String,IconData> menu = const {
-    "编辑" : Icons.edit,
-    "移除" : Icons.delete,
-  };
+  @override
+  ConsumerState<_GameItem> createState() => _GameItemState();
+}
 
-  List<PopupMenuItem<String>> buildMenu(String gamePath) {
-    return menu.keys.map((el) => PopupMenuItem<String>(
-      value: el,
-      child: Row(
-        children: [
-          Icon(menu[el]),
-          const SizedBox(width: 15),
-          Text(el),
-        ],
-      ),
-    )).toList();
+class _GameItemState extends ConsumerState<_GameItem> {
+  late final ValueNotifier<bool> isHover;
+
+  @override
+  void initState() {
+    super.initState();
+    isHover = ValueNotifier(false);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    isHover.dispose();
+    super.dispose();
+  }
+
+  final Map<String, IconData> menu = const {
+    "编辑": Icons.edit,
+    "移除": Icons.delete,
+  };
+
+  List<PopupMenuItem<String>> buildMenu(String gamePath) {
+    return menu.keys
+        .map((el) => PopupMenuItem<String>(
+              value: el,
+              child: Row(
+                children: [
+                  Icon(menu[el]),
+                  const SizedBox(width: 15),
+                  Text(el),
+                ],
+              ),
+            ))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
     final colors = theme.colorScheme;
-    final isHover = false.obs;
     return MouseRegion(
-      onEnter: (_) => isHover(true),
-      onExit: (_) => isHover(false),
+      onEnter: (_) => isHover.value = true,
+      onExit: (_) => isHover.value = false,
       child: ListTile(
         leading: const FlutterLogo(size: 36),
-        title: Text(game.data.id),
-        subtitle: Text(game.path),
+        title: Text(widget.game.data.id),
+        subtitle: Text(widget.game.path),
         subtitleTextStyle: textTheme.bodySmall!.copyWith(
           color: colors.outline,
         ),
-        trailing: Obx(
-          () => Offstage(
-            offstage: !isHover.value,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  child: FloatingActionButton.extended(
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: kDefaultBorderRadius,
-                    ),
-                    backgroundColor: colors.primary,
-                    onPressed: () => showDialog(
-                      barrierDismissible: false,
-                      context: context,
-                      builder: (context) {
-                        if (ref.read(accountProvider).selectedAccount == null) {
-                          return const WarningDialog(
-                            content: Text("先添加一个账号再启动吧"),
-                            onlyConfirm: true,
-                            onConfirmed: dialogPop,
-                          );
-                        }
-                        return GameStartupDialog(game: game);
-                      },
-                    ),
-                    heroTag: null,
-                    icon: Icon(
-                      Icons.play_arrow,
-                      color: colors.onPrimary,
-                    ),
-                    label: Text(
-                      "开始游戏",
-                      style: TextStyle(color: colors.onPrimary),
-                    ),
+        trailing: ValueListenableBuilder(
+          valueListenable: isHover,
+          builder: (context, isHover, child) =>
+              Offstage(offstage: !isHover, child: child),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: FloatingActionButton.extended(
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: kDefaultBorderRadius,
+                  ),
+                  backgroundColor: colors.primary,
+                  onPressed: () => showDialog(
+                    barrierDismissible: false,
+                    context: context,
+                    builder: (context) {
+                      if (ref.read(accountProvider).selectedAccount == null) {
+                        return const WarningDialog(
+                          content: Text("先添加一个账号再启动吧"),
+                          onlyConfirm: true,
+                          onConfirmed: dialogPop,
+                        );
+                      }
+                      return GameStartupDialog(game: widget.game);
+                    },
+                  ),
+                  heroTag: null,
+                  icon: Icon(
+                    Icons.play_arrow,
+                    color: colors.onPrimary,
+                  ),
+                  label: Text(
+                    "开始游戏",
+                    style: TextStyle(color: colors.onPrimary),
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    // TODO:Linux、MacOS待检验是否正常可用
-                    OpenFile.open(game.mainPath);
-                  },
-                  icon: const Icon(Icons.folder),
-                ),
-                PopupMenuButton(
-                  itemBuilder: (context) => buildMenu(game.path),
-                  elevation: 1,
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: kDefaultBorderRadius),
-                  onSelected: (el) => {
-                    // TODO: 更多操作
-                  },
-                )
-              ],
-            ),
+              ),
+              IconButton(
+                onPressed: () {
+                  // TODO:Linux、MacOS待检验是否正常可用
+                  OpenFile.open(widget.game.mainPath);
+                },
+                icon: const Icon(Icons.folder),
+              ),
+              // TODO: 更多操作
+              // IconButton(
+              //   onPressed: () {},
+              //   icon: const Icon(Icons.more_horiz),
+              // ),
+              PopupMenuButton(
+                itemBuilder: (context) => buildMenu(widget.game.path),
+                elevation: 1,
+                shape: const RoundedRectangleBorder(
+                    borderRadius: kDefaultBorderRadius),
+                onSelected: (el) => {
+                  // TODO: 更多操作
+                },
+              )
+            ],
           ),
         ),
         // TODO: 点击打开游戏配置

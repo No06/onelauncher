@@ -19,6 +19,62 @@ BuildContext? get rootScaffoldMessengerContext =>
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
+final _routerProvider = Provider<GoRouter>((ref) {
+  return GoRouter(
+    navigatorKey: rootNavigatorKey,
+    initialLocation: '/play',
+    routes: [
+      ShellRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        navigatorKey: _shellNavigatorKey,
+        builder: (context, state, child) => _MainPage(child: child),
+        routes: [
+          GoRoute(
+            path: '/account',
+            pageBuilder: (context, state) =>
+                SharedAxisPage(key: state.pageKey, child: const AccountPage()),
+          ),
+          GoRoute(
+            path: '/play',
+            pageBuilder: (context, state) => SharedAxisPage(
+                key: state.pageKey, child: const GameLibraryPage()),
+          ),
+          GoRoute(
+            path: '/appearance',
+            pageBuilder: (context, state) => SharedAxisPage(
+                key: state.pageKey, child: const AppearancePage()),
+          ),
+          GoRoute(
+            path: '/setting',
+            pageBuilder: (context, state) =>
+                SharedAxisPage(key: state.pageKey, child: const SettingPage()),
+          ),
+        ],
+      ),
+    ],
+  );
+});
+
+class RouteInformationNotifier extends ChangeNotifier {
+  final RouteInformationProvider routeInformationProvider;
+
+  RouteInformationNotifier(this.routeInformationProvider) {
+    routeInformationProvider.addListener(notifyListeners);
+  }
+
+  @override
+  void dispose() {
+    routeInformationProvider.removeListener(notifyListeners);
+    super.dispose();
+  }
+}
+
+final _routeInformationNotifierProvider =
+    ChangeNotifierProvider<RouteInformationNotifier>((ref) {
+  final goRouter = ref.watch(_routerProvider);
+  return RouteInformationNotifier(goRouter.routeInformationProvider);
+});
+
 class SharedAxisPage extends Page {
   const SharedAxisPage({required this.child, super.key});
 
@@ -53,19 +109,21 @@ class SharedAxisPage extends Page {
   }
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with WindowListener {
+class _MyAppState extends ConsumerState<MyApp> with WindowListener {
   var isMaximize = ValueNotifier(false);
+  late final GoRouter router;
 
   @override
   void initState() {
     super.initState();
+    router = ref.read(_routerProvider);
     windowManager.addListener(this);
     windowManager.isMaximized().then((value) => isMaximize.value = value);
   }
@@ -81,40 +139,6 @@ class _MyAppState extends State<MyApp> with WindowListener {
 
   @override
   void onWindowUnmaximize() => setState(() => isMaximize.value = false);
-
-  final _router = GoRouter(
-    navigatorKey: rootNavigatorKey,
-    initialLocation: '/play',
-    routes: [
-      ShellRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) => _MainPage(child: child),
-        routes: [
-          GoRoute(
-            path: '/account',
-            pageBuilder: (context, state) =>
-                SharedAxisPage(key: state.pageKey, child: const AccountPage()),
-          ),
-          GoRoute(
-            path: '/play',
-            pageBuilder: (context, state) => SharedAxisPage(
-                key: state.pageKey, child: const GameLibraryPage()),
-          ),
-          GoRoute(
-            path: '/appearance',
-            pageBuilder: (context, state) => SharedAxisPage(
-                key: state.pageKey, child: const AppearancePage()),
-          ),
-          GoRoute(
-            path: '/setting',
-            pageBuilder: (context, state) =>
-                SharedAxisPage(key: state.pageKey, child: const SettingPage()),
-          ),
-        ],
-      ),
-    ],
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -144,15 +168,16 @@ class _MyAppState extends State<MyApp> with WindowListener {
               ),
             ),
       child: Consumer(builder: (context, ref, child) {
-        final themeMode = ref.watch(appThemeProvider).mode;
-        final theme = ref.watch(appThemeProvider).lightTheme;
-        final darkTheme = ref.watch(appThemeProvider).darkTheme;
+        final theme = ref.watch(appThemeProvider);
+        final themeMode = theme.mode;
+        final lightTheme = theme.lightTheme;
+        final darkTheme = theme.darkTheme;
         return MaterialApp.router(
           scaffoldMessengerKey: rootScaffoldMessengerKey,
-          theme: theme,
+          theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: themeMode,
-          routerConfig: _router,
+          routerConfig: router,
         );
       }),
     );
@@ -233,11 +258,12 @@ class _NavigationItem extends StatelessWidget {
     final unSelectedTextColor = colors.inverseSurface;
     final hoverColor = selectedColor.withOpacity(.15);
 
-    return ValueListenableBuilder(
-      valueListenable: GoRouter.of(context).routeInformationProvider,
-      builder: (context, info, child) {
-        final currentRoutePath = info.uri.path;
-        final isSelected = currentRoutePath == routePath;
+    return Consumer(
+      builder: (context, ref, child) {
+        final isSelected = ref.watch(
+          _routeInformationNotifierProvider.select((state) =>
+              state.routeInformationProvider.value.uri.path == routePath),
+        );
 
         tween() => isSelected
             ? ColorTween(begin: unSelectedColor, end: selectedColor)

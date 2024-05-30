@@ -2,7 +2,6 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:get/state_manager.dart';
 import 'package:get/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:one_launcher/consts.dart';
