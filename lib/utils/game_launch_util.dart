@@ -373,7 +373,7 @@ class GameLaunchUtil {
 
   /// 获取启动参数
   Future<Iterable<String>> getLaunchArguments() async {
-    final setting = this.globarSetting;
+    final setting = globarSetting;
     final version = game.data;
     // 命令行参数
     final args = [

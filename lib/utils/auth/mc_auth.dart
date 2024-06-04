@@ -45,7 +45,7 @@ abstract class MinecraftAuth {
     final xboxLiveToken = xboxLiveResponse["token"]!;
     final uhs = xboxLiveResponse["uhs"]!;
     final xstsToken = await XboxAuth.getXSTSToken(xboxLiveToken);
-    return await MinecraftAuth._loginWithXbox(uhs: uhs, xstsToken: xstsToken);
+    return MinecraftAuth._loginWithXbox(uhs: uhs, xstsToken: xstsToken);
   }
 
   /// 使用 已保存的 refreshToekn 获取新的 Microsoft AccessToken。
@@ -53,6 +53,6 @@ abstract class MinecraftAuth {
     String refreshToken,
   ) async {
     final res = await MicrosoftOAuth.refreshAuthToken(refreshToken);
-    return await loginWithMsAccessToken(res.accessToken);
+    return loginWithMsAccessToken(res.accessToken);
   }
 }

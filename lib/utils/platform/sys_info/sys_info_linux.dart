@@ -134,9 +134,7 @@ final class LinuxSysInfo extends SysInfo {
   final _sysctl = DynamicLibrary.open('libc.so.6')
       .lookupFunction<_SysctlFunc, _SysctlDart>('sysctl');
   // 分配一块内存，用于存储名字数组
-  final _sysctlName = calloc<Int32>(2)
-    ..elementAt(0).value = _ctlHW
-    ..elementAt(1).value = _hwWordSize;
+  final _sysctlName = calloc<Int32>(2) + _ctlHW + _hwWordSize;
   // 分配一块内存，用于存储值缓冲区的长度
   final _oldlenp = calloc<Uint64>()..value = 8;
   // 分配一块内存，用于存储值缓冲区
