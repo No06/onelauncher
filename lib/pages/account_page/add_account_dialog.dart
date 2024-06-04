@@ -73,7 +73,7 @@ class _AddAccountDialogState extends State<_AddAccountDialog> {
                       return form = _OfflineLoginForm();
                     case AccountType.microsoft:
                       return form =
-                          _MicosoftLoginForm(onSubmit: widget.onSubmit);
+                          MicosoftLoginForm(onSubmit: widget.onSubmit);
                     // TODO: 自定义登录
                     case AccountType.custom:
                       return form = const _CustomLoginForm();
