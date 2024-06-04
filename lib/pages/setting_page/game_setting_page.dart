@@ -61,7 +61,7 @@ class _JavaSettingEditListTileGroup extends StatelessWidget {
             return ListTile(
               title: const Text("JVM启动参数"),
               subtitle: Text(
-                useDefaultJvmArgs ? "默认" : jvmArgs,
+                useDefaultJvmArgs ? "默认" : jvmArgs!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

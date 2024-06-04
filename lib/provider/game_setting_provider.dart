@@ -15,7 +15,7 @@ const _kDefaultJvmArgs =
 @CopyWith()
 class GameSettingState {
   final Java? java;
-  final String? _jvmArgs;
+  final String? jvmArgs;
   final bool autoMemory;
   final int maxMemory;
   final bool fullScreen;
@@ -25,12 +25,13 @@ class GameSettingState {
   final String args;
   final String serverAddress;
 
-  String get jvmArgs => useDefaultJvmArgs ? _kDefaultJvmArgs : _jvmArgs!;
-  bool get useDefaultJvmArgs => _jvmArgs == null || _jvmArgs!.isEmpty;
+  /// 如果 [jvmArgs] 为空，则返回默认启动项 [_kDefaultJvmArgs]
+  String get adaptiveJvmArgs => useDefaultJvmArgs ? _kDefaultJvmArgs : jvmArgs!;
+  bool get useDefaultJvmArgs => jvmArgs == null || jvmArgs!.isEmpty;
 
-  GameSettingState({
+  const GameSettingState({
     this.java,
-    String? jvmArgs,
+    this.jvmArgs,
     this.autoMemory = true,
     this.maxMemory = 2048,
     this.fullScreen = false,
@@ -39,7 +40,7 @@ class GameSettingState {
     this.recordLog = false,
     this.args = "",
     this.serverAddress = "",
-  }) : _jvmArgs = jvmArgs;
+  });
 
   JsonMap toJson() => _$GameSettingStateToJson(this);
 

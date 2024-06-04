@@ -181,6 +181,7 @@ GameSettingState _$GameSettingStateFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$GameSettingStateToJson(GameSettingState instance) =>
     <String, dynamic>{
       'java': instance.java,
+      'jvmArgs': instance.jvmArgs,
       'autoMemory': instance.autoMemory,
       'maxMemory': instance.maxMemory,
       'fullScreen': instance.fullScreen,
@@ -189,5 +190,4 @@ Map<String, dynamic> _$GameSettingStateToJson(GameSettingState instance) =>
       'recordLog': instance.recordLog,
       'args': instance.args,
       'serverAddress': instance.serverAddress,
-      'jvmArgs': instance.jvmArgs,
     };

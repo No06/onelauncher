@@ -384,7 +384,7 @@ class GameLaunchUtil {
           "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Djava.rmi.server.useCodebaseOnly=true -Dcom.sun.jndi.rmi.object.trustURLCodebase=false -Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false -Dlog4j2.formatMsgNoLookups=true"),
       if (game.data.logging != null) GameArgument(loggingArg!),
       GameArgument("-Dminecraft.client.jar", addQuote(game.clientRelativePath)),
-      GameArgument(setting.jvmArgs),
+      GameArgument(setting.adaptiveJvmArgs),
       const GameArgument(
           "-XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -XX:-DontCompileHugeMethods -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true"),
       if (Platform.isWindows)
