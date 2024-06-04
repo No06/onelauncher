@@ -1,21 +1,13 @@
-import 'dart:async';
+part of 'microsoft_login_form.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:one_launcher/utils/auth/ms_device_code_oauth.dart';
-import 'package:one_launcher/utils/auth/ms_oauth.dart';
-import 'package:one_launcher/widgets/dialog.dart';
-import 'package:one_launcher/widgets/snackbar.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-class DeviceCodeLoginDialog extends StatefulWidget {
-  const DeviceCodeLoginDialog({super.key});
+class _DeviceCodeLoginDialog extends StatefulWidget {
+  const _DeviceCodeLoginDialog();
 
   @override
-  State<DeviceCodeLoginDialog> createState() => _DeviceCodeLoginDialogState();
+  State<_DeviceCodeLoginDialog> createState() => _DeviceCodeLoginDialogState();
 }
 
-class _DeviceCodeLoginDialogState extends State<DeviceCodeLoginDialog> {
+class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
   var visible = false;
   String? _deviceCode;
   String? _verificationUrl;

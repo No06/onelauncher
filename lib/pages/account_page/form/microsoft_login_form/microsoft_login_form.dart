@@ -1,14 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/account/microsoft_account.dart';
+import 'package:one_launcher/utils/auth/ms_device_code_oauth.dart';
 import 'package:one_launcher/utils/auth/ms_oauth.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_windows/webview_windows.dart';
+import 'package:window_manager/window_manager.dart';
 
-import 'device_code_login_dialog.dart';
-import 'login_webview.dart';
+part 'login_webview_dialog.dart';
+part 'device_code_login_dialog.dart';
 
 class MicosoftLoginForm extends StatelessWidget {
   const MicosoftLoginForm({super.key, required this.onSubmit});
@@ -43,64 +48,54 @@ class MicosoftLoginForm extends StatelessWidget {
     );
   }
 
-  Future<void> _onTapWebviewLogin(BuildContext context) => showDialog<String>(
+  Future<void> _onTapWebviewLogin(BuildContext context) {
+    submit(String code) async {
+      final account = await _generateAccount(
         context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          shape: const RoundedRectangleBorder(
-            borderRadius: kDefaultBorderRadius,
-          ),
-          contentPadding: EdgeInsets.zero,
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            // TODO: Webview对Linux、MacOS的支持
-            child: const LoginWebviewDialog(),
-          ),
-        ),
-      ).then((code) {
-        if (code != null) _webViewLoginSubmit(context, code);
-      });
+        generator: () => MicrosoftAccount.generateByOAuthCode(code),
+      );
+      if (account != null) onSubmit(account);
+    }
 
-  Future<void> _onTapDeviceCodeLogin(BuildContext context) =>
-      showDialog<MicrosoftOAuthResponse>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const DeviceCodeLoginDialog(),
-      ).then((response) {
-        if (response != null) _deviceCodeLoginSubmit(context, response);
-      });
-
-  Future<void> _webViewLoginSubmit(BuildContext context, String code) async {
-    final account = await _generateAccount(
+    return showDialog<String>(
       context: context,
-      function: () => MicrosoftAccount.generateByOAuthCode(code),
-    );
-    if (account != null) onSubmit(account);
+      // barrierDismissible: false,
+      builder: (context) => const _MicrosoftLoginWebviewDialog(),
+    ).then((code) {
+      if (code != null) submit(code);
+    });
   }
 
-  Future<void> _deviceCodeLoginSubmit(
-    BuildContext context,
-    MicrosoftOAuthResponse response,
-  ) async {
-    final account = await _generateAccount(
+  Future<void> _onTapDeviceCodeLogin(BuildContext context) async {
+    submit(MicrosoftOAuthResponse response) async {
+      final account = await _generateAccount(
+        context: context,
+        generator: () => MicrosoftAccount.generateByMsToken(
+          msAccessToken: "d=${response.accessToken}",
+          refreshToken: response.refreshToken,
+        ),
+      );
+      if (account != null) onSubmit(account);
+    }
+
+    return showDialog<MicrosoftOAuthResponse>(
       context: context,
-      function: () => MicrosoftAccount.generateByMsToken(
-        msAccessToken: "d=${response.accessToken}",
-        refreshToken: response.refreshToken,
-      ),
-    );
-    if (account != null) onSubmit(account);
+      barrierDismissible: false,
+      builder: (context) => const _DeviceCodeLoginDialog(),
+    ).then((response) {
+      if (response != null) submit(response);
+    });
   }
 
   Future<T?> _generateAccount<T>({
     required BuildContext context,
-    required Future<T> Function() function,
+    required Future<T> Function() generator,
   }) {
     return showDialog<T>(
       context: context,
       barrierDismissible: false,
       builder: (context) => FutureBuilder(
-        future: function(),
+        future: generator(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             dialogPop(result: snapshot.data);
