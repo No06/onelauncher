@@ -1,6 +1,7 @@
 part of 'account_page.dart';
 
-final _accountTypeProvider = StateProvider((ref) => AccountType.offline);
+final _accountTypeProvider =
+    StateProvider.autoDispose((ref) => AccountType.offline);
 
 class _SegmentedItem {
   const _SegmentedItem({required this.name, required this.icon});

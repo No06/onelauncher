@@ -29,7 +29,9 @@ class _JavaSettingEditListTileGroup extends StatelessWidget {
       context: context,
       builder: (_) => const _JvmArgsEditDialog(),
     );
-    ref.read(gameSettingProvider.notifier).update(jvmArgs: result);
+    if (result != null) {
+      ref.read(gameSettingProvider.notifier).update(jvmArgs: result);
+    }
   }
 
   @override
@@ -55,7 +57,7 @@ class _JavaSettingEditListTileGroup extends StatelessWidget {
             final jvmArgs =
                 ref.watch(gameSettingProvider.select((state) => state.jvmArgs));
             final useDefaultJvmArgs =
-                ref.watch(gameSettingProvider).useDefaultJvmArgs;
+                ref.read(gameSettingProvider).useDefaultJvmArgs;
             return ListTile(
               title: const Text("JVM启动参数"),
               subtitle: Text(

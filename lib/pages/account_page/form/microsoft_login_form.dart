@@ -33,7 +33,7 @@ class _MicosoftLoginForm extends StatelessWidget {
     );
   }
 
-  void _onTapWebviewLogin(BuildContext context) => showDialog<String>(
+  Future<void> _onTapWebviewLogin(BuildContext context) => showDialog<String>(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
@@ -51,7 +51,7 @@ class _MicosoftLoginForm extends StatelessWidget {
         if (code != null) _webViewLoginSubmit(context, code);
       });
 
-  void _onTapDeviceCodeLogin(BuildContext context) =>
+  Future<void> _onTapDeviceCodeLogin(BuildContext context) =>
       showDialog<MicrosoftOAuthResponse>(
         context: context,
         barrierDismissible: false,
@@ -86,7 +86,7 @@ class _MicosoftLoginForm extends StatelessWidget {
     required BuildContext context,
     required Future<T> Function() function,
   }) {
-    return showDialog<T?>(
+    return showDialog<T>(
       context: context,
       barrierDismissible: false,
       builder: (context) => FutureBuilder(
@@ -348,7 +348,7 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
     )
         .then((resp) {
       completer.complete(resp);
-      dialogPop(result: resp);
+      if (resp != null) dialogPop(result: resp);
     });
   }
 
