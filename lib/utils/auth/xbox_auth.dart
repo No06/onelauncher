@@ -1,15 +1,6 @@
-import 'dart:convert';
-
-import 'package:one_launcher/utils/http.dart';
+import 'package:dio/dio.dart';
 
 abstract class XboxAuth {
-  static const xboxLiveAuthUrl = 'https://user.auth.xboxlive.com/user/authenticate';
-  static const xstsAuthUrl = 'https://xsts.auth.xboxlive.com/xsts/authorize';
-  static const _header = {
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-  };
-
   /// 使用微软账号访问令牌 [msAccessToken] 获取 XboxLive Token
   ///
   /// 随后返回 Xbox Live 的 Token 和 UserHash.
@@ -17,8 +8,11 @@ abstract class XboxAuth {
   /// 如果是使用设备码登录则需在 [msAccessToken] 前加上 "d=" 字符串
   ///
   /// 返回Map，keys: "token", "uhs".
-  static Future<Map<String, String>> getXboxLiveToken(String msAccessToken) async {
-    final body = {
+  static Future<Map<String, String>> getXboxLiveToken(
+    String msAccessToken,
+  ) async {
+    const uri = 'https://user.auth.xboxlive.com/user/authenticate';
+    final data = {
       "Properties": {
         "AuthMethod": "RPS",
         "SiteName": "user.auth.xboxlive.com",
@@ -27,8 +21,12 @@ abstract class XboxAuth {
       "RelyingParty": "http://auth.xboxlive.com",
       "TokenType": "JWT"
     };
-    final response = await httpPost(xboxLiveAuthUrl, body: jsonEncode(body), header: _header);
-    return {"token": response['Token'], "uhs": response['DisplayClaims']['xui'][0]['uhs']};
+
+    final response = await Dio().postUri(Uri.parse(uri), data: data);
+    return {
+      "token": response.data['Token'],
+      "uhs": response.data['DisplayClaims']['xui'][0]['uhs']
+    };
   }
 
   /// 获取XSTS令牌
@@ -37,7 +35,8 @@ abstract class XboxAuth {
   ///
   /// 返回 XSTS Token.
   static Future<String> getXSTSToken(String xboxLiveToken) async {
-    final params = {
+    const uri = 'https://xsts.auth.xboxlive.com/xsts/authorize';
+    final data = {
       "Properties": {
         "SandboxId": "RETAIL",
         "UserTokens": [
@@ -47,7 +46,8 @@ abstract class XboxAuth {
       "RelyingParty": "rp://api.minecraftservices.com/",
       "TokenType": "JWT"
     };
-    final response = await httpPost(xstsAuthUrl, body: jsonEncode(params), header: _header);
-    return response['Token'];
+
+    final response = await Dio().postUri(Uri.parse(uri), data: data);
+    return response.data['Token'];
   }
 }
