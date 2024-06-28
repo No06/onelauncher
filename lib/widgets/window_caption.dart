@@ -1,20 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:windows_titlebar/windows_titlebar.dart';
 
-class MyWindowCaption extends StatelessWidget {
+class MyWindowCaption extends HookConsumerWidget {
   const MyWindowCaption({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final brightness = Theme.of(context).brightness;
+    final isMaximized = useValueNotifier<bool?>(null);
+
+    final windowButtonColor = () {
+      switch (brightness) {
+        case Brightness.dark:
+          return const WindowButtonColor.dark();
+        case Brightness.light:
+          return const WindowButtonColor.light();
+      }
+    }();
+    final closeWindowButtonColor = () {
+      switch (brightness) {
+        case Brightness.dark:
+          return const WindowButtonColor.closeDark();
+        case Brightness.light:
+          return const WindowButtonColor.closeLight();
+      }
+    }();
+
     return WindowTitleBar(
-      title: const Text(appName),
+      title: const Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: EdgeInsets.only(left: 16),
+          child: Text(appName),
+        ),
+      ),
       actions: [
         WindowButton.minimize(
           animated: true,
-          brightness: brightness,
+          buttonColor: windowButtonColor,
           onTap: () async {
             bool isMinimized = await windowManager.isMinimized();
             if (isMinimized) {
@@ -24,80 +51,31 @@ class MyWindowCaption extends StatelessWidget {
             }
           },
         ),
-        _MaximizeButton(brightness: brightness),
+        FutureBuilder(
+          future: windowManager.isMaximized(),
+          builder: (context, snapshot) => ValueListenableBuilder(
+            valueListenable: isMaximized,
+            builder: (context, isMaximized, child) {
+              isMaximized = isMaximized ??= snapshot.hasData && snapshot.data!;
+              if (isMaximized) {
+                return WindowButton.unmaximize(
+                  buttonColor: windowButtonColor,
+                  onTap: windowManager.unmaximize,
+                );
+              }
+              return WindowButton.maximize(
+                buttonColor: windowButtonColor,
+                onTap: windowManager.maximize,
+              );
+            },
+          ),
+        ),
         WindowButton.close(
           animated: true,
-          brightness: brightness,
+          buttonColor: closeWindowButtonColor,
           onTap: windowManager.close,
         ),
       ],
     );
-  }
-}
-
-class _MaximizeButton extends StatefulWidget {
-  const _MaximizeButton({required this.brightness});
-
-  final Brightness brightness;
-
-  @override
-  State<_MaximizeButton> createState() => _MaximizeButtonState();
-}
-
-class _MaximizeButtonState extends State<_MaximizeButton> with WindowListener {
-  bool? isMaximize;
-
-  @override
-  void initState() {
-    super.initState();
-    windowManager.addListener(this);
-  }
-
-  @override
-  void dispose() {
-    windowManager.removeListener(this);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final unmaximizeButton = WindowButton.unmaximize(
-      animated: true,
-      brightness: Theme.of(context).brightness,
-      onTap: windowManager.unmaximize,
-    );
-
-    final maximizeButton = WindowButton.maximize(
-      animated: true,
-      brightness: Theme.of(context).brightness,
-      onTap: windowManager.maximize,
-    );
-    if (isMaximize == null) {
-      return FutureBuilder(
-        future: windowManager.isMaximized(),
-        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          if (snapshot.hasData && snapshot.data!) {
-            return unmaximizeButton;
-          }
-          return maximizeButton;
-        },
-      );
-    }
-
-    if (isMaximize!) {
-      return unmaximizeButton;
-    }
-
-    return maximizeButton;
-  }
-
-  @override
-  void onWindowMaximize() async {
-    setState(() => isMaximize = true);
-  }
-
-  @override
-  void onWindowUnmaximize() {
-    setState(() => isMaximize = false);
   }
 }
