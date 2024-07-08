@@ -29,7 +29,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  get: ^4.6.5
   file_picker: ^8.0.3
   image: ^4.0.17
   animations: ^2.0.8
@@ -46,7 +45,6 @@ dependencies:
   dropdown_button2: ^2.3.9
   async: ^2.11.0
   flutter_downloader: ^1.11.3
-  nil: ^1.1.1
   path_provider: ^2.1.1
   package_info_plus: ^8.0.0
   get_storage: ^2.1.1
@@ -68,6 +66,7 @@ dependencies:
   flutter_mdi_icons: ^0.1.1
   cached_network_image: ^3.3.1
   multi_value_listenable_builder: ^0.0.2
+  basic_utils: ^5.7.0
 
 dev_dependencies:
 

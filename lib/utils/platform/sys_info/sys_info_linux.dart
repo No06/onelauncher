@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
-import 'package:get/utils.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/utils/platform/architecture.dart';
 import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
 

@@ -109,14 +109,39 @@ class SharedAxisPage extends Page {
   }
 }
 
-class MyApp extends ConsumerStatefulWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  ConsumerState<MyApp> createState() => _MyAppState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.read(_routerProvider);
+    return Consumer(builder: (context, ref, child) {
+      final theme = ref.watch(appThemeProvider);
+      final themeMode = theme.mode;
+      final lightTheme = theme.lightTheme;
+      final darkTheme = theme.darkTheme;
+      return MaterialApp.router(
+        scaffoldMessengerKey: rootScaffoldMessengerKey,
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        themeMode: themeMode,
+        routerConfig: router,
+      );
+    });
+  }
 }
 
-class _MyAppState extends ConsumerState<MyApp> with WindowListener {
+class AppPage extends ConsumerStatefulWidget {
+  const AppPage({super.key, this.body, this.background});
+
+  final Widget? body;
+  final Widget? background;
+
+  @override
+  ConsumerState<AppPage> createState() => _AppPageState();
+}
+
+class _AppPageState extends ConsumerState<AppPage> with WindowListener {
   var isMaximize = ValueNotifier(false);
   late final GoRouter router;
 
@@ -146,67 +171,46 @@ class _MyAppState extends ConsumerState<MyApp> with WindowListener {
       valueListenable: isMaximize,
       builder: (context, isMaximize, child) => isMaximize
           ? child!
-          : Padding(
-              padding: const EdgeInsets.all(8),
-              child: DecoratedBox(
-                decoration: const BoxDecoration(boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 6,
-                    spreadRadius: 0,
-                  ),
-                ]),
+          : DragToResizeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
                 child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 1, color: Colors.black26),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(1),
-                    child: child,
+                  decoration: const BoxDecoration(boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      spreadRadius: 0,
+                    ),
+                  ]),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border.all(width: 1, color: Colors.black26),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(1),
+                      child: child,
+                    ),
                   ),
                 ),
               ),
             ),
-      child: Consumer(builder: (context, ref, child) {
-        final theme = ref.watch(appThemeProvider);
-        final themeMode = theme.mode;
-        final lightTheme = theme.lightTheme;
-        final darkTheme = theme.darkTheme;
-        return MaterialApp.router(
-          scaffoldMessengerKey: rootScaffoldMessengerKey,
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: themeMode,
-          routerConfig: router,
-        );
-      }),
-    );
-  }
-}
-
-class AppPage extends StatelessWidget {
-  const AppPage({super.key, this.body, this.background});
-
-  final Widget? body;
-  final Widget? background;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        if (background != null) background!,
-        Scaffold(
-          backgroundColor: background == null ? null : Colors.transparent,
-          // TODO: 为 Linux 或 MacOS 定制窗口栏
-          appBar: Platform.isWindows
-              ? const PreferredSize(
-                  preferredSize: Size.fromHeight(kWindowCaptionHeight),
-                  child: MyWindowCaption(),
-                )
-              : null,
-          body: body,
-        ),
-      ],
+      child: Stack(
+        children: [
+          if (widget.background != null) widget.background!,
+          Scaffold(
+            backgroundColor:
+                widget.background == null ? null : Colors.transparent,
+            // TODO: 为 Linux 或 MacOS 定制窗口栏
+            appBar: Platform.isWindows
+                ? const PreferredSize(
+                    preferredSize: Size.fromHeight(kWindowCaptionHeight),
+                    child: MyWindowCaption(),
+                  )
+                : null,
+            body: widget.body,
+          ),
+        ],
+      ),
     );
   }
 }

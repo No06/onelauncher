@@ -34,7 +34,7 @@ Future<void> init() async {
       titleBarStyle:
           Platform.isWindows ? TitleBarStyle.hidden : TitleBarStyle.normal,
     );
-    windowManager.waitUntilReadyToShow(windowOptions, () async {
+    return windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.setAsFrameless();
       await windowManager.show();
       await windowManager.focus();

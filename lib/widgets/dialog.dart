@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nil/nil.dart';
 import 'package:one_launcher/app.dart';
 
 class DialogConfirmButton extends StatelessWidget {
@@ -96,10 +95,11 @@ class ErrorDialog extends StatelessWidget {
       content: Row(children: [
         const Icon(Icons.error, size: 36),
         const SizedBox(width: 10),
-        DefaultTextStyle(
-          style: Theme.of(context).textTheme.bodyLarge!,
-          child: content ?? nil,
-        )
+        if (content != null)
+          DefaultTextStyle(
+            style: Theme.of(context).textTheme.bodyLarge!,
+            child: content!,
+          )
       ]),
       actions: [
         DialogConfirmButton(onPressed: onConfirmed ?? dialogPop),
@@ -133,10 +133,11 @@ class WarningDialog extends StatelessWidget {
       content: Row(children: [
         const Icon(Icons.warning, size: 36),
         const SizedBox(width: 10),
-        DefaultTextStyle(
-          style: Theme.of(context).textTheme.bodyLarge!,
-          child: content ?? nil,
-        )
+        if (content != null)
+          DefaultTextStyle(
+            style: Theme.of(context).textTheme.bodyLarge!,
+            child: content!,
+          )
       ]),
       actions: [
         if (!onlyConfirm)

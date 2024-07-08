@@ -5,6 +5,6 @@ class _CustomLoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return nil;
+    return const SizedBox();
   }
 }

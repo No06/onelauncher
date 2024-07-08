@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:get/utils.dart';
 import 'package:one_launcher/models/game/java_version.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/models/version.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:path/path.dart';
 
 part 'java.g.dart';

@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:get/utils.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:path/path.dart';
 
 import 'game.dart';
@@ -36,7 +36,7 @@ class GamePath {
           yield Game(librariesPath, versionPath);
           // 如有异常则跳过
         } catch (e) {
-          e.printError(info: "path: ${dir.path}");
+          e.printError("path: ${dir.path}");
         }
       }
     }
