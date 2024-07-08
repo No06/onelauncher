@@ -6,7 +6,6 @@ import 'dart:math';
 import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
-import 'package:get/state_manager.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/account_login_info.dart';
@@ -17,13 +16,12 @@ import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/library/maven_library.dart';
 import 'package:one_launcher/models/game/data/library/natives_library.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';
+import 'package:one_launcher/utils/extension/list_extension.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/utils/file/get_file_md5.dart';
 import 'package:one_launcher/utils/java_util.dart';
-import 'package:one_launcher/utils/random_string.dart';
 import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 
 class GameLaunchUtil {
   GameLaunchUtil(this.game, this.globarSetting) {
@@ -259,13 +257,6 @@ class GameLaunchUtil {
     }
     await Future.wait(_nativesLibraries
         .map((e) => e.extract(game.librariesPath, game.nativesPath)));
-  }
-
-  /// 生成随机本地存储的路径
-  Future<String> get randomOutputPath async {
-    final random = generateRandomString(8);
-    return join((await getApplicationDocumentsDirectory()).path,
-        "minecraft-${game.data.id}-natives-$random");
   }
 
   /// 为字符串添加双引号

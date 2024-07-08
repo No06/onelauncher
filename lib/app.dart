@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:animations/animations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -165,6 +163,8 @@ class _AppPageState extends ConsumerState<AppPage> with WindowListener {
   @override
   void onWindowUnmaximize() => setState(() => isMaximize.value = false);
 
+  bool get hasBackground => widget.background != null;
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
@@ -196,12 +196,11 @@ class _AppPageState extends ConsumerState<AppPage> with WindowListener {
             ),
       child: Stack(
         children: [
-          if (widget.background != null) widget.background!,
+          if (hasBackground) widget.background!,
           Scaffold(
-            backgroundColor:
-                widget.background == null ? null : Colors.transparent,
+            backgroundColor: hasBackground ? Colors.transparent : null,
             // TODO: 为 Linux 或 MacOS 定制窗口栏
-            appBar: Platform.isWindows
+            appBar: kHideTitleBar
                 ? const PreferredSize(
                     preferredSize: Size.fromHeight(kWindowCaptionHeight),
                     child: MyWindowCaption(),

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/consts.dart';
@@ -13,11 +11,11 @@ import 'app.dart';
 final storage = GetStorage("$appName/config");
 
 void main() async {
-  await init();
+  await _init();
   runApp(const ProviderScope(child: MyApp()));
 }
 
-Future<void> init() async {
+Future<void> _init() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   initWindow() async {
@@ -32,7 +30,7 @@ Future<void> init() async {
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
       titleBarStyle:
-          Platform.isWindows ? TitleBarStyle.hidden : TitleBarStyle.normal,
+          kHideTitleBar ? TitleBarStyle.hidden : TitleBarStyle.normal,
     );
     return windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.setAsFrameless();

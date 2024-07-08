@@ -12,7 +12,7 @@ class MinecraftAccessToken {
 
   String _accessToken;
   int _notAfter; // accessToken 过期时间戳
-  String _refreshToken; // MicrosoftRefreshToken
+  final String _refreshToken; // MicrosoftRefreshToken
 
   /// 使用前需调用 [isExpired] 检查有效性
   ///
