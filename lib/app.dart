@@ -107,46 +107,19 @@ class SharedAxisPage extends Page {
   }
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.read(_routerProvider);
-    return Consumer(builder: (context, ref, child) {
-      final theme = ref.watch(appThemeProvider);
-      final themeMode = theme.mode;
-      final lightTheme = theme.lightTheme;
-      final darkTheme = theme.darkTheme;
-      return MaterialApp.router(
-        scaffoldMessengerKey: rootScaffoldMessengerKey,
-        theme: lightTheme,
-        darkTheme: darkTheme,
-        themeMode: themeMode,
-        routerConfig: router,
-      );
-    });
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class AppPage extends ConsumerStatefulWidget {
-  const AppPage({super.key, this.body, this.background});
-
-  final Widget? body;
-  final Widget? background;
-
-  @override
-  ConsumerState<AppPage> createState() => _AppPageState();
-}
-
-class _AppPageState extends ConsumerState<AppPage> with WindowListener {
+class _MyAppState extends State<MyApp> with WindowListener {
   var isMaximize = ValueNotifier(false);
-  late final GoRouter router;
 
   @override
   void initState() {
     super.initState();
-    router = ref.read(_routerProvider);
     windowManager.addListener(this);
     windowManager.isMaximized().then((value) => isMaximize.value = value);
   }
@@ -163,53 +136,81 @@ class _AppPageState extends ConsumerState<AppPage> with WindowListener {
   @override
   void onWindowUnmaximize() => setState(() => isMaximize.value = false);
 
-  bool get hasBackground => widget.background != null;
-
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: isMaximize,
-      builder: (context, isMaximize, child) => isMaximize
-          ? child!
-          : DragToResizeArea(
-              child: Padding(
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: ValueListenableBuilder(
+        valueListenable: isMaximize,
+        builder: (context, isMaximize, child) => isMaximize
+            ? child!
+            : Padding(
                 padding: const EdgeInsets.all(8),
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 6,
-                      spreadRadius: 0,
-                    ),
-                  ]),
+                child: DragToResizeArea(
                   child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 1, color: Colors.black26),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(1),
-                      child: child,
+                    decoration: const BoxDecoration(boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 6,
+                        spreadRadius: 0,
+                      ),
+                    ]),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(width: 1, color: Colors.black26),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(1),
+                        child: child,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-      child: Stack(
-        children: [
-          if (hasBackground) widget.background!,
-          Scaffold(
-            backgroundColor: hasBackground ? Colors.transparent : null,
-            // TODO: 为 Linux 或 MacOS 定制窗口栏
-            appBar: kHideTitleBar
-                ? const PreferredSize(
-                    preferredSize: Size.fromHeight(kWindowCaptionHeight),
-                    child: MyWindowCaption(),
-                  )
-                : null,
-            body: widget.body,
-          ),
-        ],
+        child: Consumer(builder: (context, ref, child) {
+          final theme = ref.watch(appThemeProvider);
+          final router = ref.read(_routerProvider);
+          final themeMode = theme.mode;
+          final lightTheme = theme.lightTheme;
+          final darkTheme = theme.darkTheme;
+          return MaterialApp.router(
+            scaffoldMessengerKey: rootScaffoldMessengerKey,
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: themeMode,
+            routerConfig: router,
+          );
+        }),
       ),
+    );
+  }
+}
+
+class AppPage extends StatelessWidget {
+  const AppPage({super.key, this.body, this.background})
+      : hasBackground = background != null;
+
+  final Widget? body;
+  final Widget? background;
+  final bool hasBackground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        if (hasBackground) background!,
+        Scaffold(
+          backgroundColor: hasBackground ? Colors.transparent : null,
+          // TODO: 为 Linux 或 MacOS 定制窗口栏
+          appBar: kHideTitleBar
+              ? const PreferredSize(
+                  preferredSize: Size.fromHeight(kWindowCaptionHeight),
+                  child: MyWindowCaption(),
+                )
+              : null,
+          body: body,
+        ),
+      ],
     );
   }
 }
