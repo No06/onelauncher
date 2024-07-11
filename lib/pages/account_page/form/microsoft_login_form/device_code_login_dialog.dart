@@ -19,7 +19,7 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      showSnackbar(errorSnackBar('跳转链接失败 $url'));
+      showSnackbar(errorSnackBar(title: '跳转链接失败'));
     }
   }
 

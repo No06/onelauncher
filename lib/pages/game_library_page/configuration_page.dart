@@ -9,7 +9,7 @@ class _ConfigurationPage extends ConsumerWidget {
       builder: (_) => _AddGamePathDialog(),
     );
     if (result ?? false) {
-      showSnackbar(successSnackBar("添加成功！"));
+      showSnackbar(successSnackBar(title: "添加成功！"));
     }
   }
 
@@ -226,7 +226,7 @@ class _AddGamePathDialog extends HookConsumerWidget {
     if (add()) {
       dialogPop(result: true);
     } else {
-      showSnackbar(warningSnackBar("已有重复目录"));
+      showSnackbar(warningSnackBar(title: "已有重复目录"));
     }
   }
 

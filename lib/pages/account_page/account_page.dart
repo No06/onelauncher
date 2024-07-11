@@ -70,10 +70,9 @@ class AccountPage extends RoutePage {
                           if (ref
                               .read(accountProvider.notifier)
                               .addAccount(account)) {
-                            dialogPop();
-                            showSnackbar(successSnackBar("添加成功！"));
+                            showSnackbar(successSnackBar(title: "添加成功！"));
                           } else {
-                            showSnackbar(errorSnackBar("已有重复账号"));
+                            showSnackbar(errorSnackBar(title: "已有重复账号"));
                           }
                         },
                       ),

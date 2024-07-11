@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/utils/auth/ms_device_code_oauth.dart';
 import 'package:one_launcher/utils/auth/ms_oauth.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -50,6 +52,7 @@ class MicosoftLoginForm extends StatelessWidget {
 
   Future<void> _onTapWebviewLogin(BuildContext context) {
     submit(String code) async {
+      debugPrintInfo(code, title: "Got OAuth code");
       final account = await _generateAccount(
         context: context,
         generator: () => MicrosoftAccount.generateByOAuthCode(code),
@@ -62,7 +65,10 @@ class MicosoftLoginForm extends StatelessWidget {
       // barrierDismissible: false,
       builder: (context) => const _MicrosoftLoginWebviewDialog(),
     ).then((code) {
-      if (code != null) submit(code);
+      if (code != null) {
+        dialogPop();
+        submit(code);
+      }
     });
   }
 
@@ -83,45 +89,49 @@ class MicosoftLoginForm extends StatelessWidget {
       barrierDismissible: false,
       builder: (context) => const _DeviceCodeLoginDialog(),
     ).then((response) {
-      if (response != null) submit(response);
+      if (response != null) {
+        dialogPop();
+        submit(response);
+      }
     });
   }
 
   Future<T?> _generateAccount<T>({
     required BuildContext context,
-    required Future<T> Function() generator,
-  }) {
-    return showDialog<T>(
+    required FutureOr<T> Function() generator,
+  }) async {
+    showDialog<T>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => FutureBuilder(
-        future: generator(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            dialogPop(result: snapshot.data);
-            if (snapshot.hasError) {
-              showSnackbar(errorSnackBar("请求错误：${snapshot.error.toString()}"));
-            }
-          }
-          return DefaultDialog(
-            title: const Text("登录成功"),
-            content: Row(
-              children: [
-                const Text("正在获取游戏授权码"),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Transform.scale(
-                    scale: 0.8,
-                    child: const CircularProgressIndicator(),
-                  ),
-                ),
-              ],
+      builder: (context) => DefaultDialog(
+        title: const Text("登录成功"),
+        content: Row(
+          children: [
+            const Text("正在获取游戏授权码"),
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Transform.scale(
+                scale: 0.8,
+                child: const CircularProgressIndicator(),
+              ),
             ),
-            actions: const [DialogCancelButton(onPressed: dialogPop)],
-          );
-        },
+          ],
+        ),
+        actions: const [DialogCancelButton(onPressed: dialogPop)],
       ),
     );
+
+    T? account;
+    try {
+      account = await generator();
+    } on DioException catch (e) {
+      debugPrintError(e.message.toString());
+      showSnackbar(errorSnackBar(title: "网络请求错误", content: e.message));
+    } finally {
+      dialogPop();
+    }
+
+    return account;
   }
 }
 

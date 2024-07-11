@@ -176,36 +176,55 @@ class _AvatarState extends State<_Avatar> {
   }
 }
 
-class _Actions extends ConsumerWidget {
-  const _Actions(this.account, {required this.fontColor});
+class _Actions extends StatefulHookConsumerWidget {
+  const _Actions(this.account, {required this.fontColor})
+      : isMSAccount = account is MicrosoftAccount;
 
   final Account account;
   final Color fontColor;
+  final bool isMSAccount;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Actions> createState() => _ActionsState();
+}
+
+class _ActionsState extends ConsumerState<_Actions> {
+  @override
+  Widget build(BuildContext context) {
+    final updating = useValueNotifier(false);
+    updateProfile() {
+      updating.value = true;
+      ref
+          .read(accountProvider.notifier)
+          .updateAccountProfile(widget.account as MicrosoftAccount)
+          .then((_) {
+        setState(() {
+          updating.value = false;
+        });
+      });
+    }
+
     return Wrap(
       spacing: 5,
       children: [
-        if (account is MicrosoftAccount)
-          IconButton(
-            onPressed: () {
-              (account as MicrosoftAccount).getProfile();
-            },
-            icon: Icon(
-              Icons.refresh,
-              color: fontColor,
+        if (widget.isMSAccount)
+          ValueListenableBuilder(
+            valueListenable: updating,
+            builder: (context, updating, child) => IconButton(
+              onPressed: updating ? null : updateProfile,
+              icon: Icon(Icons.refresh,
+                  color: widget.fontColor.withOpacity(updating ? .5 : 1)),
             ),
           ),
         AbsorbPointer(
           absorbing: false,
           child: IconButton(
             onPressed: () {},
-            icon: Icon(Icons.checkroom_rounded, color: fontColor),
+            icon: Icon(Icons.checkroom_rounded, color: widget.fontColor),
           ),
         ),
         IconButton(
-          icon: Icon(Icons.delete, color: fontColor),
+          icon: Icon(Icons.delete, color: widget.fontColor),
           onPressed: () {
             showDialog(
               context: context,
@@ -213,8 +232,10 @@ class _Actions extends ConsumerWidget {
                 title: const Text("删除用户"),
                 content: const Text("你确定要删除这条数据吗？"),
                 onConfirmed: () {
-                  ref.read(accountProvider.notifier).removeAccount(account);
-                  showSnackbar(successSnackBar("删除成功"));
+                  ref
+                      .read(accountProvider.notifier)
+                      .removeAccount(widget.account);
+                  showSnackbar(successSnackBar(title: "删除成功"));
                   dialogPop();
                 },
                 onCanceled: dialogPop,

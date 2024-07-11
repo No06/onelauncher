@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/main.dart';
 import 'package:one_launcher/models/account/account.dart';
+import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 
@@ -55,6 +56,11 @@ class AccountStateNotifier extends StateNotifier<AccountState> {
       state = state.copyWith(selectedAccount: account);
       _saveState();
     }
+  }
+
+  Future<void> updateAccountProfile(MicrosoftAccount account) async {
+    await account.updateProfile();
+    _saveState();
   }
 
   bool addAccount(Account value) {

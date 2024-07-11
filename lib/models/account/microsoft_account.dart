@@ -99,6 +99,12 @@ class MicrosoftAccount extends Account {
     );
   }
 
+  Future<void> updateProfile() async {
+    final newProfile = await getProfile();
+    _displayName = newProfile.name;
+    _skin = newProfile.skins.first;
+  }
+
   Future<Profile> getProfile() async =>
       AccountInfoUtil(await getAccessToken()).getProfile();
 

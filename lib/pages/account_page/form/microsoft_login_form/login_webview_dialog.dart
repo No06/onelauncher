@@ -65,12 +65,9 @@ class _MicrosoftLoginWebviewScreenState
       _controller.url.listen((url) async {
         final match = codeRegex.firstMatch(url);
         final code = match?.group(0);
-        if (match != null && code != null) {
-          debugPrint("授权码: $code");
-          dialogPop(result: code);
-        } else {
-          debugPrint("未找到授权码");
-        }
+        final hasCode = match != null && code != null;
+
+        if (hasCode) dialogPop(result: code);
       });
 
       if (!mounted) return;

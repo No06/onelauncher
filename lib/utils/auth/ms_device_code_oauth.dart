@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:http/http.dart' as http;
+import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/auth/ms_oauth.dart';
 
@@ -19,7 +20,6 @@ class MicrosoftDeviceCodeOAuth {
       'https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode';
   static const tokenUrl =
       'https://login.microsoftonline.com/consumers/oauth2/v2.0/token';
-  static const clientId = "8b6fb1f0-7e3e-41d3-8171-53ff17134e00";
 
   /// 用于设备码登录，最终返回授权码
   ///
@@ -64,7 +64,7 @@ class MicrosoftDeviceCodeOAuth {
   /// 获取设备码
   static Future<DeviceCodeResponse> getDeviceCode() async {
     const body = {
-      'client_id': clientId,
+      'client_id': kAzureClientId,
       'scope': 'XboxLive.signin offline_access',
     };
 
@@ -85,7 +85,7 @@ class MicrosoftDeviceCodeOAuth {
       Uri.parse(tokenUrl),
       body: {
         'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
-        'client_id': clientId,
+        'client_id': kAzureClientId,
         'device_code': deviceCode
       },
     );

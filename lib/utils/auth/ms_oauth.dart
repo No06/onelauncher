@@ -5,7 +5,9 @@ import 'package:one_launcher/models/json_map.dart';
 part 'ms_oauth.g.dart';
 
 abstract class MicrosoftOAuth {
-  static const _clientId = "00000000402b5328";
+  static const _minecraftClientId = "00000000402b5328";
+  static Dio get dio =>
+      Dio(BaseOptions(contentType: Headers.formUrlEncodedContentType));
 
   /// 使用 已保存的 refreshToekn 获取新的 Microsoft AccessToken。
   static Future<MicrosoftOAuthResponse> refreshAuthToken(
@@ -13,13 +15,13 @@ abstract class MicrosoftOAuth {
   ) async {
     const uri = 'https://login.live.com/oauth20_token.srf';
     final data = {
-      "client_id": _clientId,
+      "client_id": _minecraftClientId,
       "refresh_token": refreshToken,
       "grant_type": "refresh_token",
       "redirect_uri": "https://login.live.com/oauth20_desktop.srf",
       "scope": "service::user.auth.xboxlive.com::MBI_SSL"
     };
-    final response = await Dio().postUri(Uri.parse(uri), data: data);
+    final response = await dio.postUri(Uri.parse(uri), data: data);
     return MicrosoftOAuthResponse.fromJson(response.data);
   }
 
@@ -29,13 +31,13 @@ abstract class MicrosoftOAuth {
   static Future<MicrosoftOAuthResponse> getAccessToken(String code) async {
     const uri = 'https://login.live.com/oauth20_token.srf';
     final data = {
-      "client_id": _clientId, // 还是Minecraft客户端id
-      "code": code, // 第一步中获取的代码
+      "client_id": _minecraftClientId,
+      "code": code,
       "grant_type": "authorization_code",
       "redirect_uri": "https://login.live.com/oauth20_desktop.srf",
       "scope": "service::user.auth.xboxlive.com::MBI_SSL"
     };
-    final response = await Dio().postUri(Uri.parse(uri), data: data);
+    final response = await dio.postUri(Uri.parse(uri), data: data);
     return MicrosoftOAuthResponse.fromJson(response.data);
   }
 }
