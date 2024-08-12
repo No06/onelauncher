@@ -1,4 +1,4 @@
-import 'package:one_launcher/utils/auth/mc_auth.dart';
+import 'package:one_launcher/api/oauth/client/minecraft_oauth_client.dart';
 import 'package:one_launcher/utils/seconds_since_epoch.dart';
 
 class MinecraftAccessToken {
@@ -26,7 +26,8 @@ class MinecraftAccessToken {
   bool get isExpired => secondsSinceEpoch >= notAfter;
 
   Future<void> refreshAccessToken() async {
-    final response = await MinecraftAuth.loginWithRefreshToken(refreshToken);
+    final client = MinecraftOAuthClient();
+    final response = await client.requestTokenByRefreshToken(refreshToken);
     _accessToken = response.accessToken;
     _notAfter = validityToExpiredTime(response.expiresIn);
   }

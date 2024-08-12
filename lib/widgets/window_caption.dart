@@ -1,74 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:windows_titlebar/windows_titlebar.dart';
 
-class MyWindowCaption extends HookConsumerWidget {
+class MyWindowCaption extends StatelessWidget {
   const MyWindowCaption({super.key});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final brightness = Theme.of(context).brightness;
-    final isMaximized = useValueNotifier<bool?>(null);
+  void toggleMinimize() async => await windowManager.isMinimized()
+      ? windowManager.restore()
+      : windowManager.minimize();
 
-    final windowButtonColor = () {
-      switch (brightness) {
-        case Brightness.dark:
-          return const WindowButtonColor.dark();
-        case Brightness.light:
-          return const WindowButtonColor.light();
-      }
-    }();
-    final closeWindowButtonColor = () {
-      switch (brightness) {
-        case Brightness.dark:
-          return const WindowButtonColor.closeDark();
-        case Brightness.light:
-          return const WindowButtonColor.closeLight();
-      }
-    }();
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+
+    final windowButtonColor = switch (brightness) {
+      Brightness.dark => const WindowButtonColor.dark(),
+      Brightness.light => const WindowButtonColor.light(),
+    };
+    final closeWindowButtonColor = switch (brightness) {
+      Brightness.dark => const WindowButtonColor.closeDark(),
+      Brightness.light => const WindowButtonColor.closeLight(),
+    };
 
     return WindowTitleBar(
-      title: const Align(
-        alignment: Alignment.centerLeft,
-        child: Padding(
-          padding: EdgeInsets.only(left: 16),
-          child: Text(appName),
+      title: const DragToMoveArea(
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: EdgeInsets.only(left: 16),
+            child: Text(kAppName),
+          ),
         ),
       ),
       actions: [
         WindowButton.minimize(
           animated: true,
           buttonColor: windowButtonColor,
-          onTap: () async {
-            bool isMinimized = await windowManager.isMinimized();
-            if (isMinimized) {
-              windowManager.restore();
-            } else {
-              windowManager.minimize();
-            }
-          },
+          onTap: toggleMinimize,
         ),
-        FutureBuilder(
-          future: windowManager.isMaximized(),
-          builder: (context, snapshot) => ValueListenableBuilder(
-            valueListenable: isMaximized,
-            builder: (context, isMaximized, child) {
-              isMaximized = isMaximized ??= snapshot.hasData && snapshot.data!;
-              if (isMaximized) {
-                return WindowButton.unmaximize(
-                  buttonColor: windowButtonColor,
-                  onTap: windowManager.unmaximize,
-                );
-              }
-              return WindowButton.maximize(
-                buttonColor: windowButtonColor,
-                onTap: windowManager.maximize,
-              );
-            },
-          ),
+        _WindowMaximizeToggleButton(
+          animated: true,
+          color: windowButtonColor,
         ),
         WindowButton.close(
           animated: true,
@@ -77,5 +50,61 @@ class MyWindowCaption extends HookConsumerWidget {
         ),
       ],
     );
+  }
+}
+
+class _WindowMaximizeToggleButton extends StatefulWidget {
+  const _WindowMaximizeToggleButton({required this.color, this.animated});
+
+  final WindowButtonColor color;
+  final bool? animated;
+
+  @override
+  State<_WindowMaximizeToggleButton> createState() =>
+      _WindowMaximizeToggleButtonState();
+}
+
+class _WindowMaximizeToggleButtonState
+    extends State<_WindowMaximizeToggleButton> with WindowListener {
+  var isMaximized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    windowManager.addListener(this);
+    windowManager.isMaximized().then((isMaximized) => setState(() {
+          this.isMaximized = isMaximized;
+        }));
+  }
+
+  @override
+  void dispose() {
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onWindowMaximize() => setState(() {
+        isMaximized = true;
+      });
+
+  @override
+  void onWindowUnmaximize() => setState(() {
+        isMaximized = false;
+      });
+
+  @override
+  Widget build(BuildContext context) {
+    return isMaximized
+        ? WindowButton.unmaximize(
+            animated: widget.animated,
+            buttonColor: widget.color,
+            onTap: windowManager.unmaximize,
+          )
+        : WindowButton.maximize(
+            animated: widget.animated,
+            buttonColor: widget.color,
+            onTap: windowManager.maximize,
+          );
   }
 }

@@ -1,21 +1,35 @@
 part of 'microsoft_login_form.dart';
 
-class _DeviceCodeLoginDialog extends StatefulWidget {
+final _initiateAuthenticationProvider = FutureProvider.autoDispose((ref) {
+  final client = MicrosoftDeviceOAuthClient();
+  return client.requestDeviceAuthorization();
+});
+
+class _DeviceCodeLoginDialog extends ConsumerStatefulWidget {
   const _DeviceCodeLoginDialog();
 
   @override
-  State<_DeviceCodeLoginDialog> createState() => _DeviceCodeLoginDialogState();
+  ConsumerState<_DeviceCodeLoginDialog> createState() =>
+      _DeviceCodeLoginDialogState();
 }
 
-class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
+class _DeviceCodeLoginDialogState
+    extends ConsumerState<_DeviceCodeLoginDialog> {
   var visible = false;
-  String? _deviceCode;
-  String? _verificationUrl;
-  final completer = Completer<MicrosoftOAuthResponse?>(); // 返回 accessToken
-  final util = MicrosoftDeviceCodeOAuth();
+  final authenticationCompleter = Completer<MicrosoftDeviceOAuthToken>();
+  final client = MicrosoftDeviceOAuthClient();
+  late final Stream<MicrosoftDeviceOAuthToken> stream;
 
-  Future<void> _launchURL(String url) async {
-    final uri = Uri.parse(url);
+  MicrosoftDeviceAuthorizationResponse? get authorizationData =>
+      ref.read(_initiateAuthenticationProvider).value;
+
+  Future<void> _copyCodeToClipboard() async =>
+      Clipboard.setData(ClipboardData(text: authorizationData!.userCode));
+
+  Future<void> _onTapToLogin() async {
+    await _copyCodeToClipboard();
+
+    final uri = Uri.parse(authorizationData!.verificationUri);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
@@ -23,45 +37,73 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
     }
   }
 
-  Future<void> _clip() => Clipboard.setData(ClipboardData(text: _deviceCode!));
+  Future<void> _initiateAuthentication() async {
+    await ref.read(_initiateAuthenticationProvider.future);
+    final token = await pollingRequestUserAuthentication();
+    if (token == null) return;
+    if (mounted) Navigator.of(context).pop(token);
+  }
+
+  Future<MicrosoftDeviceOAuthToken?> pollingRequestUserAuthentication() async {
+    final data = ref.read(_initiateAuthenticationProvider).value!;
+
+    /// Timer
+    var seconds = 0;
+    increase(Timer timer) => seconds += 1;
+    final timer = Timer.periodic(const Duration(seconds: 1), increase);
+
+    MicrosoftDeviceOAuthToken? token;
+    while (seconds < data.expiresIn && mounted) {
+      try {
+        token = await client.requestUserAuthentication(data.deviceCode);
+        break;
+      } on MicrosoftDeviceOAuthException catch (e) {
+        switch (e.type) {
+          case MicrosoftDeviceOAuthExceptionType.authorizationPending:
+            continue;
+          case MicrosoftDeviceOAuthExceptionType.authorizationDeclined:
+            showSnackbar(warningSnackBar(title: "最终用户拒绝了授权请求"));
+          case MicrosoftDeviceOAuthExceptionType.badVerificationCode:
+            showSnackbar(errorSnackBar(
+              title: "这可能是个Bug",
+              content: '发送到 /token 端点的 device_code 无法识别',
+            ));
+          case MicrosoftDeviceOAuthExceptionType.expiredToken:
+            showSnackbar(errorSnackBar(title: '请求超时'));
+          case MicrosoftDeviceOAuthExceptionType.unknown:
+            // TODO: 补充错误详细说明
+            showSnackbar(errorSnackBar(title: '啊哦，发生了意料之外的问题'));
+        }
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      } finally {
+        await Future.delayed(Duration(seconds: data.interval));
+      }
+    }
+
+    timer.cancel();
+    return token;
+  }
 
   @override
   void initState() {
     super.initState();
-    // 轮询
-    util
-        .getAccessTokenByUserCode(
-      startPolling: (deviceCode, verificationUrl) => setState(() {
-        _deviceCode = deviceCode;
-        _verificationUrl = verificationUrl;
-      }),
-    )
-        .then((resp) {
-      completer.complete(resp);
-      if (resp != null) dialogPop(result: resp);
-    });
-  }
-
-  @override
-  void dispose() {
-    util.cancel();
-    super.dispose();
+    _initiateAuthentication();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
-    final colors = theme.colorScheme;
+
+    final activity = ref.watch(_initiateAuthenticationProvider);
+    final isAlready = activity.hasValue;
+
     return DefaultDialog(
       onCanceled: dialogPop,
       confirmText: const Text('前往登录'),
-      onConfirmed: _verificationUrl == null
-          ? null
-          : () async {
-              await _clip();
-              await _launchURL(_verificationUrl!);
-            },
+      onConfirmed: isAlready ? _onTapToLogin : null,
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -70,72 +112,77 @@ class _DeviceCodeLoginDialogState extends State<_DeviceCodeLoginDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("授权码", style: textTheme.headlineSmall),
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: FutureBuilder(
-                  future: completer.future,
-                  builder: (context, snapshot) {
-                    if (_deviceCode != null && _verificationUrl != null) {
-                      return Tooltip(
-                        message: "点击复制",
-                        child: Card(
-                          clipBehavior: Clip.antiAlias,
-                          color: colors.secondaryContainer,
-                          elevation: 3,
-                          child: InkWell(
-                            onTap: _clip,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child:
-                                  StatefulBuilder(builder: (context, setState) {
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      visible
-                                          ? _deviceCode!
-                                          : _deviceCode!
-                                              .replaceAll(RegExp(r'.'), '∗'),
-                                      style: textTheme.titleLarge?.copyWith(
-                                        letterSpacing: 8,
-                                        color: colors.onSecondaryContainer,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () =>
-                                          setState(() => visible = !visible),
-                                      icon: visible
-                                          ? const Icon(Icons.visibility)
-                                          : const Icon(Icons.visibility_off),
-                                    ),
-                                  ],
-                                );
-                              }),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    if (snapshot.hasError) {
-                      return const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Icon(Icons.error),
-                      );
-                    }
-                    return const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(),
-                    );
-                  },
-                ),
+              switch (activity) {
+                AsyncData(:final value) => Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: InkWell(
+                      onTap: _copyCodeToClipboard,
+                      borderRadius: kDefaultBorderRadius,
+                      child: _CodeViewer(value.userCode),
+                    ),
+                  ),
+                AsyncError() => const Text('啊哦，发生预料之外的错误。'),
+                _ => const CircularProgressIndicator(),
+              },
+            ],
+          ),
+          switch (activity) {
+            AsyncData(:final value) =>
+              Text(value.message, style: textTheme.bodyLarge),
+            _ => const SizedBox(),
+          }
+        ],
+      ),
+    );
+  }
+}
+
+class _CodeViewer extends StatefulWidget {
+  const _CodeViewer(this.code);
+
+  final String code;
+
+  @override
+  State<_CodeViewer> createState() => _CodeViewerState();
+}
+
+class _CodeViewerState extends State<_CodeViewer> {
+  var visible = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final code = visible ? widget.code : '∗' * widget.code.length;
+    final colors = Theme.of(context).colorScheme;
+
+    return Tooltip(
+      message: "点击复制",
+      child: Card(
+        shape: const RoundedRectangleBorder(
+          borderRadius: kDefaultBorderRadius,
+        ),
+        color: colors.secondaryContainer,
+        elevation: 3,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                code,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      letterSpacing: 8,
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    ),
+              ),
+              IconButton(
+                onPressed: () => setState(() => visible = !visible),
+                icon: visible
+                    ? const Icon(Icons.visibility)
+                    : const Icon(Icons.visibility_off),
               ),
             ],
           ),
-          Text(
-            "点击登录后，自动复制授权码，跳出认证页面直接粘贴",
-            style: textTheme.bodyLarge,
-          ),
-        ],
+        ),
       ),
     );
   }

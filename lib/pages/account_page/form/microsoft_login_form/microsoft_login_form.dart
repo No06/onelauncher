@@ -3,11 +3,17 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/account/mc_access_token.dart';
 import 'package:one_launcher/models/account/microsoft_account.dart';
-import 'package:one_launcher/utils/auth/ms_device_code_oauth.dart';
-import 'package:one_launcher/utils/auth/ms_oauth.dart';
+import 'package:one_launcher/api/minecraft_services_api.dart';
+import 'package:one_launcher/api/oauth/client/microsoft_device_oauth_client.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
+import 'package:one_launcher/api/oauth/client/microsoft_oauth_client.dart';
+import 'package:one_launcher/api/oauth/client/minecraft_oauth_client.dart';
+import 'package:one_launcher/api/oauth/client/xbox_oauth_client.dart';
+import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -53,16 +59,35 @@ class MicosoftLoginForm extends StatelessWidget {
   Future<void> _onTapWebviewLogin(BuildContext context) {
     submit(String code) async {
       debugPrintInfo(code, title: "Got OAuth code");
-      final account = await _generateAccount(
-        context: context,
-        generator: () => MicrosoftAccount.generateByOAuthCode(code),
-      );
+      accountGenerator() async {
+        final msToken = await MicrosoftOAuthClient(kMinecraftClientId)
+            .requestTokenByCode(code);
+        final xboxOAuthClient = XboxOAuthClient();
+        final xblToken =
+            await xboxOAuthClient.requestToken('d=${msToken.accessToken}');
+        final xstsToken =
+            await xboxOAuthClient.requestXstsToken(xblToken.token);
+        final mcToken = await MinecraftOAuthClient().requestToken(xstsToken);
+        final profile =
+            await MinecraftServicesApi(mcToken.accessToken).requestProfile();
+        return MicrosoftAccount(
+          uuid: profile.id,
+          displayName: profile.name,
+          accessToken: mcToken.accessToken,
+          refreshToken: msToken.refreshToken!,
+          notAfter:
+              MinecraftAccessToken.validityToExpiredTime(mcToken.expiresIn),
+          skin: profile.skins.first,
+        );
+      }
+
+      final account =
+          await _generateAccount(context: context, generator: accountGenerator);
       if (account != null) onSubmit(account);
     }
 
     return showDialog<String>(
       context: context,
-      // barrierDismissible: false,
       builder: (context) => const _MicrosoftLoginWebviewDialog(),
     ).then((code) {
       if (code != null) {
@@ -73,25 +98,40 @@ class MicosoftLoginForm extends StatelessWidget {
   }
 
   Future<void> _onTapDeviceCodeLogin(BuildContext context) async {
-    submit(MicrosoftOAuthResponse response) async {
-      final account = await _generateAccount(
-        context: context,
-        generator: () => MicrosoftAccount.generateByMsToken(
-          msAccessToken: "d=${response.accessToken}",
-          refreshToken: response.refreshToken,
-        ),
-      );
+    submit(MicrosoftDeviceOAuthToken token) async {
+      accountGenerator() async {
+        final xboxOAuthClient = XboxOAuthClient();
+        final xblToken =
+            await xboxOAuthClient.requestToken('d=${token.accessToken}');
+        final xstsToken =
+            await xboxOAuthClient.requestXstsToken(xblToken.token);
+        final mcToken = await MinecraftOAuthClient().requestToken(xstsToken);
+        final profile =
+            await MinecraftServicesApi(mcToken.accessToken).requestProfile();
+        return MicrosoftAccount(
+          uuid: profile.id,
+          displayName: profile.name,
+          accessToken: mcToken.accessToken,
+          refreshToken: token.refreshToken!,
+          notAfter:
+              MinecraftAccessToken.validityToExpiredTime(mcToken.expiresIn),
+          skin: profile.skins.first,
+        );
+      }
+
+      final account =
+          await _generateAccount(context: context, generator: accountGenerator);
       if (account != null) onSubmit(account);
     }
 
-    return showDialog<MicrosoftOAuthResponse>(
+    return showDialog<MicrosoftDeviceOAuthToken>(
       context: context,
       barrierDismissible: false,
       builder: (context) => const _DeviceCodeLoginDialog(),
-    ).then((response) {
-      if (response != null) {
+    ).then((token) {
+      if (token != null) {
         dialogPop();
-        submit(response);
+        submit(token);
       }
     });
   }
@@ -152,12 +192,15 @@ class _SelectionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shape = this.shape ??
+        const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)));
     return Card(
-      clipBehavior: Clip.antiAlias,
       color: cardColor,
       shape: shape,
       child: InkWell(
         onTap: onTap,
+        customBorder: shape,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(

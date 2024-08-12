@@ -38,7 +38,9 @@ dependencies:
   path: ^1.8.3
   dynamic_color: ^1.6.5
   json_annotation: ^4.9.0
-  window_manager: ^0.3.8
+  window_manager: 
+    git:
+        url: https://github.com/rustdesk-org/window_manager
   flutter_hooks: ^0.20.1
   code_builder: ^4.6.0
   chinese_font_library: ^1.0.1
@@ -67,6 +69,7 @@ dependencies:
   cached_network_image: ^3.3.1
   multi_value_listenable_builder: ^0.0.2
   basic_utils: ^5.7.0
+  oauth2: ^2.0.2
 
 dev_dependencies:
 

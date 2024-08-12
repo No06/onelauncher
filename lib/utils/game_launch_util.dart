@@ -308,7 +308,7 @@ class GameLaunchUtil {
       "auth_uuid": loginInfo!.uuid,
       "auth_access_token": loginInfo!.accessToken,
       "user_type": "msa",
-      "version_type": '"$appName"',
+      "version_type": '"$kAppName"',
       "user_properties": "{}",
     };
     dynamic arguments = game.data.arguments?.gameFilterString;
@@ -336,7 +336,7 @@ class GameLaunchUtil {
     /// TODO: 待补充
     final jvmArgsMap = <String, String>{
       "natives_directory": game.nativesPath,
-      "launcher_name": appName,
+      "launcher_name": kAppName,
       "launcher_version": "114514",
       "classpath": classPathsArgs,
       "clientpath": game.clientPath,

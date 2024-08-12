@@ -10,7 +10,7 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? showSnackbar(
   if (context != null) {
     return ScaffoldMessenger.of(context).showSnackBar(snackBar);
   } else {
-    return rootScaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+    return rootScaffoldKey.currentState?.showSnackBar(snackBar);
   }
 }
 
@@ -23,7 +23,7 @@ SnackBar defaultSnackBar({
   IconData? iconData,
   Duration? duration,
 }) {
-  context = context ?? rootScaffoldMessengerContext!;
+  context = context ?? rootScaffoldContext!;
   final colors = Theme.of(context).colorScheme;
 
   backgroundColor ??= colors.surfaceBright;
@@ -130,7 +130,7 @@ SnackBar errorSnackBar({
   String? content,
   BuildContext? context,
 }) {
-  final colors = Theme.of(context ?? rootScaffoldMessengerContext!).colorScheme;
+  final colors = Theme.of(context ?? rootScaffoldContext!).colorScheme;
   return defaultSnackBar(
     title: title,
     content: content,

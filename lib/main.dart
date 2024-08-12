@@ -8,7 +8,7 @@ import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
 
-final storage = GetStorage("$appName/config");
+final storage = GetStorage("$kAppName/config");
 
 void main() async {
   await _init();
@@ -25,7 +25,6 @@ Future<void> _init() async {
     const windowSize = Size(defaultWindowWidth, defaultWindowHeight);
     final windowOptions = WindowOptions(
       size: windowSize,
-      minimumSize: windowSize,
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
@@ -33,7 +32,7 @@ Future<void> _init() async {
           kHideTitleBar ? TitleBarStyle.hidden : TitleBarStyle.normal,
     );
     return windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.setAsFrameless();
+      // await windowManager.setAsFrameless();
       await windowManager.show();
       await windowManager.focus();
     });

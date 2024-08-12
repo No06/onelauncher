@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'profile.dart';
+part of 'minecraft_services_api.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
