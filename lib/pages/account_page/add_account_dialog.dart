@@ -97,6 +97,7 @@ class _AddAccountDialogState extends State<_AddAccountDialog> {
                     if (_formKey.currentState!.validate()) {
                       account = (form as _OfflineLoginForm).submit();
                       widget.onSubmit(account);
+                      dialogPop();
                     }
                   case AccountType.microsoft:
                     null;

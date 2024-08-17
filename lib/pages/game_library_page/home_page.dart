@@ -160,9 +160,19 @@ class _SliverList extends ConsumerWidget {
           final filterState = ref.watch(_filterStateProvider);
           final filteredGames =
               _processor.filterAndSortGames(gameList, filterState);
-          // TODO: 异步构建item优化性能
-          return SliverList.list(
-            children: filteredGames.joinWith(_divider),
+          // TODO: 异步构建item优化性能（暂时换成懒加载，待我研究一下如何替换成异步构建
+          return SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return Column(
+                  children: [
+                    filteredGames[index],
+                    if (index < filteredGames.length - 1) _divider,
+                  ],
+                );
+              },
+              childCount: filteredGames.length,
+            ),
           );
         });
       },
