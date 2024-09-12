@@ -20,7 +20,7 @@ MicrosoftDeviceAuthorizationResponse
 MicrosoftDeviceOAuthException _$MicrosoftDeviceOAuthExceptionFromJson(
         Map<String, dynamic> json) =>
     MicrosoftDeviceOAuthException(
-      $enumDecode(_$MicrosoftDeviceOAuthExceptionTypeEnumMap, json['type'],
+      $enumDecode(_$MicrosoftDeviceOAuthExceptionTypeEnumMap, json['error'],
           unknownValue: MicrosoftDeviceOAuthExceptionType.unknown),
     );
 

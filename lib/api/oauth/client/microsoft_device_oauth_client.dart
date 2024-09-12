@@ -38,17 +38,19 @@ class MicrosoftDeviceOAuthClient {
     String deviceCode,
   ) async {
     final path = pathParse('/oauth2/v2.0/token');
-    final response = await dio.post(path, data: {
-      'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
-      'client_id': kClientId,
-      'device_code': deviceCode
-    });
-
-    final data = response.data as JsonMap;
-    if (data.containsKey('error')) {
+    try {
+      final response = await dio.post(path, data: {
+        'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
+        'client_id': kClientId,
+        'device_code': deviceCode
+      });
+      return MicrosoftDeviceOAuthToken.fromJson(response.data);
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final error = data['error'];
+      if (error == null) rethrow;
       throw MicrosoftDeviceOAuthException.fromJson(data);
     }
-    return MicrosoftDeviceOAuthToken.fromJson(response.data);
   }
 }
 
@@ -80,7 +82,9 @@ class MicrosoftDeviceAuthorizationResponse {
 class MicrosoftDeviceOAuthException implements Exception {
   const MicrosoftDeviceOAuthException(this.type);
 
-  @JsonKey(unknownEnumValue: MicrosoftDeviceOAuthExceptionType.unknown)
+  @JsonKey(
+      name: "error",
+      unknownEnumValue: MicrosoftDeviceOAuthExceptionType.unknown)
   final MicrosoftDeviceOAuthExceptionType type;
 
   factory MicrosoftDeviceOAuthException.fromJson(JsonMap json) =>

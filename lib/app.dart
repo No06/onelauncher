@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:animations/animations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -48,13 +46,13 @@ class AppPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _VirtualWindowFrame(
+    // TODO: 为 Windows 删除边框，为 Linux 或 MacOS 适配窗口样式
+    return VirtualWindowFrame(
       child: Stack(
         children: [
           if (hasBackground) background!,
           Scaffold(
             backgroundColor: hasBackground ? Colors.transparent : null,
-            // TODO: 为 Linux 或 MacOS 定制窗口栏
             appBar: kHideTitleBar
                 ? const PreferredSize(
                     preferredSize: Size.fromHeight(kWindowCaptionHeight),
@@ -67,116 +65,6 @@ class AppPage extends StatelessWidget {
       ),
     );
   }
-}
-
-class _VirtualWindowFrame extends StatefulWidget {
-  const _VirtualWindowFrame({required this.child});
-
-  /// The [child] contained by the VirtualWindowFrame.
-  final Widget child;
-
-  @override
-  State<StatefulWidget> createState() => _VirtualWindowFrameState();
-}
-
-class _VirtualWindowFrameState extends State<_VirtualWindowFrame>
-    with WindowListener {
-  bool _isFocused = true;
-  bool _isMaximized = false;
-  bool _isFullScreen = false;
-
-  @override
-  void initState() {
-    windowManager.addListener(this);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    windowManager.removeListener(this);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DragToResizeArea(
-      enableResizeEdges: _isMaximized || _isFullScreen
-          ? []
-          : Platform.isLinux
-              ? null
-              : [ResizeEdge.topLeft, ResizeEdge.top, ResizeEdge.topRight],
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          border: Border.all(
-            color: Theme.of(context).dividerColor,
-            width: (_isMaximized || _isFullScreen) ? 0 : 1,
-            strokeAlign: BorderSide.strokeAlignInside,
-          ),
-          boxShadow: <BoxShadow>[
-            if (!_isMaximized && !_isFullScreen)
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                offset: Offset(0.0, _isFocused ? 4 : 2),
-                blurRadius: 6,
-              ),
-          ],
-        ),
-        child: widget.child,
-      ),
-    );
-  }
-
-  @override
-  void onWindowFocus() {
-    setState(() {
-      _isFocused = true;
-    });
-  }
-
-  @override
-  void onWindowBlur() {
-    setState(() {
-      _isFocused = false;
-    });
-  }
-
-  @override
-  void onWindowMaximize() {
-    setState(() {
-      _isMaximized = true;
-    });
-  }
-
-  @override
-  void onWindowUnmaximize() {
-    setState(() {
-      _isMaximized = false;
-    });
-  }
-
-  @override
-  void onWindowEnterFullScreen() {
-    setState(() {
-      _isFullScreen = true;
-    });
-  }
-
-  @override
-  void onWindowLeaveFullScreen() {
-    setState(() {
-      _isFullScreen = false;
-    });
-  }
-}
-
-// ignore: non_constant_identifier_names
-TransitionBuilder VirtualWindowFrameInit() {
-  return (_, Widget? child) {
-    return _VirtualWindowFrame(
-      child: child!,
-    );
-  };
 }
 
 class _NavigationItem extends ConsumerWidget {
@@ -252,9 +140,9 @@ class _NavigationItem extends ConsumerWidget {
                     color: color,
                   ),
                   Text(
-                    key: ValueKey(title),
                     title,
-                    style: theme.textTheme.labelLarge!.copyWith(color: color),
+                    style: theme.textTheme.labelLarge!
+                        .copyWith(color: color, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),

@@ -23,11 +23,8 @@ class _DeviceCodeLoginDialogState
   MicrosoftDeviceAuthorizationResponse? get authorizationData =>
       ref.read(_initiateAuthenticationProvider).value;
 
-  Future<void> _copyCodeToClipboard() async =>
-      Clipboard.setData(ClipboardData(text: authorizationData!.userCode));
-
   Future<void> _onTapToLogin() async {
-    await _copyCodeToClipboard();
+    await Clipboard.setData(ClipboardData(text: authorizationData!.userCode));
 
     final uri = Uri.parse(authorizationData!.verificationUri);
     if (await canLaunchUrl(uri)) {
@@ -77,6 +74,7 @@ class _DeviceCodeLoginDialogState
         if (mounted) {
           Navigator.of(context).pop();
         }
+        break;
       } finally {
         await Future.delayed(Duration(seconds: data.interval));
       }
@@ -104,54 +102,58 @@ class _DeviceCodeLoginDialogState
       onCanceled: dialogPop,
       confirmText: const Text('前往登录'),
       onConfirmed: isAlready ? _onTapToLogin : null,
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("授权码", style: textTheme.headlineSmall),
-              switch (activity) {
-                AsyncData(:final value) => Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: InkWell(
-                      onTap: _copyCodeToClipboard,
-                      borderRadius: kDefaultBorderRadius,
-                      child: _CodeViewer(value.userCode),
-                    ),
+      content: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  switch (activity) {
+                    AsyncData() => Text(
+                        "授权码",
+                        style: textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w600, letterSpacing: 3),
+                      ),
+                    AsyncError() => const SizedBox(),
+                    _ => Text("请求中...", style: textTheme.headlineSmall),
+                  },
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: switch (activity) {
+                      AsyncData(:final value) => _CodeViewer(value.userCode),
+                      AsyncError() => const Text('啊哦，发生预料之外的错误。'),
+                      _ => const CircularProgressIndicator(),
+                    },
                   ),
-                AsyncError() => const Text('啊哦，发生预料之外的错误。'),
-                _ => const CircularProgressIndicator(),
-              },
-            ],
-          ),
-          switch (activity) {
-            AsyncData(:final value) =>
-              Text(value.message, style: textTheme.bodyLarge),
-            _ => const SizedBox(),
-          }
-        ],
+                  switch (activity) {
+                    AsyncData(:final value) =>
+                      Text(value.message, style: textTheme.bodyLarge),
+                    _ => const SizedBox(),
+                  }
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _CodeViewer extends StatefulWidget {
+class _CodeViewer extends StatelessWidget {
   const _CodeViewer(this.code);
 
   final String code;
 
-  @override
-  State<_CodeViewer> createState() => _CodeViewerState();
-}
-
-class _CodeViewerState extends State<_CodeViewer> {
-  var visible = false;
+  void onTapCopy() => Clipboard.setData(ClipboardData(text: code));
 
   @override
   Widget build(BuildContext context) {
-    final code = visible ? widget.code : '∗' * widget.code.length;
     final colors = Theme.of(context).colorScheme;
 
     return Tooltip(
@@ -162,25 +164,18 @@ class _CodeViewerState extends State<_CodeViewer> {
         ),
         color: colors.secondaryContainer,
         elevation: 3,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                code,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      letterSpacing: 8,
-                      color: Theme.of(context).colorScheme.onSecondaryContainer,
-                    ),
-              ),
-              IconButton(
-                onPressed: () => setState(() => visible = !visible),
-                icon: visible
-                    ? const Icon(Icons.visibility)
-                    : const Icon(Icons.visibility_off),
-              ),
-            ],
+        child: InkWell(
+          onTap: onTapCopy,
+          borderRadius: kDefaultBorderRadius,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              code,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    letterSpacing: 8,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
+            ),
           ),
         ),
       ),

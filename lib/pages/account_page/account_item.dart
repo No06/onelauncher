@@ -70,35 +70,31 @@ class _AccountItem extends HookConsumerWidget {
                   final fontColor =
                       isSelected ? colors.onPrimary : colors.onSurface;
                   return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Wrap(
-                        spacing: 15,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          _Avatar(account, isSelected: isSelected),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                account.displayName,
-                                style: TextStyle(
-                                  color: fontColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      _Avatar(account, isSelected: isSelected),
+                      const Gap(12),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              account.displayName,
+                              style: TextStyle(
+                                color: fontColor,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                account is OfflineAccount
-                                    ? "离线账号"
-                                    : account is MicrosoftAccount
-                                        ? "微软账号"
-                                        : "未知账号",
-                                style: TextStyle(color: fontColor),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            Text(
+                              switch (account) {
+                                OfflineAccount() => "离线账号",
+                                MicrosoftAccount() => "微软账号",
+                                _ => "未知账号",
+                              },
+                              style: TextStyle(color: fontColor),
+                            ),
+                          ],
+                        ),
                       ),
                       _Actions(account, fontColor: fontColor),
                     ],
@@ -189,59 +185,68 @@ class _Actions extends StatefulHookConsumerWidget {
 }
 
 class _ActionsState extends ConsumerState<_Actions> {
-  @override
-  Widget build(BuildContext context) {
-    final updating = useValueNotifier(false);
-    updateProfile() {
-      updating.value = true;
-      ref
+  var updating = false;
+
+  void onTapUpdate() async {
+    assert(widget.account is MicrosoftAccount);
+    if (updating) return;
+
+    setState(() {
+      updating = true;
+    });
+    try {
+      await ref
           .read(accountProvider.notifier)
-          .updateAccountProfile(widget.account as MicrosoftAccount)
-          .then((_) {
-        setState(() {
-          updating.value = false;
-        });
+          .updateAccountProfile(widget.account as MicrosoftAccount);
+    } on DioException catch (e) {
+      showSnackbar(
+        errorSnackBar(title: "更新账号信息失败", content: e.message ?? 'Unknown error'),
+      );
+    } finally {
+      setState(() {
+        updating = false;
       });
     }
+  }
 
-    return Wrap(
-      spacing: 5,
+  void onTapDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => WarningDialog(
+        title: const Text("删除用户"),
+        content: const Text("你确定要删除这条数据吗？"),
+        onConfirmed: () => dialogPop(result: true),
+        onCanceled: dialogPop,
+      ),
+    );
+    if (confirm ?? false) {
+      ref.read(accountProvider.notifier).removeAccount(widget.account);
+      showSnackbar(successSnackBar(title: "删除成功"));
+      dialogPop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.isMSAccount)
-          ValueListenableBuilder(
-            valueListenable: updating,
-            builder: (context, updating, child) => IconButton(
-              onPressed: updating ? null : updateProfile,
-              icon: Icon(Icons.refresh,
-                  color: widget.fontColor.withOpacity(updating ? .5 : 1)),
-            ),
+          IconButton(
+            onPressed: updating ? null : onTapUpdate,
+            icon: Icon(Icons.refresh,
+                color: widget.fontColor.withOpacity(updating ? .5 : 1)),
           ),
-        AbsorbPointer(
-          absorbing: false,
-          child: IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.checkroom_rounded, color: widget.fontColor),
-          ),
-        ),
+        // AbsorbPointer(
+        //   absorbing: false,
+        //   child: IconButton(
+        //     onPressed: () {},
+        //     icon: Icon(Icons.checkroom_rounded, color: widget.fontColor),
+        //   ),
+        // ),
         IconButton(
           icon: Icon(Icons.delete, color: widget.fontColor),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => WarningDialog(
-                title: const Text("删除用户"),
-                content: const Text("你确定要删除这条数据吗？"),
-                onConfirmed: () {
-                  ref
-                      .read(accountProvider.notifier)
-                      .removeAccount(widget.account);
-                  showSnackbar(successSnackBar(title: "删除成功"));
-                  dialogPop();
-                },
-                onCanceled: dialogPop,
-              ),
-            );
-          },
+          onPressed: onTapDelete,
         ),
       ],
     );

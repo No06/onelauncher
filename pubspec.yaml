@@ -66,8 +66,9 @@ dependencies:
   cached_network_image: ^3.3.1
   multi_value_listenable_builder: ^0.0.2
   basic_utils: ^5.7.0
-  oauth2: ^2.0.2
   window_manager: ^0.4.0
+  gap: ^3.0.1
+  win32: ^5.5.4
 
 dev_dependencies:
 

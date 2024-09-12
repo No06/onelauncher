@@ -35,7 +35,7 @@ SnackBar defaultSnackBar({
   final titleTextStyle = Theme.of(context)
       .textTheme
       .titleMedium
-      ?.copyWith(color: textColor)
+      ?.copyWith(color: textColor, fontWeight: FontWeight.w600)
       .useSystemChineseFont();
   final hasContent = content != null;
 
