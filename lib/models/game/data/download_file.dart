@@ -18,4 +18,5 @@ class DownloadFile {
   final int size;
 
   factory DownloadFile.fromJson(JsonMap json) => _$DownloadFileFromJson(json);
+  JsonMap toJson() => _$DownloadFileToJson(this);
 }

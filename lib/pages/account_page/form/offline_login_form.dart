@@ -2,12 +2,16 @@ part of '../account_page.dart';
 
 final _isExpanedProvider = StateProvider.autoDispose((ref) => false);
 
-class _OfflineLoginForm extends HookWidget {
+class _OfflineLoginForm extends StatefulHookWidget {
+  const _OfflineLoginForm({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _OfflineLoginFormState();
+}
+
+class _OfflineLoginFormState extends State<_OfflineLoginForm> {
   late final TextEditingController uuidTextController;
   late final TextEditingController usernameTextController;
-
-  static String getUuidFromName(String name) =>
-      const Uuid().v5(Uuid.NAMESPACE_NIL, name);
 
   OfflineAccount submit() => OfflineAccount(
         displayName: usernameTextController.text,
@@ -15,9 +19,21 @@ class _OfflineLoginForm extends HookWidget {
       );
 
   @override
+  void initState() {
+    super.initState();
+    uuidTextController = TextEditingController();
+    usernameTextController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    uuidTextController.dispose();
+    usernameTextController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    uuidTextController = useTextEditingController();
-    usernameTextController = useTextEditingController();
     final rotationAnimationController = useAnimationController(
       upperBound: 0.5,
       duration: const Duration(milliseconds: 250),
@@ -25,8 +41,12 @@ class _OfflineLoginForm extends HookWidget {
 
     // uuid 监听 用户名变化
     useEffect(() {
+      getUuidFromName(String name) =>
+          const Uuid().v5(Namespace.nil.value, name);
+
       listener() => uuidTextController.text =
           getUuidFromName(usernameTextController.text);
+
       usernameTextController.addListener(listener);
       return () => usernameTextController.removeListener(listener);
     }, [usernameTextController]);

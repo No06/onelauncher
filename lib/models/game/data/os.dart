@@ -10,6 +10,7 @@ class Os {
   final OsName name;
 
   factory Os.fromJson(JsonMap json) => _$OsFromJson(json);
+  JsonMap toJson() => _$OsToJson(this);
 }
 
 @JsonEnum()

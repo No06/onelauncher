@@ -17,4 +17,6 @@ class AssetIndex extends DownloadFile {
   final int totalSize;
 
   factory AssetIndex.fromJson(JsonMap json) => _$AssetIndexFromJson(json);
+  @override
+  JsonMap toJson() => _$AssetIndexToJson(this);
 }

@@ -13,4 +13,5 @@ class ClientLogging {
   final String type;
 
   factory ClientLogging.fromJson(JsonMap json) => _$ClientLoggingFromJson(json);
+  JsonMap toJson() => _$ClientLoggingToJson(this);
 }

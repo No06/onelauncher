@@ -222,7 +222,6 @@ class _ActionsState extends ConsumerState<_Actions> {
     if (confirm ?? false) {
       ref.read(accountProvider.notifier).removeAccount(widget.account);
       showSnackbar(successSnackBar(title: "删除成功"));
-      dialogPop();
     }
   }
 

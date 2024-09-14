@@ -18,8 +18,8 @@ class CommonLibrary extends Library {
     this.rules,
   });
 
-  late final Downloads downloads;
-  late final List<Rule>? rules;
+  final Downloads downloads;
+  final List<Rule>? rules;
 
   /// 根据规则判断是否需要
   bool get isAllowed {
@@ -50,4 +50,5 @@ class CommonLibrary extends Library {
   }
 
   factory CommonLibrary.fromJson(JsonMap json) => _$CommonLibraryFromJson(json);
+  JsonMap toJson() => _$CommonLibraryToJson(this);
 }

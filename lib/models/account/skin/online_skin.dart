@@ -28,4 +28,7 @@ class OnlineSkin extends Skin {
   }
 
   factory OnlineSkin.fromJson(JsonMap json) => _$OnlineSkinFromJson(json);
+
+  @override
+  JsonMap toJson() => _$OnlineSkinToJson(this);
 }

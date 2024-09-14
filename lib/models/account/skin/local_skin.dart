@@ -5,7 +5,7 @@ import 'package:one_launcher/models/json_map.dart';
 
 part 'local_skin.g.dart';
 
-@JsonSerializable(includeIfNull: false)
+@JsonSerializable(includeIfNull: false, createToJson: false)
 class LocalSkin extends Skin {
   const LocalSkin({
     this.type = SkinType.steve,
@@ -39,6 +39,9 @@ class LocalSkin extends Skin {
   }
 
   factory LocalSkin.fromJson(JsonMap json) => _$LocalSkinFromJson(json);
+
+  @override
+  JsonMap toJson() => _$LocalSkinToJson(this);
 }
 
 Future<Uint8List> _localImgU8l(String key) => rootBundle.load(key).then(

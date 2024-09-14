@@ -6,13 +6,11 @@ part 'maven_library.g.dart';
 
 @JsonSerializable()
 class MavenLibrary extends Library {
-  MavenLibrary(String name, this.url)
-      : _nameSplit = name.split(":"),
-        super(name: name);
+  MavenLibrary(String name, this.url) : super(name: name);
 
-  late final String url;
+  final String url;
 
-  late final List<String> _nameSplit;
+  late final List<String> _nameSplit = name.split(":");
   late final List<String> _domainSplit = _nameSplit[0].split('.');
 
   String get domain => _nameSplit[0];
@@ -24,4 +22,5 @@ class MavenLibrary extends Library {
       "$url/$domainSuffix/$domainName/$packageName/$packageVersion/$packageName-$packageVersion.jar";
 
   factory MavenLibrary.fromJson(JsonMap json) => _$MavenLibraryFromJson(json);
+  JsonMap toJson() => _$MavenLibraryToJson(this);
 }

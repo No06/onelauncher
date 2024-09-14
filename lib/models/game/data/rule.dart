@@ -16,6 +16,8 @@ class Rule {
     }
     return _$RuleFromJson(json);
   }
+
+  JsonMap toJson() => _$RuleToJson(this);
 }
 
 @JsonEnum()

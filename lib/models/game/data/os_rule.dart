@@ -12,4 +12,6 @@ class OsRule extends Rule {
   final Os os;
 
   factory OsRule.fromJson(JsonMap json) => _$OsRuleFromJson(json);
+  @override
+  JsonMap toJson() => _$OsRuleToJson(this);
 }

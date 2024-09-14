@@ -11,4 +11,5 @@ class JavaVersion {
   final int majorVersion;
 
   factory JavaVersion.fromJson(JsonMap json) => _$JavaVersionFromJson(json);
+  JsonMap toJson() => _$JavaVersionToJson(this);
 }

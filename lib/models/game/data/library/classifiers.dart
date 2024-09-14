@@ -30,4 +30,5 @@ class Classifiers {
   final Artifact? windows_64;
 
   factory Classifiers.fromJson(JsonMap json) => _$ClassifiersFromJson(json);
+  JsonMap toJson() => _$ClassifiersToJson(this);
 }

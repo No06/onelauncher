@@ -7,7 +7,8 @@ part 'extract.g.dart';
 class ExtractRule {
   ExtractRule({this.exclude});
 
-  late final List<String>? exclude;
+  final List<String>? exclude;
 
   factory ExtractRule.fromJson(JsonMap json) => _$ExtractRuleFromJson(json);
+  JsonMap toJson() => _$ExtractRuleToJson(this);
 }

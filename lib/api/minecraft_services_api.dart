@@ -23,7 +23,7 @@ class MinecraftServicesApi {
   }
 }
 
-@JsonSerializable(includeIfNull: false, createFactory: true)
+@JsonSerializable(includeIfNull: false, createToJson: false)
 class Profile {
   Profile(this.id, this.name, this.skins);
 
@@ -32,4 +32,5 @@ class Profile {
   final List<OnlineSkin> skins;
 
   factory Profile.fromJson(JsonMap json) => _$ProfileFromJson(json);
+  JsonMap toJson() => _$ProfileToJson(this);
 }

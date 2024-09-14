@@ -12,6 +12,7 @@ class Natives {
   final Native? windows;
 
   factory Natives.fromJson(JsonMap json) => _$NativesFromJson(json);
+  JsonMap toJson() => _$NativesToJson(this);
 }
 
 @JsonEnum()

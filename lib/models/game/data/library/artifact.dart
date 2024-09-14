@@ -16,4 +16,6 @@ class Artifact extends DownloadFile {
   final String path;
 
   factory Artifact.fromJson(JsonMap json) => _$ArtifactFromJson(json);
+  @override
+  JsonMap toJson() => _$ArtifactToJson(this);
 }

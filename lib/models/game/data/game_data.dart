@@ -29,21 +29,22 @@ class GameData {
   });
 
   ///游戏名 可能是版本号，也可能是自定义的名字
-  late final String id;
-  late final Arguments? arguments;
-  late final String? minecraftArguments;
-  late final String mainClass;
-  late final String? jar;
-  late final AssetIndex assetIndex;
-  late final JavaVersion? javaVersion;
-  late final List<Library> libraries;
-  late final GameDownloads downloads;
-  late final Logging? logging;
-  late final GameType type;
-  late final int minimumLauncherVersion;
-  late final String? clientVersion;
+  final String id;
+  final Arguments? arguments;
+  final String? minecraftArguments;
+  final String mainClass;
+  final String? jar;
+  final AssetIndex assetIndex;
+  final JavaVersion? javaVersion;
+  final List<Library> libraries;
+  final GameDownloads downloads;
+  final Logging? logging;
+  final GameType type;
+  final int minimumLauncherVersion;
+  final String? clientVersion;
 
   String get jarFile => jar == null ? "$id.jar" : "$jar.jar";
 
   factory GameData.fromJson(JsonMap json) => _$GameDataFromJson(json);
+  JsonMap toJson() => _$GameDataToJson(this);
 }

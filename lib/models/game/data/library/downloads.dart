@@ -9,8 +9,9 @@ part 'downloads.g.dart';
 class Downloads {
   Downloads({this.artifact, this.classifiers});
 
-  late final Artifact? artifact;
-  late final Classifiers? classifiers;
+  final Artifact? artifact;
+  final Classifiers? classifiers;
 
   factory Downloads.fromJson(JsonMap json) => _$DownloadsFromJson(json);
+  JsonMap toJson() => _$DownloadsToJson(this);
 }

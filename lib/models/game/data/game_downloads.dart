@@ -11,4 +11,5 @@ class GameDownloads {
   final DownloadFile client;
 
   factory GameDownloads.fromJson(JsonMap json) => _$GameDownloadsFromJson(json);
+  JsonMap toJson() => _$GameDownloadsToJson(this);
 }

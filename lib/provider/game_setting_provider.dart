@@ -60,7 +60,7 @@ class GameSettingNotifier extends StateNotifier<GameSettingState> {
     } catch (e) {
       e.printError();
     }
-    return GameSettingState();
+    return const GameSettingState();
   }
 
   void _saveState() {
