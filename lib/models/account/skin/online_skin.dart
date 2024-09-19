@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:dio/dio.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/account/skin/skin.dart';
 import 'package:one_launcher/models/json_map.dart';
@@ -22,9 +22,9 @@ class OnlineSkin extends Skin {
 
   @override
   Future<Uint8List> u8l() async {
-    var r = await Dio()
-        .get(url, options: Options(responseType: ResponseType.bytes));
-    return r.data;
+    final cache = DefaultCacheManager();
+    final imageFile = await cache.getSingleFile(url);
+    return await imageFile.readAsBytes();
   }
 
   factory OnlineSkin.fromJson(JsonMap json) => _$OnlineSkinFromJson(json);

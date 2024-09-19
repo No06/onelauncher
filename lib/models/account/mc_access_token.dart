@@ -12,7 +12,7 @@ class MinecraftAccessToken {
 
   String _accessToken;
   int _notAfter; // accessToken 过期时间戳
-  final String _refreshToken; // MicrosoftRefreshToken
+  String _refreshToken; // MicrosoftRefreshToken
 
   /// 使用前需调用 [isExpired] 检查有效性
   ///
@@ -29,6 +29,7 @@ class MinecraftAccessToken {
     final client = MinecraftOAuthClient();
     final response = await client.requestTokenByRefreshToken(refreshToken);
     _accessToken = response.accessToken;
+    if (response.refreshToken != null) _refreshToken = response.refreshToken!;
     _notAfter = validityToExpiredTime(response.expiresIn);
   }
 

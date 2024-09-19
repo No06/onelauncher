@@ -109,7 +109,6 @@ class _AccountItem extends HookConsumerWidget {
   }
 }
 
-// FIXME: 头像第一次加载卡顿
 class _Avatar extends StatefulWidget {
   const _Avatar(this.account, {required this.isSelected});
 
@@ -121,10 +120,21 @@ class _Avatar extends StatefulWidget {
 }
 
 class _AvatarState extends State<_Avatar> {
-  late final drawAvatar = Future(() async {
-    final skin = await widget.account.getSkin();
-    return skin.drawAvatar();
-  });
+  final avatarImageCompleter = Completer<ImageProvider?>();
+
+  @override
+  void initState() {
+    super.initState();
+    Future(() async {
+      final skin = await widget.account.getSkin();
+      avatarImageCompleter.complete(switch (widget.account) {
+        OfflineAccount() ||
+        MicrosoftAccount() =>
+          MemoryImage(await skin.drawAvatar()),
+        _ => null,
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,10 +144,11 @@ class _AvatarState extends State<_Avatar> {
       width: 40,
       height: 40,
       child: FutureBuilder(
-        future: drawAvatar,
+        future: avatarImageCompleter.future,
         builder: (context, snapshot) {
+          final avatarImage = snapshot.data;
           if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
+            if (snapshot.hasError || avatarImage == null) {
               snapshot.error.printError("Account avatar request error");
               return const Icon(Icons.error);
             }
@@ -153,10 +164,7 @@ class _AvatarState extends State<_Avatar> {
                     ),
                   ],
                 ),
-                child: Image.memory(
-                  snapshot.data!,
-                  fit: BoxFit.contain,
-                ),
+                child: Image(image: avatarImage, fit: BoxFit.contain),
               ),
             );
           }

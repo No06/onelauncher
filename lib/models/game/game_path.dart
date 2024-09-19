@@ -36,7 +36,7 @@ class GamePath {
           yield Game(librariesPath, versionPath);
           // 如有异常则跳过
         } catch (e) {
-          e.printError("path: ${dir.path}");
+          e.printError(dir.path);
         }
       }
     }

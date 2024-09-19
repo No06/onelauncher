@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:one_launcher/api/dio/dio.dart';
+import 'package:one_launcher/api/oauth/client/oauth_client.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/api/oauth/client/microsoft_oauth_client.dart';
 import 'package:one_launcher/api/oauth/client/xbox_oauth_client.dart';
@@ -7,7 +9,7 @@ import 'package:one_launcher/api/oauth/token/xbox_oauth_token.dart';
 
 import '../token/minecraft_oauth_token.dart';
 
-class MinecraftOAuthClient {
+class MinecraftOAuthClient extends OAuthClient {
   /// need 'xsts token', not 'xbox live user token'
   Future<MinecraftOAuthToken> requestToken(
     XboxOAuthToken token,
@@ -17,8 +19,9 @@ class MinecraftOAuthClient {
     final uhs = token.displayClaims.xui.first.uhs;
     final xstsToken = token.token;
     final data = {"identityToken": "XBL3.0 x=$uhs;$xstsToken"};
-    final dio = Dio(BaseOptions(contentType: Headers.jsonContentType));
+    final dio = createDio(BaseOptions(contentType: Headers.jsonContentType));
     final response = await dio.postUri(Uri.parse(uri), data: data);
+    dio.close();
     return MinecraftOAuthToken.fromJson(response.data);
   }
 

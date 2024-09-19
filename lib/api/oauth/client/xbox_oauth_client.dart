@@ -1,18 +1,21 @@
 import 'package:dio/dio.dart';
+import 'package:one_launcher/api/dio/dio.dart';
+import 'package:one_launcher/api/oauth/client/oauth_client.dart';
 import 'package:one_launcher/api/oauth/token/xbox_oauth_token.dart';
 
-class XboxOAuthClient {
+class XboxOAuthClient extends OAuthClient {
   static const _contentType = Headers.jsonContentType;
+  final _dio = createDio(BaseOptions(contentType: _contentType));
 
   /// 使用微软账号访问令牌 [rpsTicket] 获取 XboxLive Token
   /// 如果是使用设备码登录则需在 [rpsTicket] 前加上 "d=" 字符串
   Future<XboxOAuthToken> requestToken(String rpsTicket) async {
-    const path = '/user/authenticate';
-    final dio = Dio(BaseOptions(
-      baseUrl: "https://user.auth.xboxlive.com",
-      contentType: _contentType,
-    ));
-    final response = await dio.post(path, data: {
+    final uri = Uri(
+      scheme: "https",
+      host: "user.auth.xboxlive.com",
+      path: "user/authenticate",
+    );
+    final response = await _dio.postUri(uri, data: {
       "Properties": {
         "AuthMethod": "RPS",
         "SiteName": "user.auth.xboxlive.com",
@@ -26,12 +29,12 @@ class XboxOAuthClient {
 
   /// 获取XSTS令牌
   Future<XboxOAuthToken> requestXstsToken(String userToken) async {
-    const path = '/xsts/authorize';
-    final dio = Dio(BaseOptions(
-      baseUrl: "https://xsts.auth.xboxlive.com",
-      contentType: _contentType,
-    ));
-    final response = await dio.post(path, data: {
+    final uri = Uri(
+      scheme: 'https',
+      host: 'xsts.auth.xboxlive.com',
+      path: 'xsts/authorize',
+    );
+    final response = await _dio.postUri(uri, data: {
       "Properties": {
         "SandboxId": "RETAIL",
         "UserTokens": [

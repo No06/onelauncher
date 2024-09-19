@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/api/dio/dio.dart';
+import 'package:one_launcher/api/oauth/client/oauth_client.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
@@ -7,19 +9,18 @@ import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
 part 'microsoft_device_oauth_client.g.dart';
 
 // 实现参考官方文档：https://learn.microsoft.com/zh-cn/entra/identity-platform/v2-oauth2-device-code
-class MicrosoftDeviceOAuthClient {
+class MicrosoftDeviceOAuthClient extends OAuthClient {
   static const url = "https://login.microsoftonline.com";
   static const tenant = 'consumers';
 
-  final dio = Dio(BaseOptions(
+  final _dio = createDio(BaseOptions(
       baseUrl: url, contentType: Headers.formUrlEncodedContentType));
-
-  String pathParse(String path) => '/$tenant$path';
+  String _pathParse(String path) => '/$tenant$path';
 
   Future<MicrosoftDeviceAuthorizationResponse>
       requestDeviceAuthorization() async {
-    final path = pathParse('/oauth2/v2.0/devicecode');
-    final response = await dio.post(path, queryParameters: {
+    final path = _pathParse('/oauth2/v2.0/devicecode');
+    final response = await _dio.post(path, queryParameters: {
       // TODO: 适配多语言
       'mkt': 'zh-CN',
     }, data: {
@@ -37,9 +38,9 @@ class MicrosoftDeviceOAuthClient {
   Future<MicrosoftDeviceOAuthToken> requestUserAuthentication(
     String deviceCode,
   ) async {
-    final path = pathParse('/oauth2/v2.0/token');
+    final path = _pathParse('/oauth2/v2.0/token');
     try {
-      final response = await dio.post(path, data: {
+      final response = await _dio.post(path, data: {
         'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
         'client_id': kClientId,
         'device_code': deviceCode

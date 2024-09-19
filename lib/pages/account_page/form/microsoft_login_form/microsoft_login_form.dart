@@ -64,7 +64,7 @@ class MicosoftLoginForm extends StatelessWidget {
             .requestTokenByCode(code);
         final xboxOAuthClient = XboxOAuthClient();
         final xblToken =
-            await xboxOAuthClient.requestToken('d=${msToken.accessToken}');
+            await xboxOAuthClient.requestToken(msToken.accessToken);
         final xstsToken =
             await xboxOAuthClient.requestXstsToken(xblToken.token);
         final mcToken = await MinecraftOAuthClient().requestToken(xstsToken);

@@ -1,20 +1,19 @@
 import 'package:dio/dio.dart';
+import 'package:one_launcher/api/dio/dio.dart';
+import 'package:one_launcher/api/oauth/client/oauth_client.dart';
 import 'package:one_launcher/api/oauth/token/microsoft_oauth_token.dart';
 
-class MicrosoftOAuthClient {
+class MicrosoftOAuthClient extends OAuthClient {
   MicrosoftOAuthClient(this.clientId);
 
   static const _uri = "https://login.live.com/oauth20_token.srf";
   static const _redirectUri = "https://login.live.com/oauth20_desktop.srf";
   static const _scope = "service::user.auth.xboxlive.com::MBI_SSL";
+  final uri = Uri.parse(_uri);
 
   final String clientId;
-  final dio = Dio(BaseOptions(
-    baseUrl: 'https://login.live.com',
-    contentType: Headers.formUrlEncodedContentType,
-  ));
-
-  late final uri = Uri.parse(_uri);
+  final _dio =
+      createDio(BaseOptions(contentType: Headers.formUrlEncodedContentType));
 
   Future<MicrosoftOAuthToken> requestTokenByRefreshToken(
     String refreshToken,
@@ -24,9 +23,8 @@ class MicrosoftOAuthClient {
       "refresh_token": refreshToken,
       "grant_type": "refresh_token",
       "redirect_uri": _redirectUri,
-      "scope": _scope
     };
-    final response = await dio.postUri(uri, data: data);
+    final response = await _dio.postUri(uri, data: data);
     return MicrosoftOAuthToken.fromJson(response.data);
   }
 
@@ -38,7 +36,7 @@ class MicrosoftOAuthClient {
       "redirect_uri": _redirectUri,
       "scope": _scope
     };
-    final response = await dio.postUri(uri, data: data);
+    final response = await _dio.postUri(uri, data: data);
     return MicrosoftOAuthToken.fromJson(response.data);
   }
 }
