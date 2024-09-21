@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:one_launcher/api/dio/dio.dart';
 import 'package:one_launcher/api/oauth/client/microsoft_device_oauth_client.dart';
 import 'package:one_launcher/api/oauth/client/oauth_client.dart';
+import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
 import 'package:one_launcher/api/oauth/token/oauth_token.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/api/oauth/client/microsoft_oauth_client.dart';
@@ -34,10 +35,15 @@ class MinecraftOAuthClient extends OAuthClient {
     OAuthToken token, {
     CancelToken? cancelToken,
   }) async {
+    // device code auth token should add "d="
+    final accessToken = switch (token) {
+      MicrosoftDeviceOAuthToken() => 'd=${token.accessToken}',
+      _ => token.accessToken,
+    };
     // xbox authorization
     final client = XboxOAuthClient();
     final xboxLiveResponse =
-        await client.requestToken(token.accessToken, cancelToken: cancelToken);
+        await client.requestToken(accessToken, cancelToken: cancelToken);
     final xstsToken = await client.requestXstsToken(xboxLiveResponse.token,
         cancelToken: cancelToken);
     // minecraft authorization

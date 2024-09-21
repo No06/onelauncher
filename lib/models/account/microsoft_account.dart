@@ -41,7 +41,7 @@ class MicrosoftAccount extends Account {
   final MinecraftAccessToken _minecraftAccessToken;
   @override
   Future<String> getAccessToken() async {
-    if (!_minecraftAccessToken.isExpired) {
+    if (_minecraftAccessToken.isExpired) {
       await _minecraftAccessToken.refreshAccessToken(loginType);
     }
     return _minecraftAccessToken.accessToken;

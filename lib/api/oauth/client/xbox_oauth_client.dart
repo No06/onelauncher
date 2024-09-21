@@ -24,7 +24,7 @@ class XboxOAuthClient extends OAuthClient {
         "Properties": {
           "AuthMethod": "RPS",
           "SiteName": "user.auth.xboxlive.com",
-          "RpsTicket": 'd=$rpsTicket'
+          "RpsTicket": rpsTicket,
         },
         "RelyingParty": "http://auth.xboxlive.com",
         "TokenType": "JWT"
