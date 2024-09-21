@@ -39,9 +39,6 @@ class LocalSkin extends Skin {
   }
 
   factory LocalSkin.fromJson(JsonMap json) => _$LocalSkinFromJson(json);
-
-  @override
-  JsonMap toJson() => _$LocalSkinToJson(this);
 }
 
 Future<Uint8List> _localImgU8l(String key) => rootBundle.load(key).then(

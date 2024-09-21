@@ -25,7 +25,7 @@ class DebugInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    _errorPrint(err.message.toString());
+    _errorPrint(_handleErrorFormat(err));
     super.onError(err, handler);
   }
 }
@@ -38,4 +38,9 @@ $blue data: ${options.data}
 String _handleResponseFormat(Response response) => '''
 [${response.statusCode}: ${response.statusMessage}] ${response.realUri}
 $blue data: ${response.data}
+''';
+
+String _handleErrorFormat(DioException err) => '''
+[${err.response?.statusCode}: ${err.type.name}] ${err.response?.realUri}
+$blue data: ${err.response?.data}
 ''';

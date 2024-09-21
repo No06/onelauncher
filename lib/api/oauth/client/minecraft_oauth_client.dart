@@ -1,48 +1,61 @@
 import 'package:dio/dio.dart';
 import 'package:one_launcher/api/dio/dio.dart';
+import 'package:one_launcher/api/oauth/client/microsoft_device_oauth_client.dart';
 import 'package:one_launcher/api/oauth/client/oauth_client.dart';
+import 'package:one_launcher/api/oauth/token/oauth_token.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/api/oauth/client/microsoft_oauth_client.dart';
 import 'package:one_launcher/api/oauth/client/xbox_oauth_client.dart';
-import 'package:one_launcher/api/oauth/token/microsoft_oauth_token.dart';
 import 'package:one_launcher/api/oauth/token/xbox_oauth_token.dart';
+import 'package:one_launcher/models/account/microsoft_account.dart';
 
 import '../token/minecraft_oauth_token.dart';
 
 class MinecraftOAuthClient extends OAuthClient {
   /// need 'xsts token', not 'xbox live user token'
   Future<MinecraftOAuthToken> requestToken(
-    XboxOAuthToken token,
-  ) async {
+    XboxOAuthToken token, {
+    CancelToken? cancelToken,
+  }) async {
     const uri =
         'https://api.minecraftservices.com/authentication/login_with_xbox';
     final uhs = token.displayClaims.xui.first.uhs;
     final xstsToken = token.token;
     final data = {"identityToken": "XBL3.0 x=$uhs;$xstsToken"};
     final dio = createDio(BaseOptions(contentType: Headers.jsonContentType));
-    final response = await dio.postUri(Uri.parse(uri), data: data);
+    final response =
+        await dio.postUri(Uri.parse(uri), data: data, cancelToken: cancelToken);
     dio.close();
     return MinecraftOAuthToken.fromJson(response.data);
   }
 
   /// 使用 Microsoft AccessToken 直接获取 Minecraft AccessToken
   Future<MinecraftOAuthToken> requestTokenByMicrosoftToken(
-    MicrosoftOAuthToken token,
-  ) async {
+    OAuthToken token, {
+    CancelToken? cancelToken,
+  }) async {
     // xbox authorization
     final client = XboxOAuthClient();
-    final xboxLiveResponse = await client.requestToken(token.accessToken);
-    final xstsToken = await client.requestXstsToken(xboxLiveResponse.token);
+    final xboxLiveResponse =
+        await client.requestToken(token.accessToken, cancelToken: cancelToken);
+    final xstsToken = await client.requestXstsToken(xboxLiveResponse.token,
+        cancelToken: cancelToken);
     // minecraft authorization
     final minecraftClient = MinecraftOAuthClient();
-    return minecraftClient.requestToken(xstsToken);
+    return minecraftClient.requestToken(xstsToken, cancelToken: cancelToken);
   }
 
   Future<MinecraftOAuthToken> requestTokenByRefreshToken(
     String refreshToken,
-  ) async {
-    final token = await MicrosoftOAuthClient(kMinecraftClientId)
-        .requestTokenByRefreshToken(refreshToken);
-    return requestTokenByMicrosoftToken(token);
+    MicrosoftLoginType loginType, {
+    CancelToken? cancelToken,
+  }) async {
+    final token = await switch (loginType) {
+      MicrosoftLoginType.oauth20 => MicrosoftOAuthClient(kMinecraftClientId)
+          .requestTokenByRefreshToken(refreshToken, cancelToken: cancelToken),
+      MicrosoftLoginType.devicecode => MicrosoftDeviceOAuthClient()
+          .requestTokenByRefreshToken(refreshToken, cancelToken: cancelToken),
+    };
+    return requestTokenByMicrosoftToken(token, cancelToken: cancelToken);
   }
 }

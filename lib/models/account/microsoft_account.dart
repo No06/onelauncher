@@ -15,6 +15,7 @@ class MicrosoftAccount extends Account {
     required String accessToken,
     required String refreshToken,
     required int notAfter,
+    required this.loginType,
     OnlineSkin? skin,
   })  : _uuid = uuid,
         _displayName = displayName,
@@ -25,31 +26,32 @@ class MicrosoftAccount extends Account {
         ),
         _skin = skin;
 
+  @override
+  String get displayName => _displayName;
   String _displayName;
-  OnlineSkin? _skin;
-  final String _uuid;
-  final MinecraftAccessToken _minecraftAccessToken;
 
   @override
-  bool operator ==(Object other) {
-    if (other is! MicrosoftAccount) return false;
-    return uuid == other.uuid;
+  Future<OnlineSkin> getSkin() async => _skin ??= await _getSkin();
+  OnlineSkin? _skin;
+
+  @override
+  String get uuid => _uuid;
+  final String _uuid;
+
+  final MinecraftAccessToken _minecraftAccessToken;
+  @override
+  Future<String> getAccessToken() async {
+    if (!_minecraftAccessToken.isExpired) {
+      await _minecraftAccessToken.refreshAccessToken(loginType);
+    }
+    return _minecraftAccessToken.accessToken;
   }
+
+  final MicrosoftLoginType loginType;
 
   @override
   @JsonKey(includeToJson: true)
   AccountType get type => AccountType.microsoft;
-
-  @override
-  String get displayName => _displayName;
-
-  @override
-  Future<String> getAccessToken() async {
-    if (_minecraftAccessToken.isExpired) {
-      await _minecraftAccessToken.refreshAccessToken();
-    }
-    return _minecraftAccessToken.accessToken;
-  }
 
   String get accessToken => _minecraftAccessToken.accessToken;
 
@@ -68,18 +70,24 @@ class MicrosoftAccount extends Account {
 
   Future<OnlineSkin> _getSkin() async => (await requestProfile()).skins.first;
 
-  factory MicrosoftAccount.fromJson(JsonMap json) =>
-      _$MicrosoftAccountFromJson(json);
-
-  @override
-  Future<OnlineSkin> getSkin() async => _skin ??= await _getSkin();
-
   @override
   int get hashCode => uuid.hashCode;
 
   @override
-  String get uuid => _uuid;
+  bool operator ==(Object other) {
+    if (other is! MicrosoftAccount) return false;
+    return uuid == other.uuid;
+  }
 
   @override
   JsonMap toJson() => _$MicrosoftAccountToJson(this);
+
+  factory MicrosoftAccount.fromJson(JsonMap json) =>
+      _$MicrosoftAccountFromJson(json);
+}
+
+@JsonEnum()
+enum MicrosoftLoginType {
+  devicecode,
+  oauth20,
 }

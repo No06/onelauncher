@@ -13,9 +13,3 @@ Profile _$ProfileFromJson(Map<String, dynamic> json) => Profile(
           .map((e) => OnlineSkin.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
-
-Map<String, dynamic> _$ProfileToJson(Profile instance) => <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-      'skins': instance.skins,
-    };

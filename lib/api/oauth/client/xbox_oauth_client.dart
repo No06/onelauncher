@@ -9,41 +9,55 @@ class XboxOAuthClient extends OAuthClient {
 
   /// 使用微软账号访问令牌 [rpsTicket] 获取 XboxLive Token
   /// 如果是使用设备码登录则需在 [rpsTicket] 前加上 "d=" 字符串
-  Future<XboxOAuthToken> requestToken(String rpsTicket) async {
+  Future<XboxOAuthToken> requestToken(
+    String rpsTicket, {
+    CancelToken? cancelToken,
+  }) async {
     final uri = Uri(
       scheme: "https",
       host: "user.auth.xboxlive.com",
       path: "user/authenticate",
     );
-    final response = await _dio.postUri(uri, data: {
-      "Properties": {
-        "AuthMethod": "RPS",
-        "SiteName": "user.auth.xboxlive.com",
-        "RpsTicket": rpsTicket
+    final response = await _dio.postUri(
+      uri,
+      data: {
+        "Properties": {
+          "AuthMethod": "RPS",
+          "SiteName": "user.auth.xboxlive.com",
+          "RpsTicket": 'd=$rpsTicket'
+        },
+        "RelyingParty": "http://auth.xboxlive.com",
+        "TokenType": "JWT"
       },
-      "RelyingParty": "http://auth.xboxlive.com",
-      "TokenType": "JWT"
-    });
+      cancelToken: cancelToken,
+    );
     return XboxOAuthToken.fromJson(response.data);
   }
 
   /// 获取XSTS令牌
-  Future<XboxOAuthToken> requestXstsToken(String userToken) async {
+  Future<XboxOAuthToken> requestXstsToken(
+    String userToken, {
+    CancelToken? cancelToken,
+  }) async {
     final uri = Uri(
       scheme: 'https',
       host: 'xsts.auth.xboxlive.com',
       path: 'xsts/authorize',
     );
-    final response = await _dio.postUri(uri, data: {
-      "Properties": {
-        "SandboxId": "RETAIL",
-        "UserTokens": [
-          userToken // from above
-        ]
+    final response = await _dio.postUri(
+      uri,
+      data: {
+        "Properties": {
+          "SandboxId": "RETAIL",
+          "UserTokens": [
+            userToken // from above
+          ]
+        },
+        "RelyingParty": "rp://api.minecraftservices.com/",
+        "TokenType": "JWT"
       },
-      "RelyingParty": "rp://api.minecraftservices.com/",
-      "TokenType": "JWT"
-    });
+      cancelToken: cancelToken,
+    );
     return XboxOAuthToken.fromJson(response.data);
   }
 }

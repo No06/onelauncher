@@ -100,7 +100,7 @@ class _DeviceCodeLoginDialogState
 
     return DefaultDialog(
       onCanceled: dialogPop,
-      confirmText: const Text('前往登录'),
+      confirmText: const Text('复制并前往验证'),
       onConfirmed: isAlready ? _onTapToLogin : null,
       content: ConstrainedBox(
         constraints:

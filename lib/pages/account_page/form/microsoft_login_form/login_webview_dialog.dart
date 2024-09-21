@@ -49,11 +49,10 @@ class _MicrosoftLoginWebviewScreenState
   Future<void> initPlatformState() async {
     // Minecraft微软登录OAuth链接
     const loginUrl = 'https://login.live.com/oauth20_authorize.srf?'
-        'client_id=00000000402b5328'
+        'client_id=$kMinecraftClientId'
         '&response_type=code'
-        '&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL'
-        '&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf';
-    // 正则用于获取授权码
+        '&scope=${MicrosoftOAuthClient.scope}'
+        '&redirect_uri=${MicrosoftOAuthClient.redirectUri}'; // 正则用于获取授权码
     final codeRegex = RegExp(r"(?<=code=)[^&]+");
 
     try {

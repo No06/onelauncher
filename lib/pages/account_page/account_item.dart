@@ -122,10 +122,8 @@ class _Avatar extends StatefulWidget {
 class _AvatarState extends State<_Avatar> {
   final avatarImageCompleter = Completer<ImageProvider?>();
 
-  @override
-  void initState() {
-    super.initState();
-    Future(() async {
+  Future<void> _initAvatar() async {
+    try {
       final skin = await widget.account.getSkin();
       avatarImageCompleter.complete(switch (widget.account) {
         OfflineAccount() ||
@@ -133,7 +131,25 @@ class _AvatarState extends State<_Avatar> {
           MemoryImage(await skin.drawAvatar()),
         _ => null,
       });
-    });
+    } catch (e, st) {
+      avatarImageCompleter.completeError(e, st);
+      switch (e) {
+        case DioException():
+          showSnackbar(errorSnackBar(
+            title: "${widget.account.displayName} 头像获取失败",
+            content:
+                "${e.response?.data['error']}: ${e.response?.data['error_description']}",
+          ));
+        default:
+          showSnackbar(errorSnackBar(title: "发生未知错误", content: e.toString()));
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initAvatar();
   }
 
   @override
@@ -149,7 +165,6 @@ class _AvatarState extends State<_Avatar> {
           final avatarImage = snapshot.data;
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError || avatarImage == null) {
-              snapshot.error.printError("Account avatar request error");
               return const Icon(Icons.error);
             }
             return Padding(
@@ -206,6 +221,7 @@ class _ActionsState extends ConsumerState<_Actions> {
       await ref
           .read(accountProvider.notifier)
           .updateAccountProfile(widget.account as MicrosoftAccount);
+      showSnackbar(successSnackBar(title: "刷新账号信息成功"));
     } on DioException catch (e) {
       showSnackbar(
         errorSnackBar(title: "更新账号信息失败", content: e.message ?? 'Unknown error'),

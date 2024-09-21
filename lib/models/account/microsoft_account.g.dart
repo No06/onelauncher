@@ -13,17 +13,24 @@ MicrosoftAccount _$MicrosoftAccountFromJson(Map<String, dynamic> json) =>
       accessToken: json['accessToken'] as String,
       refreshToken: json['refreshToken'] as String,
       notAfter: (json['notAfter'] as num).toInt(),
+      loginType: $enumDecode(_$MicrosoftLoginTypeEnumMap, json['loginType']),
     );
 
 Map<String, dynamic> _$MicrosoftAccountToJson(MicrosoftAccount instance) =>
     <String, dynamic>{
-      'type': _$AccountTypeEnumMap[instance.type]!,
       'displayName': instance.displayName,
+      'uuid': instance.uuid,
+      'loginType': _$MicrosoftLoginTypeEnumMap[instance.loginType]!,
+      'type': _$AccountTypeEnumMap[instance.type]!,
       'accessToken': instance.accessToken,
       'refreshToken': instance.refreshToken,
       'notAfter': instance.notAfter,
-      'uuid': instance.uuid,
     };
+
+const _$MicrosoftLoginTypeEnumMap = {
+  MicrosoftLoginType.devicecode: 'devicecode',
+  MicrosoftLoginType.oauth20: 'oauth20',
+};
 
 const _$AccountTypeEnumMap = {
   AccountType.offline: 'offline',

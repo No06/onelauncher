@@ -59,17 +59,21 @@ class MicosoftLoginForm extends StatelessWidget {
   Future<void> _onTapWebviewLogin(BuildContext context) {
     submit(String code) async {
       debugPrintInfo(code, title: "Got OAuth code");
+
+      final cancelToken = CancelToken();
+
       accountGenerator() async {
         final msToken = await MicrosoftOAuthClient(kMinecraftClientId)
-            .requestTokenByCode(code);
+            .requestTokenByCode(code, cancelToken: cancelToken);
         final xboxOAuthClient = XboxOAuthClient();
-        final xblToken =
-            await xboxOAuthClient.requestToken(msToken.accessToken);
-        final xstsToken =
-            await xboxOAuthClient.requestXstsToken(xblToken.token);
-        final mcToken = await MinecraftOAuthClient().requestToken(xstsToken);
-        final profile =
-            await MinecraftServicesApi(mcToken.accessToken).requestProfile();
+        final xblToken = await xboxOAuthClient.requestToken(msToken.accessToken,
+            cancelToken: cancelToken);
+        final xstsToken = await xboxOAuthClient.requestXstsToken(xblToken.token,
+            cancelToken: cancelToken);
+        final mcToken = await MinecraftOAuthClient()
+            .requestToken(xstsToken, cancelToken: cancelToken);
+        final profile = await MinecraftServicesApi(mcToken.accessToken)
+            .requestProfile(cancelToken: cancelToken);
         return MicrosoftAccount(
           uuid: profile.id,
           displayName: profile.name,
@@ -78,11 +82,14 @@ class MicosoftLoginForm extends StatelessWidget {
           notAfter:
               MinecraftAccessToken.validityToExpiredTime(mcToken.expiresIn),
           skin: profile.skins.first,
+          loginType: MicrosoftLoginType.oauth20,
         );
       }
 
-      final account =
-          await _generateAccount(context: context, generator: accountGenerator);
+      onCancel() => cancelToken.cancel();
+
+      final account = await _generateAccount(
+          context: context, generator: accountGenerator, onCancel: onCancel);
       if (account != null) onSubmit(account);
     }
 
@@ -99,13 +106,16 @@ class MicosoftLoginForm extends StatelessWidget {
 
   Future<void> _onTapDeviceCodeLogin(BuildContext context) async {
     submit(MicrosoftDeviceOAuthToken token) async {
+      final cancelToken = CancelToken();
+
       accountGenerator() async {
         final xboxOAuthClient = XboxOAuthClient();
-        final xblToken =
-            await xboxOAuthClient.requestToken('d=${token.accessToken}');
-        final xstsToken =
-            await xboxOAuthClient.requestXstsToken(xblToken.token);
-        final mcToken = await MinecraftOAuthClient().requestToken(xstsToken);
+        final xblToken = await xboxOAuthClient
+            .requestToken('d=${token.accessToken}', cancelToken: cancelToken);
+        final xstsToken = await xboxOAuthClient.requestXstsToken(xblToken.token,
+            cancelToken: cancelToken);
+        final mcToken = await MinecraftOAuthClient()
+            .requestToken(xstsToken, cancelToken: cancelToken);
         final profile =
             await MinecraftServicesApi(mcToken.accessToken).requestProfile();
         return MicrosoftAccount(
@@ -116,11 +126,14 @@ class MicosoftLoginForm extends StatelessWidget {
           notAfter:
               MinecraftAccessToken.validityToExpiredTime(mcToken.expiresIn),
           skin: profile.skins.first,
+          loginType: MicrosoftLoginType.devicecode,
         );
       }
 
-      final account =
-          await _generateAccount(context: context, generator: accountGenerator);
+      onCancel() => cancelToken.cancel();
+
+      final account = await _generateAccount(
+          context: context, generator: accountGenerator, onCancel: onCancel);
       if (account != null) onSubmit(account);
     }
 
@@ -139,26 +152,34 @@ class MicosoftLoginForm extends StatelessWidget {
   Future<T?> _generateAccount<T>({
     required BuildContext context,
     required FutureOr<T> Function() generator,
+    required VoidCallback onCancel,
   }) async {
+    onCancel = () {
+      dialogPop();
+      onCancel();
+    };
+
     showDialog<T>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => DefaultDialog(
-        title: const Text("登录成功"),
-        content: Row(
-          children: [
-            const Text("正在获取游戏授权码"),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Transform.scale(
-                scale: 0.8,
-                child: const CircularProgressIndicator(),
+      builder: (context) {
+        return DefaultDialog(
+          title: const Text("登录成功"),
+          content: Row(
+            children: [
+              const Text("正在获取游戏授权码"),
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Transform.scale(
+                  scale: 0.8,
+                  child: const CircularProgressIndicator(),
+                ),
               ),
-            ),
-          ],
-        ),
-        actions: const [DialogCancelButton(onPressed: dialogPop)],
-      ),
+            ],
+          ),
+          actions: [DialogCancelButton(onPressed: onCancel)],
+        );
+      },
     );
 
     T? account;
