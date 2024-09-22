@@ -94,7 +94,7 @@ class MicrosoftDeviceAuthorizationResponse {
   final String userCode;
   final String verificationUri;
 
-  /// default 15mins
+  /// seconds
   final int expiresIn;
   final int interval;
   final String message;
