@@ -12,38 +12,83 @@ part 'game_data.g.dart';
 
 @JsonSerializable()
 class GameData {
-  GameData(
+  const GameData(
     this.id,
-    this.arguments,
-    this.minecraftArguments,
-    this.mainClass,
-    this.jar,
-    this.assetIndex,
-    this.libraries,
-    this.downloads,
-    this.logging,
-    this.type,
-    this.minimumLauncherVersion, {
-    this.javaVersion,
-    this.clientVersion,
-  });
+    this.root,
+    this.patches, {
+    Arguments? arguments,
+    String? minecraftArguments,
+    String? mainClass,
+    String? jar,
+    AssetIndex? assetIndex,
+    JavaVersion? javaVersion,
+    required List<Library> libraries,
+    GameDownloads? downloads,
+    Logging? logging,
+    GameType? type,
+    int? minimumLauncherVersion,
+    String? clientVersion,
+  })  : _arguments = arguments,
+        _minecraftArguments = minecraftArguments,
+        _mainClass = mainClass,
+        _jar = jar,
+        _assetIndex = assetIndex,
+        _javaVersion = javaVersion,
+        _libraries = libraries,
+        _downloads = downloads,
+        _logging = logging,
+        _type = type,
+        _minimumLauncherVersion = minimumLauncherVersion,
+        _clientVersion = clientVersion;
 
   ///游戏名 可能是版本号，也可能是自定义的名字
   final String id;
-  final Arguments? arguments;
-  final String? minecraftArguments;
-  final String mainClass;
-  final String? jar;
-  final AssetIndex assetIndex;
-  final JavaVersion? javaVersion;
-  final List<Library> libraries;
-  final GameDownloads downloads;
-  final Logging? logging;
-  final GameType type;
-  final int minimumLauncherVersion;
-  final String? clientVersion;
+  final Arguments? _arguments;
+  Arguments? get arguments => _arguments ?? gamePatch?._arguments;
 
-  String get jarFile => jar == null ? "$id.jar" : "$jar.jar";
+  final String? _minecraftArguments;
+  String? get minecraftArguments =>
+      _minecraftArguments ?? gamePatch?._minecraftArguments;
+
+  final String? _mainClass;
+  String? get mainClass => _mainClass ?? gamePatch?.mainClass;
+
+  final String? _jar;
+  String? get jar => _jar ?? gamePatch?.jar;
+
+  final AssetIndex? _assetIndex;
+  AssetIndex? get assetIndex => _assetIndex ?? gamePatch?.assetIndex;
+
+  final JavaVersion? _javaVersion;
+  JavaVersion? get javaVersion => _javaVersion ?? gamePatch?.javaVersion;
+
+  final List<Library> _libraries;
+  List<Library> get libraries =>
+      _libraries.toSet().union(gamePatch?.libraries.toSet() ?? {}).toList();
+
+  final GameDownloads? _downloads;
+  GameDownloads? get downloads => _downloads ?? gamePatch?.downloads;
+
+  final Logging? _logging;
+  Logging? get logging => _logging ?? gamePatch?.logging;
+
+  final GameType? _type;
+  GameType? get type => _type ?? gamePatch?._type;
+
+  final int? _minimumLauncherVersion;
+  int? get minimumLauncherVersion =>
+      _minimumLauncherVersion ?? gamePatch?.minimumLauncherVersion;
+
+  final String? _clientVersion;
+  String? get clientVersion => _clientVersion ?? gamePatch?.clientVersion;
+
+  @JsonKey(defaultValue: false)
+  final bool root;
+  final List<GameData>? patches;
+
+  GameData? get gamePatch => patches?.firstWhere((patch) => patch.id == "game");
+
+  String get jarFile => _jar == null ? "$id.jar" : "$_jar.jar";
 
   factory GameData.fromJson(JsonMap json) => _$GameDataFromJson(json);
   JsonMap toJson() => _$GameDataToJson(this);

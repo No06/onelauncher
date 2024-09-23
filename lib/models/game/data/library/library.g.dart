@@ -15,4 +15,5 @@ Map<String, dynamic> _$LibraryToJson(Library instance) => <String, dynamic>{
       'path': instance.path,
       'jarName': instance.jarName,
       'jarPath': instance.jarPath,
+      'hashCode': instance.hashCode,
     };

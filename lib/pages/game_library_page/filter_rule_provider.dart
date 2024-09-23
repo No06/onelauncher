@@ -83,11 +83,6 @@ enum _GameType {
   final String name;
 
   const _GameType(this.name);
-
-  factory _GameType.fromGame(Game game) =>
-      game.isModVersion ? mod : _GameType.fromGameType(game.data.type);
-  factory _GameType.fromGameType(GameType type) =>
-      type == GameType.release ? release : snapshot;
 }
 
 enum _GameCollation {

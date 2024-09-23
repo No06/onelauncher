@@ -44,8 +44,17 @@ class Library {
   String get jarPath => join(path, artifactId, version, jarName);
 
   String getPath(String gameLibrariesPath) => join(gameLibrariesPath, jarPath);
-  Future<bool> exists(String gameLibrariesPath) async =>
-      await File(getPath(gameLibrariesPath)).exists();
+  Future<bool> exists(String gameLibrariesPath) =>
+      File(getPath(gameLibrariesPath)).exists();
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! Library) return false;
+    return name == other.name;
+  }
+
+  @override
+  int get hashCode => name.hashCode;
 
   static List<String> _splitPackageName(String packageName) {
     List<String> parts = packageName.split(':');

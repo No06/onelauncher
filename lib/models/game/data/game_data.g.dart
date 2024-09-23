@@ -8,25 +8,33 @@ part of 'game_data.dart';
 
 GameData _$GameDataFromJson(Map<String, dynamic> json) => GameData(
       json['id'] as String,
-      json['arguments'] == null
+      json['root'] as bool? ?? false,
+      (json['patches'] as List<dynamic>?)
+          ?.map((e) => GameData.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      arguments: json['arguments'] == null
           ? null
           : Arguments.fromJson(json['arguments'] as Map<String, dynamic>),
-      json['minecraftArguments'] as String?,
-      json['mainClass'] as String,
-      json['jar'] as String?,
-      AssetIndex.fromJson(json['assetIndex'] as Map<String, dynamic>),
-      (json['libraries'] as List<dynamic>)
-          .map((e) => Library.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      GameDownloads.fromJson(json['downloads'] as Map<String, dynamic>),
-      json['logging'] == null
+      minecraftArguments: json['minecraftArguments'] as String?,
+      mainClass: json['mainClass'] as String?,
+      jar: json['jar'] as String?,
+      assetIndex: json['assetIndex'] == null
           ? null
-          : Logging.fromJson(json['logging'] as Map<String, dynamic>),
-      $enumDecode(_$GameTypeEnumMap, json['type']),
-      (json['minimumLauncherVersion'] as num).toInt(),
+          : AssetIndex.fromJson(json['assetIndex'] as Map<String, dynamic>),
       javaVersion: json['javaVersion'] == null
           ? null
           : JavaVersion.fromJson(json['javaVersion'] as Map<String, dynamic>),
+      libraries: (json['libraries'] as List<dynamic>)
+          .map((e) => Library.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      downloads: json['downloads'] == null
+          ? null
+          : GameDownloads.fromJson(json['downloads'] as Map<String, dynamic>),
+      logging: json['logging'] == null
+          ? null
+          : Logging.fromJson(json['logging'] as Map<String, dynamic>),
+      type: $enumDecodeNullable(_$GameTypeEnumMap, json['type']),
+      minimumLauncherVersion: (json['minimumLauncherVersion'] as num?)?.toInt(),
       clientVersion: json['clientVersion'] as String?,
     );
 
@@ -41,9 +49,11 @@ Map<String, dynamic> _$GameDataToJson(GameData instance) => <String, dynamic>{
       'libraries': instance.libraries,
       'downloads': instance.downloads,
       'logging': instance.logging,
-      'type': _$GameTypeEnumMap[instance.type]!,
+      'type': _$GameTypeEnumMap[instance.type],
       'minimumLauncherVersion': instance.minimumLauncherVersion,
       'clientVersion': instance.clientVersion,
+      'root': instance.root,
+      'patches': instance.patches,
     };
 
 const _$GameTypeEnumMap = {

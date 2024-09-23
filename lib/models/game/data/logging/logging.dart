@@ -8,7 +8,7 @@ part 'logging.g.dart';
 class Logging {
   Logging(this.client);
 
-  final ClientLogging client;
+  final ClientLogging? client;
 
   factory Logging.fromJson(JsonMap json) => _$LoggingFromJson(json);
   JsonMap toJson() => _$LoggingToJson(this);

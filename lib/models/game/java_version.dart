@@ -25,9 +25,9 @@ class JavaVersion extends Version {
     }
     return JavaVersion(
       major: int.parse(major),
-      minor: toInt(minor),
-      revision: toInt(revision),
-      patched: toInt(patched),
+      minor: int.tryParse(minor),
+      revision: int.tryParse(revision),
+      patched: int.tryParse(patched ?? ''),
     );
   }
 }

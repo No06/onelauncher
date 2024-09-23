@@ -44,11 +44,9 @@ class Version {
     final patched = split.elementAtOrNull(3);
     return Version(
       major: int.parse(major),
-      minor: toInt(minor),
-      revision: toInt(revision),
-      patched: toInt(patched),
+      minor: int.tryParse(minor ?? ''),
+      revision: int.tryParse(revision ?? ''),
+      patched: int.tryParse(patched ?? ''),
     );
   }
 }
-
-int? toInt(String? value) => value != null ? int.parse(value) : null;

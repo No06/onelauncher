@@ -28,9 +28,30 @@ class NativesLibrary extends CommonLibrary {
 
   static final currentOsName = OsName.fromName(Platform.operatingSystem);
 
+  String getNativePath(String gameLibrariesPath) =>
+      join(gameLibrariesPath, artifact?.path);
+
   final Map<OsName, String> natives;
   @JsonKey(name: "extract")
   final ExtractRule? extractRule;
+
+  Artifact? get artifact {
+    final classifiers = downloads.classifiers;
+    if (Platform.isLinux) return classifiers?.linux;
+    if (Platform.isMacOS) return classifiers?.osx;
+    if (Platform.isWindows) {
+      if (classifiers?.windows != null) {
+        return classifiers?.windows;
+      }
+      if (sysinfo.architecture == Architecture.x32) {
+        return classifiers?.windows_32;
+      }
+      if (sysinfo.architecture == Architecture.x64) {
+        return classifiers?.windows_64;
+      }
+    }
+    return null;
+  }
 
   /// 解压 natives 资源
   /// [libraryPath] 应传入如 /home/onelauncher/.minecraft/libraries
@@ -40,25 +61,8 @@ class NativesLibrary extends CommonLibrary {
 
     "extract: $name, to: $outputPath, exclude: ${extractRule?.exclude}"
         .printInfo();
-    Artifact? extractArtifact() {
-      final classifiers = downloads.classifiers;
-      if (Platform.isLinux) return classifiers?.linux;
-      if (Platform.isMacOS) return classifiers?.osx;
-      if (Platform.isWindows) {
-        if (classifiers?.windows != null) {
-          return classifiers?.windows;
-        }
-        if (sysinfo.architecture == Architecture.x32) {
-          return classifiers?.windows_32;
-        }
-        if (sysinfo.architecture == Architecture.x64) {
-          return classifiers?.windows_64;
-        }
-      }
-      return null;
-    }
 
-    final nativePath = extractArtifact()?.path;
+    final nativePath = artifact?.path;
     if (nativePath == null) return;
     final path = join(libraryPath, nativePath);
     extractFileToDiskAndExclude(path, outputPath,

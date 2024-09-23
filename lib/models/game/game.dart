@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/game/data/game_data.dart';
@@ -59,11 +60,16 @@ class Game {
     final jarFile = File("$mainPath/$versionPath/${_data.jarFile}");
     if (!jarFile.existsSync()) return null;
 
-    return jsonDecode(utf8.decode(ZipDecoder()
+    final versionFile = ZipDecoder()
         .decodeBytes(
             File("$mainPath/$versionPath/${_data.jarFile}").readAsBytesSync())
-        .findFile("version.json")
-        ?.content as List<int>))["id"];
+        .findFile("version.json");
+    if (versionFile == null) return null;
+
+    final versionFileContent = versionFile.content as Uint8List?;
+    if (versionFileContent == null) return null;
+
+    return jsonDecode(utf8.decode(versionFileContent))["id"];
   }
 
   /// 游戏版本
@@ -112,13 +118,17 @@ class Game {
 
   /// log 配置文件路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/log4j2.xml
-  String? get loggingPath => join(path, data.logging?.client.file.id);
+  String? get loggingPath {
+    var logFile = data.logging?.client?.file.id;
+    logFile ??= data.gamePatch?.logging?.client?.file.id;
+    return logFile == null ? null : join(path, logFile);
+  }
 
   /// 游戏资源路径
   /// 如: /home/onelauncher/.minecraft/assets
   String get assetsPath => join(_mainPath, "assets");
 
-  String? get assetIndex => data.assetIndex.id;
+  String? get assetIndex => data.assetIndex?.id;
 
   bool get isModVersion => _data.mainClass != "net.minecraft.client.main.Main";
 

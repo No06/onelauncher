@@ -207,6 +207,9 @@ class GameLaunchUtil {
       if (lib is NativesLibrary) {
         _nativesLibraries.add(lib);
       } else if (!await lib.exists(game.librariesPath)) {
+        if (kDebugMode) {
+          lib.getPath(game.librariesPath).printInfo('');
+        }
         yield lib;
       }
     }
@@ -214,7 +217,6 @@ class GameLaunchUtil {
 
   /// 解压natives资源
   Future<void> extractNativesLibraries() async {
-    var needExtract = true;
     final outputDirectory = Directory(game.nativesPath);
     if (!await outputDirectory.exists()) await outputDirectory.create();
 
@@ -226,30 +228,29 @@ class GameLaunchUtil {
     if (await outputDirectory.exists() && targetFiles.isNotEmpty) {
       final archives = _nativesLibraries.map(
         (e) => ZipDecoder().decodeBytes(
-          File(e.getPath(game.librariesPath)).readAsBytesSync(),
+          File(e.getNativePath(game.librariesPath)).readAsBytesSync(),
         ),
       );
-      final files = archives.map((archive) {
-        for (final file in archive) {
-          return file;
-        }
-      });
+      final files = [
+        for (final archive in archives)
+          for (final file in archive.files) file
+      ];
       // 使用MD5比对
-      await () async {
+      final needExtract = await Future(() async {
         for (var i = 0; i < files.length; i++) {
-          final sourceFile = files.elementAt(i)!;
-          final sourceFileMd5 = md5.convert(sourceFile.content as List<int>);
+          final sourceFile = files.elementAt(i);
+          final sourceFileMd5 = md5.convert(sourceFile.content as Uint8List);
           final targetFilePath = targerFilesMap[sourceFile.name]?.path;
           if (targetFilePath == null) {
-            return;
+            return true;
           }
           final targetFileMd5 = await getFileMd5(targetFilePath);
           if (sourceFileMd5 != targetFileMd5) {
-            return;
+            return true;
           }
         }
-        needExtract = false;
-      }();
+        return false;
+      });
 
       if (needExtract) {
         outputDirectory.deleteSync(recursive: true);
@@ -304,7 +305,7 @@ class GameLaunchUtil {
       "version_name": game.data.id,
       "game_directory": game.mainPath,
       "assets_root": game.assetsPath,
-      "assets_index_name": game.data.assetIndex.id,
+      "assets_index_name": game.data.assetIndex?.id,
       "auth_uuid": loginInfo!.uuid,
       "auth_access_token": loginInfo!.accessToken,
       "user_type": "msa",
@@ -355,7 +356,7 @@ class GameLaunchUtil {
   /// 获取 logging 启动参数
   /// 根据 [Game.loggingPath] 判断然后生成
   String? get loggingArg {
-    var arg = game.data.logging?.client.argument;
+    var arg = game.data.logging?.client?.argument;
     if (arg == null || game.loggingPath == null) return null;
 
     arg = arg.substring(0, arg.lastIndexOf('=') - 1);
@@ -383,7 +384,7 @@ class GameLaunchUtil {
             "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"),
       // JVM 启动参数
       GameArgument(jvmArgs),
-      GameArgument(version.mainClass),
+      if (version.mainClass != null) GameArgument(version.mainClass!),
       // 游戏参数
       GameArgument(gameArgs),
     ];

@@ -187,8 +187,20 @@ class _GameProcessor {
   int compareByName(Game a, Game b) => a.data.id.compareTo(b.data.id);
 
   // 筛选游戏类型
-  bool typeFilter(Game game, Set<_GameType> types) =>
-      types.isEmpty ? true : types.contains(_GameType.fromGame(game));
+  bool typeFilter(Game game, Set<_GameType> types) {
+    if (types.isEmpty || game.data.type == null) return true;
+
+    final currTypes = {
+      if (game.isModVersion) _GameType.mod,
+      switch (game.data.type!) {
+        GameType.release => _GameType.release,
+        GameType.snapshot => _GameType.snapshot,
+        GameType.oldBeta => _GameType.snapshot,
+        GameType.oldAlpha => _GameType.snapshot,
+      }
+    };
+    return types.intersection(currTypes).isNotEmpty;
+  }
 
   // 将 Game 转换为 _GameItem
   List<Widget> gameListToItems(Iterable<Game> games) => List.generate(
