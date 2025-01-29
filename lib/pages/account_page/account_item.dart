@@ -1,7 +1,7 @@
 part of 'account_page.dart';
 
 class _AccountItem extends HookConsumerWidget {
-  const _AccountItem({super.key, required this.account});
+  const _AccountItem({required this.account, super.key});
 
   final Account account;
 
@@ -34,8 +34,10 @@ class _AccountItem extends HookConsumerWidget {
             onExit: (event) => isHover.value = false,
             child: Consumer(
               builder: (context, ref, child) {
-                final isSelected = ref.watch(accountProvider
-                    .select((state) => state.selectedAccount == account));
+                final isSelected = ref.watch(
+                  accountProvider
+                      .select((state) => state.selectedAccount == account),
+                );
 
                 return MultiValueListenableBuilder(
                   valueListenables: [isHover, isTapDown],
@@ -64,42 +66,45 @@ class _AccountItem extends HookConsumerWidget {
                   horizontal: 16,
                   vertical: 8,
                 ),
-                child: Consumer(builder: (context, ref, child) {
-                  final isSelected = ref.watch(accountProvider
-                      .select((state) => state.selectedAccount == account));
-                  final fontColor =
-                      isSelected ? colors.onPrimary : colors.onSurface;
-                  return Row(
-                    children: [
-                      _Avatar(account, isSelected: isSelected),
-                      const Gap(12),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              account.displayName,
-                              style: TextStyle(
-                                color: fontColor,
-                                fontWeight: FontWeight.bold,
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final isSelected = ref.watch(
+                      accountProvider
+                          .select((state) => state.selectedAccount == account),
+                    );
+                    final fontColor =
+                        isSelected ? colors.onPrimary : colors.onSurface;
+                    return Row(
+                      children: [
+                        _Avatar(account, isSelected: isSelected),
+                        const Gap(12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                account.displayName,
+                                style: TextStyle(
+                                  color: fontColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            Text(
-                              switch (account) {
-                                OfflineAccount() => "离线账号",
-                                MicrosoftAccount() => "微软账号",
-                                _ => "未知账号",
-                              },
-                              style: TextStyle(color: fontColor),
-                            ),
-                          ],
+                              Text(
+                                switch (account) {
+                                  OfflineAccount() => "离线账号",
+                                  MicrosoftAccount() => "微软账号",
+                                  _ => "未知账号",
+                                },
+                                style: TextStyle(color: fontColor),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      _Actions(account, fontColor: fontColor),
-                    ],
-                  );
-                }),
+                        _Actions(account, fontColor: fontColor),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -125,21 +130,25 @@ class _AvatarState extends State<_Avatar> {
   Future<void> _initAvatar() async {
     try {
       final skin = await widget.account.getSkin();
-      avatarImageCompleter.complete(switch (widget.account) {
-        OfflineAccount() ||
-        MicrosoftAccount() =>
-          MemoryImage(await skin.drawAvatar()),
-        _ => null,
-      });
+      avatarImageCompleter.complete(
+        switch (widget.account) {
+          OfflineAccount() ||
+          MicrosoftAccount() =>
+            MemoryImage(await skin.drawAvatar()),
+          _ => null,
+        },
+      );
     } catch (e, st) {
       avatarImageCompleter.completeError(e, st);
       switch (e) {
         case DioException():
-          showSnackbar(errorSnackBar(
-            title: "${widget.account.displayName} 头像获取失败",
-            content:
-                "${e.response?.data['error']}: ${e.response?.data['error_description']}",
-          ));
+          final data = e.response?.data as JsonMap;
+          showSnackbar(
+            errorSnackBar(
+              title: "${widget.account.displayName} 头像获取失败",
+              content: "${data['error']}: ${data['error_description']}",
+            ),
+          );
         default:
           showSnackbar(errorSnackBar(title: "发生未知错误", content: e.toString()));
       }
@@ -208,10 +217,10 @@ class _Actions extends StatefulHookConsumerWidget {
 }
 
 class _ActionsState extends ConsumerState<_Actions> {
-  var updating = false;
+  bool updating = false;
 
-  void onTapUpdate() async {
-    assert(widget.account is MicrosoftAccount);
+  Future<void> onTapUpdate() async {
+    assert(widget.account is MicrosoftAccount, 'should be MicrosoftAccount');
     if (updating) return;
 
     setState(() {
@@ -233,7 +242,7 @@ class _ActionsState extends ConsumerState<_Actions> {
     }
   }
 
-  void onTapDelete() async {
+  Future<void> onTapDelete() async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => WarningDialog(
@@ -257,8 +266,10 @@ class _ActionsState extends ConsumerState<_Actions> {
         if (widget.isMSAccount)
           IconButton(
             onPressed: updating ? null : onTapUpdate,
-            icon: Icon(Icons.refresh,
-                color: widget.fontColor.withOpacity(updating ? .5 : 1)),
+            icon: Icon(
+              Icons.refresh,
+              color: widget.fontColor.withOpacity(updating ? .5 : 1),
+            ),
           ),
         // AbsorbPointer(
         //   absorbing: false,

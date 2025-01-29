@@ -1,16 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:one_launcher/api/dio/dio.dart';
 import 'package:one_launcher/api/oauth/client/microsoft_device_oauth_client.dart';
-import 'package:one_launcher/api/oauth/client/oauth_client.dart';
-import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
-import 'package:one_launcher/api/oauth/token/oauth_token.dart';
-import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/api/oauth/client/microsoft_oauth_client.dart';
+import 'package:one_launcher/api/oauth/client/oauth_client.dart';
 import 'package:one_launcher/api/oauth/client/xbox_oauth_client.dart';
+import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
+import 'package:one_launcher/api/oauth/token/minecraft_oauth_token.dart';
+import 'package:one_launcher/api/oauth/token/oauth_token.dart';
 import 'package:one_launcher/api/oauth/token/xbox_oauth_token.dart';
+import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/account/microsoft_account.dart';
-
-import '../token/minecraft_oauth_token.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 class MinecraftOAuthClient extends OAuthClient {
   /// need 'xsts token', not 'xbox live user token'
@@ -24,10 +24,17 @@ class MinecraftOAuthClient extends OAuthClient {
     final xstsToken = token.token;
     final data = {"identityToken": "XBL3.0 x=$uhs;$xstsToken"};
     final dio = createDio(BaseOptions(contentType: Headers.jsonContentType));
-    final response =
-        await dio.postUri(Uri.parse(uri), data: data, cancelToken: cancelToken);
+    final response = await dio.postUri<JsonMap>(
+      Uri.parse(uri),
+      data: data,
+      cancelToken: cancelToken,
+    );
     dio.close();
-    return MinecraftOAuthToken.fromJson(response.data);
+    final respData = response.data;
+    if (respData == null) {
+      throw Exception('MinecraftOAuthToken is null');
+    }
+    return MinecraftOAuthToken.fromJson(respData);
   }
 
   /// 使用 Microsoft AccessToken 直接获取 Minecraft AccessToken
@@ -44,8 +51,10 @@ class MinecraftOAuthClient extends OAuthClient {
     final client = XboxOAuthClient();
     final xboxLiveResponse =
         await client.requestToken(accessToken, cancelToken: cancelToken);
-    final xstsToken = await client.requestXstsToken(xboxLiveResponse.token,
-        cancelToken: cancelToken);
+    final xstsToken = await client.requestXstsToken(
+      xboxLiveResponse.token,
+      cancelToken: cancelToken,
+    );
     // minecraft authorization
     final minecraftClient = MinecraftOAuthClient();
     return minecraftClient.requestToken(xstsToken, cancelToken: cancelToken);

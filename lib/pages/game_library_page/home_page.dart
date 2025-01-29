@@ -51,85 +51,87 @@ class _SliverTitle extends ConsumerWidget {
         height: toolbarHeight,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: buildWidgetsWithDivider(
-            [
-              SearchBar(
-                onChanged: ref.read(_filterStateProvider.notifier).updateName,
-                onSubmitted: ref.read(_filterStateProvider.notifier).updateName,
-                elevation: const WidgetStatePropertyAll(3),
-                hintText: "搜索配置",
-                leading: const Icon(Icons.search),
-                constraints: const BoxConstraints(
-                  minWidth: 120,
-                  maxWidth: 220,
-                  minHeight: 42,
-                ),
-                padding: const WidgetStatePropertyAll<EdgeInsets>(
-                  EdgeInsets.symmetric(horizontal: 16.0),
-                ),
+          children: [
+            SearchBar(
+              onChanged: ref.read(_filterStateProvider.notifier).updateName,
+              onSubmitted: ref.read(_filterStateProvider.notifier).updateName,
+              elevation: const WidgetStatePropertyAll(3),
+              hintText: "搜索配置",
+              leading: const Icon(Icons.search),
+              constraints: const BoxConstraints(
+                minWidth: 120,
+                maxWidth: 220,
+                minHeight: 42,
               ),
-              // TODO: 按最近游玩排序
-              _OptionItem(
-                title: "排序方式",
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton2(
-                    value: ref.watch(_filterStateProvider).collation,
-                    dropdownStyleData:
-                        const DropdownStyleData(useRootNavigator: true),
-                    items: [
-                      for (var item in _GameCollation.values)
-                        DropdownMenuItem(
-                          value: item,
-                          child: Text(
-                            item.name,
-                            style: const TextStyle(fontSize: 14),
-                          ),
+              padding: const WidgetStatePropertyAll<EdgeInsets>(
+                EdgeInsets.symmetric(horizontal: 16),
+              ),
+            ),
+            // TODO: 按最近游玩排序
+            _OptionItem(
+              title: "排序方式",
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton2(
+                  value: ref.watch(_filterStateProvider).collation,
+                  dropdownStyleData:
+                      const DropdownStyleData(useRootNavigator: true),
+                  items: [
+                    for (final item in _GameCollation.values)
+                      DropdownMenuItem(
+                        value: item,
+                        child: Text(
+                          item.name,
+                          style: const TextStyle(fontSize: 14),
                         ),
-                    ],
-                    onChanged: (value) => ref
-                        .read(_filterStateProvider.notifier)
-                        .updateCollation(value!),
-                    buttonStyleData: const ButtonStyleData(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      height: 35,
-                      width: 120,
-                    ),
-                    menuItemStyleData: MenuItemStyleData(
-                      height: 40,
-                      selectedMenuItemBuilder: (context, child) => Container(
-                        color: Theme.of(context).colorScheme.secondaryContainer,
-                        child: child,
                       ),
+                  ],
+                  onChanged: (value) => ref
+                      .read(_filterStateProvider.notifier)
+                      .updateCollation(value!),
+                  buttonStyleData: const ButtonStyleData(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    height: 35,
+                    width: 120,
+                  ),
+                  menuItemStyleData: MenuItemStyleData(
+                    height: 40,
+                    selectedMenuItemBuilder: (context, child) => ColoredBox(
+                      color: Theme.of(context).colorScheme.secondaryContainer,
+                      child: child,
                     ),
                   ),
                 ),
               ),
-              _OptionItem(
-                title: "版本",
-                child: Consumer(
-                  builder: (context, ref, child) => Row(
-                    children: List.generate(_GameType.values.length, (index) {
-                      final type = _GameType.values[index];
-                      final types = ref.watch(_filterStateProvider).types;
-                      final isSelected = types.contains(type);
-                      return _GameTypeCheckbox(
-                        isSelected: isSelected,
-                        label: type.name,
-                        type: type,
-                        ruleSet: types,
-                        onChanged: (value) {
-                          ref
-                              .read(_filterStateProvider.notifier)
-                              .updateTypeWithSelectedValue(type, value!);
-                        },
-                      );
-                    }),
-                  ),
+            ),
+            _OptionItem(
+              title: "版本",
+              child: Consumer(
+                builder: (context, ref, child) => Row(
+                  children: List.generate(_GameType.values.length, (index) {
+                    final type = _GameType.values[index];
+                    final types = ref.watch(_filterStateProvider).types;
+                    final isSelected = types.contains(type);
+                    return _GameTypeCheckbox(
+                      isSelected: isSelected,
+                      label: type.name,
+                      type: type,
+                      ruleSet: types,
+                      onChanged: (value) {
+                        ref
+                            .read(_filterStateProvider.notifier)
+                            .updateTypeWithSelectedValue(
+                              type,
+                              isSelected: value!,
+                            );
+                      },
+                    );
+                  }),
                 ),
-              )
-            ],
-            const VerticalDivider(width: 32, indent: 16, endIndent: 16),
-          ),
+              ),
+            ),
+          ]..joinWith(
+              const VerticalDivider(width: 32, indent: 16, endIndent: 16),
+            ),
         ),
       ),
     );
@@ -156,25 +158,27 @@ class _SliverList extends ConsumerWidget {
           snapshot.error.printError();
         }
         final gameList = snapshot.data!;
-        return Consumer(builder: (context, ref, child) {
-          final filterState = ref.watch(_filterStateProvider);
-          final filteredGames =
-              _processor.filterAndSortGames(gameList, filterState);
-          // TODO: 异步构建item优化性能（暂时换成懒加载，待我研究一下如何替换成异步构建
-          return SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                return Column(
-                  children: [
-                    filteredGames[index],
-                    if (index < filteredGames.length - 1) _divider,
-                  ],
-                );
-              },
-              childCount: filteredGames.length,
-            ),
-          );
-        });
+        return Consumer(
+          builder: (context, ref, child) {
+            final filterState = ref.watch(_filterStateProvider);
+            final filteredGames =
+                _processor.filterAndSortGames(gameList, filterState);
+            // TODO: 异步构建item优化性能（暂时换成懒加载，待我研究一下如何替换成异步构建
+            return SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return Column(
+                    children: [
+                      filteredGames[index],
+                      if (index < filteredGames.length - 1) _divider,
+                    ],
+                  );
+                },
+                childCount: filteredGames.length,
+              ),
+            );
+          },
+        );
       },
     );
   }
@@ -197,7 +201,7 @@ class _GameProcessor {
         GameType.snapshot => _GameType.snapshot,
         GameType.oldBeta => _GameType.snapshot,
         GameType.oldAlpha => _GameType.snapshot,
-      }
+      },
     };
     return types.intersection(currTypes).isNotEmpty;
   }
@@ -213,7 +217,7 @@ class _GameProcessor {
     Iterable<Game> gameList,
     _FilterState filterState,
   ) {
-    var typeFilteredList =
+    final typeFilteredList =
         gameList.where((game) => typeFilter(game, filterState.types));
     switch (filterState.collation) {
       // TODO: 最近游玩排序
@@ -221,7 +225,7 @@ class _GameProcessor {
         return gameListToItems(typeFilteredList);
 
       case _GameCollation.byName:
-        var filteredGameList = typeFilteredList.toList()..sort(compareByName);
+        final filteredGameList = typeFilteredList.toList()..sort(compareByName);
         return gameListToItems(filteredGameList);
     }
   }
@@ -259,7 +263,7 @@ class _GameTypeCheckbox extends StatelessWidget {
   final _GameType type;
   final Set<_GameType> ruleSet;
   final bool? isSelected;
-  final void Function(bool? value)? onChanged;
+  final void Function(bool? isSelected)? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -267,7 +271,7 @@ class _GameTypeCheckbox extends StatelessWidget {
       child: InkWell(
         onTap: () {
           if (onChanged != null) {
-            onChanged!(isSelected == null ? null : !isSelected!);
+            onChanged?.call(isSelected == null ? null : !isSelected!);
           }
         },
         child: Row(
@@ -328,16 +332,18 @@ class _GameItemState extends ConsumerState<_GameItem> {
 
   List<PopupMenuItem<String>> buildMenu(String gamePath) {
     return menu.keys
-        .map((el) => PopupMenuItem<String>(
-              value: el,
-              child: Row(
-                children: [
-                  Icon(menu[el]),
-                  const SizedBox(width: 15),
-                  Text(el),
-                ],
-              ),
-            ))
+        .map(
+          (el) => PopupMenuItem<String>(
+            value: el,
+            child: Row(
+              children: [
+                Icon(menu[el]),
+                const SizedBox(width: 15),
+                Text(el),
+              ],
+            ),
+          ),
+        )
         .toList();
   }
 
@@ -370,7 +376,7 @@ class _GameItemState extends ConsumerState<_GameItem> {
                     borderRadius: kDefaultBorderRadius,
                   ),
                   backgroundColor: colors.primary,
-                  onPressed: () => showDialog(
+                  onPressed: () => showDialog<void>(
                     barrierDismissible: false,
                     context: context,
                     builder: (context) {
@@ -411,11 +417,12 @@ class _GameItemState extends ConsumerState<_GameItem> {
                 itemBuilder: (context) => buildMenu(widget.game.path),
                 elevation: 1,
                 shape: const RoundedRectangleBorder(
-                    borderRadius: kDefaultBorderRadius),
+                  borderRadius: kDefaultBorderRadius,
+                ),
                 onSelected: (el) => {
                   // TODO: 更多操作
                 },
-              )
+              ),
             ],
           ),
         ),

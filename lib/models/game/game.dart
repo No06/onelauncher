@@ -1,10 +1,12 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:archive/archive.dart';
+import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/game/data/game_data.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/game_version.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';
@@ -12,12 +14,12 @@ import 'package:path/path.dart';
 
 part 'game.g.dart';
 
+@immutable
 @JsonSerializable(createToJson: false)
 class Game {
   Game(
     String mainPath,
     String versionPath, {
-    bool? useGlobalSetting,
     this.setting,
   })  : _mainPath = mainPath,
         _versionPath = versionPath,
@@ -28,8 +30,9 @@ class Game {
     String versionPath,
     JsonMap json,
   ) {
-    json.addAll({"librariesPath": librariesPath});
-    json.addAll({"versionPath": versionPath});
+    json
+      ..addAll({"librariesPath": librariesPath})
+      ..addAll({"versionPath": versionPath});
     return _$GameFromJson(json);
   }
 
@@ -38,10 +41,10 @@ class Game {
   String get nativesPath => join(path, "natives-${Platform.operatingSystem}");
 
   /// 游戏设置配置文件
-  GameSettingState? setting;
+  final GameSettingState? setting;
 
   /// 游戏文件 1.x.x.json序列化内容
-  GameData _data;
+  final GameData _data;
 
   /// 主路径
   /// 如: /home/onelauncher/.minecraft
@@ -62,14 +65,17 @@ class Game {
 
     final versionFile = ZipDecoder()
         .decodeBytes(
-            File("$mainPath/$versionPath/${_data.jarFile}").readAsBytesSync())
+          File("$mainPath/$versionPath/${_data.jarFile}").readAsBytesSync(),
+        )
         .findFile("version.json");
     if (versionFile == null) return null;
 
     final versionFileContent = versionFile.content as Uint8List?;
     if (versionFileContent == null) return null;
 
-    return jsonDecode(utf8.decode(versionFileContent))["id"];
+    final json =
+        jsonDecode(utf8.decode(versionFileContent)) as Map<String, String>;
+    return json["id"];
   }
 
   /// 游戏版本
@@ -133,12 +139,13 @@ class Game {
   bool get isModVersion => _data.mainClass != "net.minecraft.client.main.Main";
 
   /// 刷新 [data] 游戏文件内容
-  void freshVersion() => _data = _getDataFromPath(path);
+  Game fresh() => Game(_mainPath, _versionPath, setting: setting);
 
   /// 从指定路径读取文件序列化为 [GameData]
   static GameData _getDataFromPath(String path) => GameData.fromJson(
         jsonDecode(
-            File(join(path, "${basename(path)}.json")).readAsStringSync()),
+          File(join(path, "${basename(path)}.json")).readAsStringSync(),
+        ) as JsonMap,
       );
 
   @override

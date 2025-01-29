@@ -8,14 +8,14 @@ part 'rule.g.dart';
 class Rule {
   const Rule({required this.action});
 
-  final RuleAction action;
-
   factory Rule.fromJson(JsonMap json) {
     if (json['os'] != null) {
       return OsRule.fromJson(json);
     }
     return _$RuleFromJson(json);
   }
+
+  final RuleAction action;
 
   JsonMap toJson() => _$RuleToJson(this);
 }

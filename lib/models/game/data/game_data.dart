@@ -1,11 +1,11 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/data/arguments.dart';
-import 'package:one_launcher/models/game/data/game_type.dart';
-import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/asset_index.dart';
 import 'package:one_launcher/models/game/data/game_downloads.dart';
+import 'package:one_launcher/models/game/data/game_type.dart';
 import 'package:one_launcher/models/game/data/java_version.dart';
+import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/logging/logging.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'game_data.g.dart';
@@ -14,15 +14,15 @@ part 'game_data.g.dart';
 class GameData {
   const GameData(
     this.id,
-    this.root,
     this.patches, {
+    required this.root,
+    required List<Library> libraries,
     Arguments? arguments,
     String? minecraftArguments,
     String? mainClass,
     String? jar,
     AssetIndex? assetIndex,
     JavaVersion? javaVersion,
-    required List<Library> libraries,
     GameDownloads? downloads,
     Logging? logging,
     GameType? type,
@@ -40,6 +40,8 @@ class GameData {
         _type = type,
         _minimumLauncherVersion = minimumLauncherVersion,
         _clientVersion = clientVersion;
+
+  factory GameData.fromJson(JsonMap json) => _$GameDataFromJson(json);
 
   ///游戏名 可能是版本号，也可能是自定义的名字
   final String id;
@@ -89,7 +91,5 @@ class GameData {
   GameData? get gamePatch => patches?.firstWhere((patch) => patch.id == "game");
 
   String get jarFile => _jar == null ? "$id.jar" : "$_jar.jar";
-
-  factory GameData.fromJson(JsonMap json) => _$GameDataFromJson(json);
   JsonMap toJson() => _$GameDataToJson(this);
 }

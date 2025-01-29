@@ -1,11 +1,12 @@
-import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
+import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/utils/extension/list_extension.dart';
 
 class WidgetGroup extends StatelessWidget {
   const WidgetGroup({
-    super.key,
     required this.divider,
     required this.children,
+    super.key,
     this.width,
     this.height,
     this.backgroundColor,
@@ -41,9 +42,7 @@ class WidgetGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    for (int i = 1; i < children.length; i += 2) {
-      children.insert(i, divider);
-    }
+    final children = List<Widget>.from(this.children)..joinWith(divider);
     return Theme(
       data: theme.copyWith(
         textTheme: theme.textTheme.apply(
@@ -78,8 +77,8 @@ class WidgetGroup extends StatelessWidget {
 class TitleWidgetGroup extends StatelessWidget {
   const TitleWidgetGroup(
     this.title, {
-    super.key,
     required this.children,
+    super.key,
   });
 
   final String title;
@@ -103,7 +102,9 @@ class TitleWidgetGroup extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: WidgetGroup(
-              divider: _defaultDivider(context), children: children),
+            divider: _defaultDivider(context),
+            children: children,
+          ),
         ),
       ],
     );
@@ -112,10 +113,10 @@ class TitleWidgetGroup extends StatelessWidget {
 
 class ExpansionListTile extends StatefulWidget {
   const ExpansionListTile({
-    super.key,
     required this.title,
     required this.child,
     required this.isExpaned,
+    super.key,
     this.keepVisible = false,
   });
 
@@ -143,10 +144,12 @@ class _ExpansionListTileState extends State<ExpansionListTile>
       value: widget.isExpaned ? 1 : 0,
       vsync: this,
     );
-    animation = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-      parent: controller,
-      curve: Curves.fastOutSlowIn,
-    ));
+    animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: controller,
+        curve: Curves.fastOutSlowIn,
+      ),
+    );
   }
 
   @override
@@ -186,7 +189,7 @@ class _ExpansionListTileState extends State<ExpansionListTile>
           animation: controller,
           builder: (context, child) {
             return SizeTransition(
-              axisAlignment: 1.0,
+              axisAlignment: 1,
               sizeFactor: animation,
               child: child,
             );

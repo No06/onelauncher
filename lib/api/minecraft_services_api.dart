@@ -19,8 +19,12 @@ class MinecraftServicesApi {
 
   Future<Profile> requestProfile({CancelToken? cancelToken}) async {
     const path = "/minecraft/profile";
-    final response = await dio.get(path, cancelToken: cancelToken);
-    return Profile.fromJson(response.data);
+    final response = await dio.get<JsonMap>(path, cancelToken: cancelToken);
+    final respData = response.data;
+    if (respData == null) {
+      throw Exception("请求失败");
+    }
+    return Profile.fromJson(respData);
   }
 }
 
@@ -28,9 +32,9 @@ class MinecraftServicesApi {
 class Profile {
   Profile(this.id, this.name, this.skins);
 
+  factory Profile.fromJson(JsonMap json) => _$ProfileFromJson(json);
+
   final String id;
   final String name;
   final List<OnlineSkin> skins;
-
-  factory Profile.fromJson(JsonMap json) => _$ProfileFromJson(json);
 }

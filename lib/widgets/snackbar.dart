@@ -81,7 +81,7 @@ SnackBar defaultSnackBar({
                         overflow: TextOverflow.ellipsis,
                       );
                     },
-                  )),
+                  ),),
               ],
             ),
           ),

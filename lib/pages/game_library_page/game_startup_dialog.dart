@@ -13,7 +13,7 @@ typedef _TaskFutureFunction<T> = Future<T>? Function()?;
 typedef _TaskDoneCallBack<T> = bool? Function(T)?;
 
 class GameStartupDialog extends ConsumerStatefulWidget {
-  const GameStartupDialog({super.key, required this.game});
+  const GameStartupDialog({required this.game, super.key});
 
   final Game game;
 
@@ -24,7 +24,7 @@ class GameStartupDialog extends ConsumerStatefulWidget {
 class _GameStartupDialogState extends ConsumerState<GameStartupDialog> {
   late final GameLaunchUtil launchUtil;
   Timer? timer;
-  var seconds = 5;
+  int seconds = 5;
   var _continue = false;
 
   List<String> get warningMessages => launchUtil.warningMessages;
@@ -70,7 +70,7 @@ class _GameStartupDialogState extends ConsumerState<GameStartupDialog> {
                     future: () => launchUtil
                         .login(ref.read(accountProvider).selectedAccount!),
                     title: const Text("登录"),
-                    onDone: (value) => value == null,
+                    onDone: (value) => true,
                   ),
                   _Task(
                     future: launchUtil.launchGame,
@@ -83,7 +83,7 @@ class _GameStartupDialogState extends ConsumerState<GameStartupDialog> {
             onConfirmed: () async {
               if (!launchUtil.completer.isCompleted) {
                 // 强制关闭
-                launchUtil.cancel();
+                await launchUtil.cancel();
                 launchUtil.killProcess();
               }
               dialogPop();
@@ -91,26 +91,24 @@ class _GameStartupDialogState extends ConsumerState<GameStartupDialog> {
             confirmText: FutureBuilder(
               future: launchUtil.completer.future,
               builder: (context, snapshot) {
-                return StatefulBuilder(builder: (context, setState) {
-                  switch (snapshot.connectionState) {
-                    // 启动成功后倒计时自动关闭窗口
-                    case ConnectionState.done:
-                      if (timer == null) {
-                        seconds -= 1;
-                        timer = Timer.periodic(Durations.extralong4, (time) {
-                          if (seconds > 0) {
-                            setState(() => seconds--);
-                            if (seconds == 0) {
-                              // 关闭 Process 并关闭窗口
-                              Future.delayed(Durations.extralong4, dialogPop);
-                            }
+                return StatefulBuilder(
+                  builder: (context, setState) {
+                    if (snapshot.connectionState == ConnectionState.done &&
+                        timer == null) {
+                      seconds -= 1;
+                      timer = Timer.periodic(Durations.extralong4, (time) {
+                        if (seconds > 0) {
+                          setState(() => seconds--);
+                          if (seconds == 0) {
+                            // 关闭 Process 并关闭窗口
+                            Future.delayed(Durations.extralong4, dialogPop);
                           }
-                        });
-                      }
-                    default:
-                  }
-                  return Text("取消${timer != null ? ' ($seconds)' : ''}");
-                });
+                        }
+                      });
+                    }
+                    return Text("取消${timer != null ? ' ($seconds)' : ''}");
+                  },
+                );
               },
             ),
           );
@@ -118,23 +116,23 @@ class _GameStartupDialogState extends ConsumerState<GameStartupDialog> {
 }
 
 /// 顺序执行任务
-class _SequenceTaskItems extends StatefulWidget {
+class _SequenceTaskItems<T> extends StatefulWidget {
   const _SequenceTaskItems({required this.tasks});
 
-  final List<_Task> tasks;
+  final List<_Task<T>> tasks;
 
   @override
-  State<_SequenceTaskItems> createState() => _SequenceTaskItemsState();
+  State<_SequenceTaskItems<T>> createState() => _SequenceTaskItemsState<T>();
 }
 
-class _SequenceTaskItemsState extends State<_SequenceTaskItems> {
-  final listenables = <ValueNotifier<_TaskFutureFunction>>[];
-  final futures = <_TaskFutureFunction>[];
+class _SequenceTaskItemsState<T> extends State<_SequenceTaskItems<T>> {
+  final listenables = <ValueNotifier<_TaskFutureFunction<T>>>[];
+  final futures = <_TaskFutureFunction<T>>[];
 
   @override
   void initState() {
     super.initState();
-    for (int i = 0; i < widget.tasks.length; i++) {
+    for (var i = 0; i < widget.tasks.length; i++) {
       final currentTask = widget.tasks[i];
       final next = i + 1;
       final nextTask = widget.tasks.elementAtOrNull(next);
@@ -150,7 +148,7 @@ class _SequenceTaskItemsState extends State<_SequenceTaskItems> {
                   (value) {
                     // 当还有下一个任务时
                     if (currentTask.onDone != null) {
-                      currentTask.hasError = currentTask.onDone!(value)!;
+                      currentTask.hasError = currentTask.onDone!(value);
                     }
                     if (nextTask != null && !(currentTask.hasError ?? false)) {
                       listenables[i].value = futures[next];
@@ -181,8 +179,8 @@ class _SequenceTaskItemsState extends State<_SequenceTaskItems> {
 
 class _Task<T> {
   _Task({
-    this.future,
     required this.title,
+    this.future,
     this.onDone,
     this.hasError,
   });
@@ -196,7 +194,7 @@ class _Task<T> {
 class _TaskItem<T> extends StatelessWidget {
   const _TaskItem(this.task, {this.future});
 
-  final _Task task;
+  final _Task<T> task;
   final _TaskFutureFunction<T>? future;
 
   final _errorIconColor = Colors.red;

@@ -40,16 +40,19 @@ class _OfflineLoginFormState extends State<_OfflineLoginForm> {
     );
 
     // uuid 监听 用户名变化
-    useEffect(() {
-      getUuidFromName(String name) =>
-          const Uuid().v5(Namespace.nil.value, name);
+    useEffect(
+      () {
+        String getUuidFromName(String name) =>
+            const Uuid().v5(Namespace.nil.value, name);
 
-      listener() => uuidTextController.text =
-          getUuidFromName(usernameTextController.text);
+        String listener() => uuidTextController.text =
+            getUuidFromName(usernameTextController.text);
 
-      usernameTextController.addListener(listener);
-      return () => usernameTextController.removeListener(listener);
-    }, [usernameTextController]);
+        usernameTextController.addListener(listener);
+        return () => usernameTextController.removeListener(listener);
+      },
+      [usernameTextController],
+    );
 
     return Theme(
       data: simpleInputDecorationThemeData(context),
@@ -57,8 +60,6 @@ class _OfflineLoginFormState extends State<_OfflineLoginForm> {
         children: [
           TextFormField(
             decoration: const InputDecoration(labelText: "用户名"),
-            obscureText: false,
-            readOnly: false,
             maxLength: 20,
             controller: usernameTextController,
             inputFormatters: [

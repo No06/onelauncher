@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
-typedef DynMouseScrollBuilder = Function(
-    BuildContext context, ScrollController controller, ScrollPhysics physics);
+typedef DynMouseScrollBuilder = void Function(
+  BuildContext context,
+  ScrollController controller,
+  ScrollPhysics physics,
+);
 
 class MyDynMouseScroll extends StatelessWidget {
   const MyDynMouseScroll({
+    required this.builder,
     super.key,
     this.mobilePhysics = const BouncingScrollPhysics(),
     this.durationMS = 220,
     this.scrollSpeed = 2,
     this.animationCurve = Curves.fastEaseInToSlowEaseOut,
-    required this.builder,
   });
 
   final ScrollPhysics mobilePhysics;

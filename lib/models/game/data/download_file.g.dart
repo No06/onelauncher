@@ -7,10 +7,10 @@ part of 'download_file.dart';
 // **************************************************************************
 
 DownloadFile _$DownloadFileFromJson(Map<String, dynamic> json) => DownloadFile(
-      id: json['id'] as String?,
       url: json['url'] as String,
       sha1: json['sha1'] as String,
       size: (json['size'] as num).toInt(),
+      id: json['id'] as String?,
     );
 
 Map<String, dynamic> _$DownloadFileToJson(DownloadFile instance) =>

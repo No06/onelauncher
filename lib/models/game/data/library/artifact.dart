@@ -1,5 +1,5 @@
-import 'package:one_launcher/models/game/data/download_file.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/game/data/download_file.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'artifact.g.dart';
@@ -13,9 +13,9 @@ class Artifact extends DownloadFile {
     required super.size,
   });
 
-  final String path;
-
   factory Artifact.fromJson(JsonMap json) => _$ArtifactFromJson(json);
+
+  final String path;
   @override
   JsonMap toJson() => _$ArtifactToJson(this);
 }

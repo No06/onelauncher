@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/main.dart';
-import 'package:one_launcher/models/game/game_path.dart';
 import 'package:one_launcher/models/game/game.dart';
+import 'package:one_launcher/models/game/game_path.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:path/path.dart';
@@ -27,7 +27,7 @@ class _GamePathUtils {
         return join(value, kGameDirectoryName);
       } else if (Platform.isMacOS) {
         return join(
-            value, "Library", "Application Support", kGameDirectoryName);
+            value, "Library", "Application Support", kGameDirectoryName,);
       } else {
         throw Exception("Unsupported platform: ${Platform.operatingSystem}");
       }
@@ -48,6 +48,11 @@ class _GamePathUtils {
 @JsonSerializable()
 @CopyWith()
 class GamePathState {
+
+  GamePathState({Set<GamePath>? paths})
+      : paths = paths ?? {...launcherGamePaths};
+
+  factory GamePathState.fromJson(JsonMap json) => _$GamePathStateFromJson(json);
   final Set<GamePath> paths;
 
   /// 默认
@@ -72,12 +77,7 @@ class GamePathState {
 
   Set<GamePath> get addedPaths => paths.difference(launcherGamePaths);
 
-  GamePathState({Set<GamePath>? paths})
-      : paths = paths ?? {...launcherGamePaths};
-
   JsonMap toJson() => _$GamePathStateToJson(this);
-
-  factory GamePathState.fromJson(JsonMap json) => _$GamePathStateFromJson(json);
 }
 
 class GamePathStateNotifier extends StateNotifier<GamePathState> {

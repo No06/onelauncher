@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/api/oauth/token/oauth_token.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'microsoft_device_oauth_token.g.dart';
 
@@ -16,12 +16,12 @@ class MicrosoftDeviceOAuthToken extends OAuthToken {
     required super.expiresIn,
   });
 
+  factory MicrosoftDeviceOAuthToken.fromJson(JsonMap json) =>
+      _$MicrosoftDeviceOAuthTokenFromJson(json);
+
   /// always 'Bearer'
   final String tokenType;
   final String scope;
   final String? idToken;
   final int extExpiresIn;
-
-  factory MicrosoftDeviceOAuthToken.fromJson(JsonMap json) =>
-      _$MicrosoftDeviceOAuthTokenFromJson(json);
 }

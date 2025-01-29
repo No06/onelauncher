@@ -7,9 +7,9 @@ part 'os.g.dart';
 class Os {
   const Os({required this.name});
 
-  final OsName name;
-
   factory Os.fromJson(JsonMap json) => _$OsFromJson(json);
+
+  final OsName name;
   JsonMap toJson() => _$OsToJson(this);
 }
 
@@ -21,10 +21,11 @@ enum OsName {
   unknown("unknown");
 
   const OsName(this.name);
-  final String name;
 
   factory OsName.fromName(String name) {
     if (name == "macos") return osx;
     return $enumDecode(_$OsNameEnumMap, name, unknownValue: unknown);
   }
+
+  final String name;
 }

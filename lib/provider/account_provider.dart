@@ -12,20 +12,20 @@ part 'account_provider.g.dart';
 @JsonSerializable()
 @CopyWith()
 class AccountState {
-  /// 被选中的用户
-  final Account? selectedAccount;
-
-  /// 可用的用户集合
-  final Set<Account> accounts;
 
   AccountState({
     required this.selectedAccount,
     required this.accounts,
   });
 
-  JsonMap toJson() => _$AccountStateToJson(this);
-
   factory AccountState.fromJson(JsonMap json) => _$AccountStateFromJson(json);
+  /// 被选中的用户
+  final Account? selectedAccount;
+
+  /// 可用的用户集合
+  final Set<Account> accounts;
+
+  JsonMap toJson() => _$AccountStateToJson(this);
 }
 
 class AccountStateNotifier extends StateNotifier<AccountState> {

@@ -79,15 +79,17 @@ class _ConfigurationView extends StatelessWidget {
         children: [
           ...launcherGamePaths
               .map((path) => _LauncherGamePathListTile(path: path)),
-          Consumer(builder: (context, ref, child) {
-            final addedPaths =
-                ref.watch(gamePathProvider.select((state) => state.addedPaths));
-            return Column(
-              children: [
-                ...addedPaths.map((path) => _GamePathListTile(path: path)),
-              ],
-            );
-          }),
+          Consumer(
+            builder: (context, ref, child) {
+              final addedPaths = ref
+                  .watch(gamePathProvider.select((state) => state.addedPaths));
+              return Column(
+                children: [
+                  ...addedPaths.map((path) => _GamePathListTile(path: path)),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
@@ -95,9 +97,8 @@ class _ConfigurationView extends StatelessWidget {
 }
 
 class _LauncherGamePathListTile extends ConsumerWidget {
-  final GamePath path;
-
   const _LauncherGamePathListTile({required this.path});
+  final GamePath path;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -117,16 +118,15 @@ class _LauncherGamePathListTile extends ConsumerWidget {
 }
 
 class _GamePathListTile extends ConsumerStatefulWidget {
-  final GamePath path;
-
   const _GamePathListTile({required this.path});
+  final GamePath path;
 
   @override
   _HoverListTileState createState() => _HoverListTileState();
 }
 
 class _HoverListTileState extends ConsumerState<_GamePathListTile> {
-  var isHover = false;
+  bool isHover = false;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +219,7 @@ class _AddGamePathDialog extends HookConsumerWidget {
   Future<void> _confirm(String name, String path, WidgetRef ref) async {
     if (!formKey.currentState!.validate()) return;
 
-    add() => ref
+    bool add() => ref
         .read(gamePathProvider.notifier)
         .addPath(GamePath(name: name, path: path));
 

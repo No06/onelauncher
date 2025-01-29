@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/data/library/common_library.dart';
 import 'package:one_launcher/models/game/data/library/maven_library.dart';
@@ -9,6 +10,7 @@ import 'package:path/path.dart';
 
 part 'library.g.dart';
 
+@immutable
 @JsonSerializable(createFactory: false)
 class Library {
   Library({required this.name}) {
@@ -21,6 +23,22 @@ class Library {
     } else {
       _classifier = null;
     }
+  }
+
+  factory Library.fromJson(JsonMap json) {
+    if (json['natives'] != null) {
+      return NativesLibrary.fromJson(json);
+    }
+    if (json['downloads'] != null) {
+      return CommonLibrary.fromJson(json);
+    }
+    if (json['url'] != null) {
+      return MavenLibrary.fromJson(json);
+    }
+    if (json['name'] != null) {
+      return Library(name: json['name'] as String);
+    }
+    throw Exception("未知资源类型");
   }
 
   final String name;
@@ -44,8 +62,8 @@ class Library {
   String get jarPath => join(path, artifactId, version, jarName);
 
   String getPath(String gameLibrariesPath) => join(gameLibrariesPath, jarPath);
-  Future<bool> exists(String gameLibrariesPath) =>
-      File(getPath(gameLibrariesPath)).exists();
+  bool exists(String gameLibrariesPath) =>
+      File(getPath(gameLibrariesPath)).existsSync();
 
   @override
   bool operator ==(Object other) {
@@ -57,27 +75,12 @@ class Library {
   int get hashCode => name.hashCode;
 
   static List<String> _splitPackageName(String packageName) {
-    List<String> parts = packageName.split(':');
+    final parts = packageName.split(':');
     if (parts.length > 4 || parts.length < 3) {
       throw ArgumentError(
-          'packageName must have three parts separated by colons');
+        'packageName must have three parts separated by colons',
+      );
     }
     return parts;
-  }
-
-  factory Library.fromJson(JsonMap json) {
-    if (json['natives'] != null) {
-      return NativesLibrary.fromJson(json);
-    }
-    if (json['downloads'] != null) {
-      return CommonLibrary.fromJson(json);
-    }
-    if (json['url'] != null) {
-      return MavenLibrary.fromJson(json);
-    }
-    if (json['name'] != null) {
-      return Library(name: json['name']);
-    }
-    throw Exception("未知资源类型");
   }
 }

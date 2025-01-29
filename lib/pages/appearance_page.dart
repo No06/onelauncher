@@ -1,8 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:one_launcher/pages/common/base_page.dart';
 import 'package:one_launcher/provider/theme_provider.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
-import 'package:one_launcher/pages/common/base_page.dart';
 
 class AppearancePage extends RoutePage {
   const AppearancePage({super.key, super.pageName = "外观"});
@@ -20,7 +20,7 @@ class AppearancePage extends RoutePage {
         builder: (context, controller, physics) => ListView(
           controller: controller,
           physics: physics,
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+          padding: const EdgeInsets.symmetric(horizontal: 15),
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +47,7 @@ class AppearancePage extends RoutePage {
                       );
                     }),
                   );
-                }),
+                },),
               ],
             ),
           ],
@@ -82,7 +82,7 @@ class _Radio extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 5),
           child: Text(text, style: const TextStyle(height: 1)),
-        )
+        ),
       ],
     );
   }

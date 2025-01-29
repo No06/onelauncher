@@ -15,22 +15,13 @@ OfflineAccount _$OfflineAccountFromJson(Map<String, dynamic> json) =>
           : LocalSkin.fromJson(json['skin'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$OfflineAccountToJson(OfflineAccount instance) {
-  final val = <String, dynamic>{
-    'type': _$AccountTypeEnumMap[instance.type]!,
-    'uuid': instance.uuid,
-    'displayName': instance.displayName,
-  };
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('skin', instance.skin?.toJson());
-  return val;
-}
+Map<String, dynamic> _$OfflineAccountToJson(OfflineAccount instance) =>
+    <String, dynamic>{
+      'type': _$AccountTypeEnumMap[instance.type]!,
+      'uuid': instance.uuid,
+      'displayName': instance.displayName,
+      if (instance.skin?.toJson() case final value?) 'skin': value,
+    };
 
 const _$AccountTypeEnumMap = {
   AccountType.offline: 'offline',

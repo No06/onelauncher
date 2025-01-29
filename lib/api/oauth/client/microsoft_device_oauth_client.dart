@@ -2,9 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/api/dio/dio.dart';
 import 'package:one_launcher/api/oauth/client/oauth_client.dart';
+import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/json_map.dart';
-import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
 
 part 'microsoft_device_oauth_client.g.dart';
 
@@ -14,22 +14,30 @@ class MicrosoftDeviceOAuthClient extends OAuthClient {
   static const _tenant = 'consumers';
   static const _scope = 'Xboxlive.offline_access XboxLive.signin';
 
-  final _dio = createDio(BaseOptions(
-      baseUrl: _url, contentType: Headers.formUrlEncodedContentType));
+  final _dio = createDio(
+    BaseOptions(
+      baseUrl: _url,
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
   String _pathParse(String path) => '/$_tenant$path';
 
   Future<MicrosoftDeviceAuthorizationResponse> requestDeviceAuthorization({
     CancelToken? cancelToken,
   }) async {
     final path = _pathParse('/oauth2/v2.0/devicecode');
-    final response = await _dio.post(
+    final response = await _dio.post<JsonMap>(
       path,
       // TODO: 适配多语言
       queryParameters: {'mkt': 'zh-CN'},
       data: {'client_id': kClientId, 'scope': _scope},
       cancelToken: cancelToken,
     );
-    return MicrosoftDeviceAuthorizationResponse.fromJson(response.data);
+    final respData = response.data;
+    if (respData == null) {
+      throw Exception('MicrosoftDeviceAuthorizationResponse is null');
+    }
+    return MicrosoftDeviceAuthorizationResponse.fromJson(respData);
   }
 
   /// While the user is authenticating at the `verification_uri`, the client
@@ -43,18 +51,22 @@ class MicrosoftDeviceOAuthClient extends OAuthClient {
   }) async {
     final path = _pathParse('/oauth2/v2.0/token');
     try {
-      final response = await _dio.post(
+      final response = await _dio.post<JsonMap>(
         path,
         data: {
           'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
           'client_id': kClientId,
-          'device_code': deviceCode
+          'device_code': deviceCode,
         },
         cancelToken: cancelToken,
       );
-      return MicrosoftDeviceOAuthToken.fromJson(response.data);
+      final respData = response.data;
+      if (respData == null) {
+        throw Exception('MicrosoftDeviceOAuthToken is null');
+      }
+      return MicrosoftDeviceOAuthToken.fromJson(respData);
     } on DioException catch (e) {
-      final data = e.response?.data;
+      final data = e.response?.data as JsonMap?;
       if (data == null) rethrow;
       throw MicrosoftDeviceOAuthException.fromJson(data);
     }
@@ -65,7 +77,7 @@ class MicrosoftDeviceOAuthClient extends OAuthClient {
     CancelToken? cancelToken,
   }) async {
     final path = _pathParse('/oauth2/v2.0/token');
-    final response = await _dio.post(
+    final response = await _dio.post<JsonMap>(
       path,
       data: {
         'grant_type': 'refresh_token',
@@ -75,7 +87,11 @@ class MicrosoftDeviceOAuthClient extends OAuthClient {
       },
       cancelToken: cancelToken,
     );
-    return MicrosoftDeviceOAuthToken.fromJson(response.data);
+    final respData = response.data;
+    if (respData == null) {
+      throw Exception('MicrosoftDeviceOAuthToken is null');
+    }
+    return MicrosoftDeviceOAuthToken.fromJson(respData);
   }
 }
 
@@ -90,6 +106,9 @@ class MicrosoftDeviceAuthorizationResponse {
     this.message,
   );
 
+  factory MicrosoftDeviceAuthorizationResponse.fromJson(JsonMap json) =>
+      _$MicrosoftDeviceAuthorizationResponseFromJson(json);
+
   final String deviceCode;
   final String userCode;
   final String verificationUri;
@@ -98,22 +117,20 @@ class MicrosoftDeviceAuthorizationResponse {
   final int expiresIn;
   final int interval;
   final String message;
-
-  factory MicrosoftDeviceAuthorizationResponse.fromJson(JsonMap json) =>
-      _$MicrosoftDeviceAuthorizationResponseFromJson(json);
 }
 
 @JsonSerializable(createToJson: false)
 class MicrosoftDeviceOAuthException implements Exception {
   const MicrosoftDeviceOAuthException(this.type);
 
-  @JsonKey(
-      name: "error",
-      unknownEnumValue: MicrosoftDeviceOAuthExceptionType.unknown)
-  final MicrosoftDeviceOAuthExceptionType type;
-
   factory MicrosoftDeviceOAuthException.fromJson(JsonMap json) =>
       _$MicrosoftDeviceOAuthExceptionFromJson(json);
+
+  @JsonKey(
+    name: "error",
+    unknownEnumValue: MicrosoftDeviceOAuthExceptionType.unknown,
+  )
+  final MicrosoftDeviceOAuthExceptionType type;
 }
 
 @JsonEnum(fieldRename: FieldRename.snake)

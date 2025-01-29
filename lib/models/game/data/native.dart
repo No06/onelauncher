@@ -7,11 +7,11 @@ part 'native.g.dart';
 class Natives {
   const Natives(this.linux, this.osx, this.windows);
 
+  factory Natives.fromJson(JsonMap json) => _$NativesFromJson(json);
+
   final Native? linux;
   final Native? osx;
   final Native? windows;
-
-  factory Natives.fromJson(JsonMap json) => _$NativesFromJson(json);
   JsonMap toJson() => _$NativesToJson(this);
 }
 

@@ -7,9 +7,9 @@ part 'java_version.g.dart';
 class JavaVersion {
   const JavaVersion(this.component, this.majorVersion);
 
+  factory JavaVersion.fromJson(JsonMap json) => _$JavaVersionFromJson(json);
+
   final String component;
   final int majorVersion;
-
-  factory JavaVersion.fromJson(JsonMap json) => _$JavaVersionFromJson(json);
   JsonMap toJson() => _$JavaVersionToJson(this);
 }

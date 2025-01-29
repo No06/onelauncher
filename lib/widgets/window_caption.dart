@@ -6,7 +6,7 @@ import 'package:windows_titlebar/windows_titlebar.dart';
 class MyWindowCaption extends StatelessWidget {
   const MyWindowCaption({super.key});
 
-  void toggleMinimize() async => await windowManager.isMinimized()
+  Future<void> toggleMinimize() async => await windowManager.isMinimized()
       ? windowManager.restore()
       : windowManager.minimize();
 
@@ -66,7 +66,7 @@ class _WindowMaximizeToggleButton extends StatefulWidget {
 
 class _WindowMaximizeToggleButtonState
     extends State<_WindowMaximizeToggleButton> with WindowListener {
-  var isMaximized = false;
+  bool isMaximized = false;
 
   @override
   void initState() {
@@ -74,7 +74,7 @@ class _WindowMaximizeToggleButtonState
     windowManager.addListener(this);
     windowManager.isMaximized().then((isMaximized) => setState(() {
           this.isMaximized = isMaximized;
-        }));
+        }),);
   }
 
   @override

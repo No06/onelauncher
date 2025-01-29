@@ -21,12 +21,16 @@ final _routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/play',
             pageBuilder: (context, state) => _SharedAxisPage(
-                key: state.pageKey, child: const GameLibraryPage()),
+              key: state.pageKey,
+              child: const GameLibraryPage(),
+            ),
           ),
           GoRoute(
             path: '/appearance',
             pageBuilder: (context, state) => _SharedAxisPage(
-                key: state.pageKey, child: const AppearancePage()),
+              key: state.pageKey,
+              child: const AppearancePage(),
+            ),
           ),
           GoRoute(
             path: '/setting',
@@ -40,11 +44,10 @@ final _routerProvider = Provider<GoRouter>((ref) {
 });
 
 class _RouteInformationNotifier extends ChangeNotifier {
-  final RouteInformationProvider routeInformationProvider;
-
   _RouteInformationNotifier(this.routeInformationProvider) {
     routeInformationProvider.addListener(notifyListeners);
   }
+  final RouteInformationProvider routeInformationProvider;
 
   @override
   void dispose() {
@@ -59,14 +62,14 @@ final _routeInformationNotifierProvider =
   return _RouteInformationNotifier(goRouter.routeInformationProvider);
 });
 
-class _SharedAxisPage extends Page {
+class _SharedAxisPage<T> extends Page<T> {
   const _SharedAxisPage({required this.child, super.key});
 
   final Widget child;
 
   @override
-  Route createRoute(BuildContext context) {
-    return PageRouteBuilder(
+  Route<T> createRoute(BuildContext context) {
+    return PageRouteBuilder<T>(
       settings: this,
       pageBuilder: (context, animation, secondaryAnimation) =>
           SharedAxisTransition(
@@ -77,11 +80,11 @@ class _SharedAxisPage extends Page {
         child: child,
       ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(0.0, 0.1);
+        const begin = Offset(0, 0.1);
         const end = Offset.zero;
         const curve = Curves.ease;
 
-        var tween =
+        final tween =
             Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
         return SlideTransition(
@@ -105,11 +108,13 @@ class _MainPage extends StatelessWidget {
         children: [
           const Divider(height: 1),
           Expanded(
-            child: Row(children: [
-              const _NavigationBar(),
-              const VerticalDivider(width: 1),
-              Expanded(child: child),
-            ]),
+            child: Row(
+              children: [
+                const _NavigationBar(),
+                const VerticalDivider(width: 1),
+                Expanded(child: child),
+              ],
+            ),
           ),
         ],
       ),

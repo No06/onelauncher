@@ -8,9 +8,6 @@ class GameVersion extends Version {
     super.patched,
   });
 
-  @override
-  int get minor => super.minor!;
-
   factory GameVersion.fromString(String value) {
     final split = value.split('.');
     final major = split[0];
@@ -27,4 +24,7 @@ class GameVersion extends Version {
       patched: int.tryParse(patched ?? ''),
     );
   }
+
+  @override
+  int get minor => super.minor!;
 }

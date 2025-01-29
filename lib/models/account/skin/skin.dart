@@ -24,11 +24,11 @@ abstract class Skin {
       Future(() => face = copyResize(
           copyCrop(source, x: 8 * wratio, y: 8 * lratio, width: 8, height: 8),
           width: 64,
-          height: 64)),
+          height: 64,),),
       Future(() => hair = copyResize(
           copyCrop(source, x: 40 * wratio, y: 8 * lratio, width: 8, height: 8),
           width: 72,
-          height: 72)),
+          height: 72,),),
     ]);
     final head = Image(width: 72, height: 72, numChannels: 4);
     await Future.wait([

@@ -14,6 +14,8 @@ class Classifiers {
     this.windows_64,
   });
 
+  factory Classifiers.fromJson(JsonMap json) => _$ClassifiersFromJson(json);
+
   @JsonKey(name: "natives-linux")
   final Artifact? linux;
 
@@ -28,7 +30,5 @@ class Classifiers {
 
   @JsonKey(name: "natives-windows-64")
   final Artifact? windows_64;
-
-  factory Classifiers.fromJson(JsonMap json) => _$ClassifiersFromJson(json);
   JsonMap toJson() => _$ClassifiersToJson(this);
 }

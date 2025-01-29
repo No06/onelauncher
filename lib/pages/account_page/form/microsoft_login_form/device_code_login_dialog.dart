@@ -15,7 +15,7 @@ class _DeviceCodeLoginDialog extends ConsumerStatefulWidget {
 
 class _DeviceCodeLoginDialogState
     extends ConsumerState<_DeviceCodeLoginDialog> {
-  var visible = false;
+  bool visible = false;
   final authenticationCompleter = Completer<MicrosoftDeviceOAuthToken>();
   final client = MicrosoftDeviceOAuthClient();
   late final Stream<MicrosoftDeviceOAuthToken> stream;
@@ -46,7 +46,7 @@ class _DeviceCodeLoginDialogState
 
     /// Timer
     var seconds = 0;
-    increase(Timer timer) => seconds += 1;
+    int increase(Timer timer) => seconds += 1;
     final timer = Timer.periodic(const Duration(seconds: 1), increase);
 
     MicrosoftDeviceOAuthToken? token;
@@ -61,10 +61,12 @@ class _DeviceCodeLoginDialogState
           case MicrosoftDeviceOAuthExceptionType.authorizationDeclined:
             showSnackbar(warningSnackBar(title: "最终用户拒绝了授权请求"));
           case MicrosoftDeviceOAuthExceptionType.badVerificationCode:
-            showSnackbar(errorSnackBar(
-              title: "这可能是个Bug",
-              content: '发送到 /token 端点的 device_code 无法识别',
-            ));
+            showSnackbar(
+              errorSnackBar(
+                title: "这可能是个Bug",
+                content: '发送到 /token 端点的 device_code 无法识别',
+              ),
+            );
           case MicrosoftDeviceOAuthExceptionType.expiredToken:
             showSnackbar(errorSnackBar(title: '请求超时'));
           case MicrosoftDeviceOAuthExceptionType.unknown:
@@ -117,7 +119,9 @@ class _DeviceCodeLoginDialogState
                     AsyncData() => Text(
                         "授权码",
                         style: textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w600, letterSpacing: 3),
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 3,
+                        ),
                       ),
                     AsyncError() => const SizedBox(),
                     _ => Text("请求中...", style: textTheme.headlineSmall),
@@ -134,7 +138,7 @@ class _DeviceCodeLoginDialogState
                     AsyncData(:final value) =>
                       Text(value.message, style: textTheme.bodyLarge),
                     _ => const SizedBox(),
-                  }
+                  },
                 ],
               ),
             ),

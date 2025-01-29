@@ -11,6 +11,6 @@ MinecraftOAuthToken _$MinecraftOAuthTokenFromJson(Map<String, dynamic> json) =>
       username: json['username'] as String,
       tokenType: json['token_type'] as String,
       accessToken: json['access_token'] as String,
-      refreshToken: json['refresh_token'] as String?,
       expiresIn: (json['expires_in'] as num).toInt(),
+      refreshToken: json['refresh_token'] as String?,
     );

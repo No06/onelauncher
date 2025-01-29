@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 
 class ValuesNotifier implements ValueListenable<bool> {
-  final List<ValueListenable> valueListenables;
-  late final Listenable listenable;
-  bool val = false;
   ValuesNotifier(this.valueListenables) {
     listenable = Listenable.merge(valueListenables);
     listenable.addListener(onNotified);
   }
+  final List<ValueListenable> valueListenables;
+  late final Listenable listenable;
+  bool val = false;
 
   @override
   void addListener(VoidCallback listener) {

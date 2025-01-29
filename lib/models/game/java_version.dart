@@ -8,12 +8,6 @@ class JavaVersion extends Version {
     super.patched,
   });
 
-  @override
-  int get minor => super.minor!;
-
-  @override
-  int get revision => super.revision!;
-
   factory JavaVersion.fromString(String value) {
     final split = value.split('.');
     final major = split[0];
@@ -30,4 +24,10 @@ class JavaVersion extends Version {
       patched: int.tryParse(patched ?? ''),
     );
   }
+
+  @override
+  int get minor => super.minor!;
+
+  @override
+  int get revision => super.revision!;
 }

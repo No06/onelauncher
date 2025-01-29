@@ -1,5 +1,5 @@
-import 'package:one_launcher/models/game/data/download_file.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/models/game/data/download_file.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'asset_index.g.dart';
@@ -14,9 +14,9 @@ class AssetIndex extends DownloadFile {
     required super.size,
   });
 
-  final int totalSize;
-
   factory AssetIndex.fromJson(JsonMap json) => _$AssetIndexFromJson(json);
+
+  final int totalSize;
   @override
   JsonMap toJson() => _$AssetIndexToJson(this);
 }

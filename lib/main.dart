@@ -1,12 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:one_launcher/app.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/utils/java_util.dart';
-import 'package:flutter/material.dart';
-
 import 'package:window_manager/window_manager.dart';
-
-import 'app.dart';
 
 final storage = GetStorage("$kAppName/config");
 
@@ -18,7 +16,7 @@ void main() async {
 Future<void> _init() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  initWindow() async {
+  Future<void> initWindow() async {
     await windowManager.ensureInitialized();
     const defaultWindowWidth = 960.0;
     const defaultWindowHeight = 593.0;

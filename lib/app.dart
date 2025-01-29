@@ -1,13 +1,13 @@
 import 'package:animations/animations.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:one_launcher/consts.dart';
-import 'package:flutter/material.dart';
-import 'package:one_launcher/provider/theme_provider.dart';
 import 'package:one_launcher/pages/account_page/account_page.dart';
 import 'package:one_launcher/pages/appearance_page.dart';
 import 'package:one_launcher/pages/game_library_page/game_library_page.dart';
 import 'package:one_launcher/pages/setting_page/setting_page.dart';
+import 'package:one_launcher/provider/theme_provider.dart';
 import 'package:one_launcher/widgets/window_caption.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -91,8 +91,9 @@ class _NavigationItem extends ConsumerWidget {
     final hoverColor = selectedColor.withOpacity(.15);
 
     final isSelected = ref.watch(
-      _routeInformationNotifierProvider.select((state) =>
-          state.routeInformationProvider.value.uri.path == routePath),
+      _routeInformationNotifierProvider.select(
+        (state) => state.routeInformationProvider.value.uri.path == routePath,
+      ),
     );
 
     final tween = isSelected
@@ -165,35 +166,37 @@ class _NavigationBar extends StatelessWidget {
       height: double.infinity,
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-        child: Column(children: [
-          _NavigationItem(
-            routePath: "/account",
-            title: "账号",
-            iconData: Icons.people_outline,
-            selectedIconData: Icons.people,
-          ),
-          divider,
-          _NavigationItem(
-            routePath: "/play",
-            title: "开始游戏",
-            iconData: Icons.sports_esports_outlined,
-            selectedIconData: Icons.sports_esports,
-          ),
-          divider,
-          _NavigationItem(
-            routePath: "/appearance",
-            title: "外观",
-            iconData: Icons.palette_outlined,
-            selectedIconData: Icons.palette,
-          ),
-          Spacer(),
-          _NavigationItem(
-            routePath: "/setting",
-            title: "设置",
-            iconData: Icons.settings_outlined,
-            selectedIconData: Icons.settings,
-          ),
-        ]),
+        child: Column(
+          children: [
+            _NavigationItem(
+              routePath: "/account",
+              title: "账号",
+              iconData: Icons.people_outline,
+              selectedIconData: Icons.people,
+            ),
+            divider,
+            _NavigationItem(
+              routePath: "/play",
+              title: "开始游戏",
+              iconData: Icons.sports_esports_outlined,
+              selectedIconData: Icons.sports_esports,
+            ),
+            divider,
+            _NavigationItem(
+              routePath: "/appearance",
+              title: "外观",
+              iconData: Icons.palette_outlined,
+              selectedIconData: Icons.palette,
+            ),
+            Spacer(),
+            _NavigationItem(
+              routePath: "/setting",
+              title: "设置",
+              iconData: Icons.settings_outlined,
+              selectedIconData: Icons.settings,
+            ),
+          ],
+        ),
       ),
     );
   }

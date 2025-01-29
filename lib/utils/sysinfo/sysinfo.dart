@@ -33,7 +33,7 @@ class LibCSysinfo extends Sysinfo {
 
   final _sysinfo = () {
     final instance = libc.sysinfo();
-    assert(instance != null);
+    assert(instance != null, 'sysinfo failed');
     return instance!;
   }();
 

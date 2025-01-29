@@ -8,9 +8,12 @@ part of 'game_data.dart';
 
 GameData _$GameDataFromJson(Map<String, dynamic> json) => GameData(
       json['id'] as String,
-      json['root'] as bool? ?? false,
       (json['patches'] as List<dynamic>?)
           ?.map((e) => GameData.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      root: json['root'] as bool? ?? false,
+      libraries: (json['libraries'] as List<dynamic>)
+          .map((e) => Library.fromJson(e as Map<String, dynamic>))
           .toList(),
       arguments: json['arguments'] == null
           ? null
@@ -24,9 +27,6 @@ GameData _$GameDataFromJson(Map<String, dynamic> json) => GameData(
       javaVersion: json['javaVersion'] == null
           ? null
           : JavaVersion.fromJson(json['javaVersion'] as Map<String, dynamic>),
-      libraries: (json['libraries'] as List<dynamic>)
-          .map((e) => Library.fromJson(e as Map<String, dynamic>))
-          .toList(),
       downloads: json['downloads'] == null
           ? null
           : GameDownloads.fromJson(json['downloads'] as Map<String, dynamic>),

@@ -10,12 +10,12 @@ NativesLibrary _$NativesLibraryFromJson(Map<String, dynamic> json) =>
     NativesLibrary(
       name: json['name'] as String,
       downloads: Downloads.fromJson(json['downloads'] as Map<String, dynamic>),
-      rules: (json['rules'] as List<dynamic>?)
-          ?.map((e) => Rule.fromJson(e as Map<String, dynamic>))
-          .toList(),
       natives: (json['natives'] as Map<String, dynamic>).map(
         (k, e) => MapEntry($enumDecode(_$OsNameEnumMap, k), e as String),
       ),
+      rules: (json['rules'] as List<dynamic>?)
+          ?.map((e) => Rule.fromJson(e as Map<String, dynamic>))
+          .toList(),
       extractRule: json['extract'] == null
           ? null
           : ExtractRule.fromJson(json['extract'] as Map<String, dynamic>),

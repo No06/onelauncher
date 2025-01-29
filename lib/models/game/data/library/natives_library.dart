@@ -21,10 +21,13 @@ class NativesLibrary extends CommonLibrary {
   NativesLibrary({
     required super.name,
     required super.downloads,
-    super.rules,
     required this.natives,
+    super.rules,
     this.extractRule,
   });
+
+  factory NativesLibrary.fromJson(JsonMap json) =>
+      _$NativesLibraryFromJson(json);
 
   static final currentOsName = OsName.fromName(Platform.operatingSystem);
 
@@ -65,14 +68,14 @@ class NativesLibrary extends CommonLibrary {
     final nativePath = artifact?.path;
     if (nativePath == null) return;
     final path = join(libraryPath, nativePath);
-    extractFileToDiskAndExclude(path, outputPath,
-        excludeFiles: extractRule?.exclude);
+    await extractFileToDiskAndExclude(
+      path,
+      outputPath,
+      excludeFiles: extractRule?.exclude,
+    );
   }
 
   String? get osNameString => natives[currentOsName];
-
-  factory NativesLibrary.fromJson(JsonMap json) =>
-      _$NativesLibraryFromJson(json);
   @override
   JsonMap toJson() => _$NativesLibraryToJson(this);
 }

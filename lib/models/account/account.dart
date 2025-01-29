@@ -1,8 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/models/account/offline_account.dart';
 import 'package:one_launcher/models/account/skin/skin.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'account.g.dart';
@@ -10,17 +10,6 @@ part 'account.g.dart';
 @JsonSerializable(createFactory: false)
 abstract class Account {
   const Account();
-
-  String get uuid;
-  String get displayName;
-
-  Future<Skin> getSkin();
-  Future<String> getAccessToken();
-
-  AccountType get type;
-
-  Future<AccountLoginInfo> login() async => AccountLoginInfo(
-      username: displayName, uuid: uuid, accessToken: await getAccessToken());
 
   factory Account.fromJson(JsonMap json) {
     switch (json['type']) {
@@ -32,6 +21,17 @@ abstract class Account {
         throw Exception("未知账号类型: ${json['type']}");
     }
   }
+
+  String get uuid;
+  String get displayName;
+
+  Future<Skin> getSkin();
+  Future<String> getAccessToken();
+
+  AccountType get type;
+
+  Future<AccountLoginInfo> login() async => AccountLoginInfo(
+      username: displayName, uuid: uuid, accessToken: await getAccessToken(),);
 
   JsonMap toJson() => _$AccountToJson(this);
 }

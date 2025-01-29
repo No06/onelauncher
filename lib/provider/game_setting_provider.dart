@@ -14,6 +14,21 @@ const _kDefaultJvmArgs =
 @JsonSerializable()
 @CopyWith()
 class GameSettingState {
+  const GameSettingState({
+    this.java,
+    this.jvmArgs,
+    this.autoMemory = true,
+    this.maxMemory = 2048,
+    this.fullScreen = false,
+    this.width = 854,
+    this.height = 480,
+    this.recordLog = false,
+    this.args = "",
+    this.serverAddress = "",
+  });
+
+  factory GameSettingState.fromJson(JsonMap json) =>
+      _$GameSettingStateFromJson(json);
   final Java? java;
   final String? jvmArgs;
   final bool autoMemory;
@@ -29,23 +44,7 @@ class GameSettingState {
   String get adaptiveJvmArgs => useDefaultJvmArgs ? _kDefaultJvmArgs : jvmArgs!;
   bool get useDefaultJvmArgs => jvmArgs == null || jvmArgs!.isEmpty;
 
-  const GameSettingState({
-    this.java,
-    this.jvmArgs,
-    this.autoMemory = true,
-    this.maxMemory = 2048,
-    this.fullScreen = false,
-    this.width = 854,
-    this.height = 480,
-    this.recordLog = false,
-    this.args = "",
-    this.serverAddress = "",
-  });
-
   JsonMap toJson() => _$GameSettingStateToJson(this);
-
-  factory GameSettingState.fromJson(JsonMap json) =>
-      _$GameSettingStateFromJson(json);
 }
 
 class GameSettingNotifier extends StateNotifier<GameSettingState> {

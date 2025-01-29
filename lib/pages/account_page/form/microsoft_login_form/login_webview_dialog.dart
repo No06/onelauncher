@@ -53,7 +53,7 @@ class _MicrosoftLoginWebviewScreenState
         '&response_type=code'
         '&scope=${MicrosoftOAuthClient.scope}'
         '&redirect_uri=${MicrosoftOAuthClient.redirectUri}'; // 正则用于获取授权码
-    final codeRegex = RegExp(r"(?<=code=)[^&]+");
+    final codeRegex = RegExp("(?<=code=)[^&]+");
 
     try {
       await _controller.initialize();
@@ -74,7 +74,7 @@ class _MicrosoftLoginWebviewScreenState
     } on PlatformException catch (e) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) {
-          showDialog(
+          showDialog<void>(
             context: context,
             builder: (_) => AlertDialog(
               title: const Text('Error'),
@@ -90,7 +90,7 @@ class _MicrosoftLoginWebviewScreenState
                 TextButton(
                   onPressed: Navigator.of(context).pop,
                   child: const Text('Continue'),
-                )
+                ),
               ],
             ),
           );
@@ -124,10 +124,7 @@ class _MicrosoftLoginWebviewScreenState
                 ),
                 const Flexible(
                   child: DragToMoveArea(
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
+                    child: SizedBox.expand(),
                   ),
                 ),
                 const IconButton(

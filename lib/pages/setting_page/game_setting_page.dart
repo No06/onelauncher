@@ -41,13 +41,15 @@ class _JavaSettingEditListTileGroup extends StatelessWidget {
       children: [
         ListTile(
           title: const Text("Java路径"),
-          subtitle: Consumer(builder: (context, ref, child) {
-            final path = ref
-                .watch(gameSettingProvider.select((state) => state.java))
-                ?.path;
-            return Text(path ?? "自动选择最佳版本");
-          }),
-          onTap: () => showDialog(
+          subtitle: Consumer(
+            builder: (context, ref, child) {
+              final path = ref
+                  .watch(gameSettingProvider.select((state) => state.java))
+                  ?.path;
+              return Text(path ?? "自动选择最佳版本");
+            },
+          ),
+          onTap: () => showDialog<void>(
             context: context,
             builder: (context) => const _JavaSelectDialog(),
           ),
@@ -145,30 +147,32 @@ class _JavaSelectDialog extends StatelessWidget {
         borderRadius: kDefaultBorderRadius,
         clipBehavior: Clip.antiAlias,
         child: SingleChildScrollView(
-          child: Consumer(builder: (context, ref, child) {
-            final java =
-                ref.watch(gameSettingProvider.select((state) => state.java));
-            final notifier = ref.read(gameSettingProvider.notifier);
-            return Column(
-              children: [
-                RadioListTile(
-                  value: null,
-                  groupValue: java,
-                  title: const Text("自动选择最佳版本"),
-                  onChanged: (value) => notifier.update(java: value),
-                ),
-                ...JavaManager.set.map(
-                  (e) => RadioListTile(
-                    value: e,
+          child: Consumer(
+            builder: (context, ref, child) {
+              final java =
+                  ref.watch(gameSettingProvider.select((state) => state.java));
+              final notifier = ref.read(gameSettingProvider.notifier);
+              return Column(
+                children: [
+                  RadioListTile(
+                    value: null,
                     groupValue: java,
-                    title: Text(e.version),
-                    subtitle: Text(e.path),
+                    title: const Text("自动选择最佳版本"),
                     onChanged: (value) => notifier.update(java: value),
                   ),
-                )
-              ],
-            );
-          }),
+                  ...JavaManager.set.map(
+                    (e) => RadioListTile(
+                      value: e,
+                      groupValue: java,
+                      title: Text(e.version),
+                      subtitle: Text(e.path),
+                      onChanged: (value) => notifier.update(java: value),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -198,10 +202,13 @@ class _MemorySettingListTileGroup extends HookConsumerWidget {
       if (!textFieldFocusNode.hasFocus) updateMaxMemory();
     }
 
-    useEffect(() {
-      textFieldFocusNode.addListener(listener);
-      return () => textFieldFocusNode.removeListener(listener);
-    }, [textFieldFocusNode]);
+    useEffect(
+      () {
+        textFieldFocusNode.addListener(listener);
+        return () => textFieldFocusNode.removeListener(listener);
+      },
+      [textFieldFocusNode],
+    );
 
     return TitleWidgetGroup(
       "内存",
@@ -225,70 +232,73 @@ class _MemorySettingListTileGroup extends HookConsumerWidget {
               child: child!,
             );
           },
-          child: Column(children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 15),
-              child: Row(
-                children: [
-                  const Text("手动分配"),
-                  Expanded(
-                    child: ValueListenableBuilder(
-                      valueListenable: textController,
-                      builder: (context, textValue, child) => Slider(
-                        inactiveColor: colors.primary.withOpacity(.2),
-                        value: double.parse(textValue.text),
-                        min: 1,
-                        max: sysinfo.totalPhyMem.toMB(),
-                        label: textValue.text,
-                        onChanged: (value) =>
-                            updateText(value.toInt().toString()),
-                        onChangeEnd: (value) {
-                          var intValue = value.toInt();
-                          updateText(intValue.toString());
-                          updateMaxMemory();
-                        },
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 15),
+                child: Row(
+                  children: [
+                    const Text("手动分配"),
+                    Expanded(
+                      child: ValueListenableBuilder(
+                        valueListenable: textController,
+                        builder: (context, textValue, child) => Slider(
+                          inactiveColor: colors.primary.withOpacity(.2),
+                          value: double.parse(textValue.text),
+                          min: 1,
+                          max: sysinfo.totalPhyMem.toMB(),
+                          label: textValue.text,
+                          onChanged: (value) =>
+                              updateText(value.toInt().toString()),
+                          onChangeEnd: (value) {
+                            final intValue = value.toInt();
+                            updateText(intValue.toString());
+                            updateMaxMemory();
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 15),
-                    child: SizedBox(
-                      width: 100,
-                      height: 36,
-                      child: TextField(
-                        focusNode: textFieldFocusNode,
-                        controller: textController,
-                        inputFormatters: [
-                          _MemoryTextInputFormatter(
-                              sysinfo.totalPhyMem.toMB().toInt())
-                        ],
-                        decoration: const InputDecoration(
-                          suffixIcon: SizedBox.shrink(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Padding(
-                                padding: EdgeInsets.only(right: 10),
-                                child: Text("MB"),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 15),
+                      child: SizedBox(
+                        width: 100,
+                        height: 36,
+                        child: TextField(
+                          focusNode: textFieldFocusNode,
+                          controller: textController,
+                          inputFormatters: [
+                            _MemoryTextInputFormatter(
+                              sysinfo.totalPhyMem.toMB().toInt(),
+                            ),
+                          ],
+                          decoration: const InputDecoration(
+                            suffixIcon: SizedBox.shrink(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                  padding: EdgeInsets.only(right: 10),
+                                  child: Text("MB"),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(left: 15, right: 15, bottom: 10),
-              child: ValueListenableBuilder(
-                valueListenable: textController,
-                builder: (context, value, child) =>
-                    _MemoryAllocationBar(double.parse(value.text) / 1024),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(left: 15, right: 15, bottom: 10),
+                child: ValueListenableBuilder(
+                  valueListenable: textController,
+                  builder: (context, value, child) =>
+                      _MemoryAllocationBar(double.parse(value.text) / 1024),
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ),
       ],
     );
@@ -332,7 +342,8 @@ class _GameSettingListTileGroup extends ConsumerWidget {
                       builder: (context, ref, child) =>
                           _ResolutionEditTextField(
                         value: ref.watch(
-                            gameSettingProvider.select((state) => state.width)),
+                          gameSettingProvider.select((state) => state.width),
+                        ),
                         onSubmitted: (value) =>
                             notifier.update(width: int.parse(value)),
                       ),
@@ -347,8 +358,9 @@ class _GameSettingListTileGroup extends ConsumerWidget {
                     child: Consumer(
                       builder: (context, ref, child) =>
                           _ResolutionEditTextField(
-                        value: ref.watch(gameSettingProvider
-                            .select((state) => state.height)),
+                        value: ref.watch(
+                          gameSettingProvider.select((state) => state.height),
+                        ),
                         onSubmitted: (value) =>
                             notifier.update(height: int.parse(value)),
                       ),
@@ -359,16 +371,18 @@ class _GameSettingListTileGroup extends ConsumerWidget {
             ),
           ),
         ),
-        Consumer(builder: (context, ref, child) {
-          final recordLog =
-              ref.watch(gameSettingProvider.select((state) => state.recordLog));
-          return SwitchListTile(
-            value: recordLog,
-            selected: recordLog,
-            title: const Text("日志"),
-            onChanged: (value) => notifier.update(recordLog: value),
-          );
-        }),
+        Consumer(
+          builder: (context, ref, child) {
+            final recordLog = ref
+                .watch(gameSettingProvider.select((state) => state.recordLog));
+            return SwitchListTile(
+              value: recordLog,
+              selected: recordLog,
+              title: const Text("日志"),
+              onChanged: (value) => notifier.update(recordLog: value),
+            );
+          },
+        ),
         ListTile(
           title: const Text("启动参数"),
           trailing: SizedBox(
@@ -376,8 +390,8 @@ class _GameSettingListTileGroup extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 5),
               child: _TextField(
-                text: ref
-                    .read(gameSettingProvider.select(((state) => state.args))),
+                text:
+                    ref.read(gameSettingProvider.select((state) => state.args)),
                 onNoFocus: (value) => notifier.update(args: value),
                 onSubmitted: (value) => notifier.update(args: value),
               ),
@@ -391,8 +405,9 @@ class _GameSettingListTileGroup extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 5),
               child: _TextField(
-                text: ref.read(gameSettingProvider
-                    .select(((state) => state.serverAddress))),
+                text: ref.read(
+                  gameSettingProvider.select((state) => state.serverAddress),
+                ),
                 onNoFocus: (value) => notifier.update(serverAddress: value),
                 onChanged: (value) => notifier.update(serverAddress: value),
               ),
@@ -454,16 +469,19 @@ class _TextField extends HookWidget {
     final textCtl = useTextEditingController(text: text);
     final focusNode = useFocusNode();
 
-    useEffect(() {
-      listener() {
-        if (!focusNode.hasFocus && onNoFocus != null) {
-          onNoFocus!(textCtl.text);
+    useEffect(
+      () {
+        listener() {
+          if (!focusNode.hasFocus && onNoFocus != null) {
+            onNoFocus!(textCtl.text);
+          }
         }
-      }
 
-      focusNode.addListener(listener);
-      return () => focusNode.removeListener(listener);
-    }, [focusNode]);
+        focusNode.addListener(listener);
+        return () => focusNode.removeListener(listener);
+      },
+      [focusNode],
+    );
 
     return TextField(
       controller: textCtl,
@@ -485,7 +503,7 @@ class _MemoryAllocationBar extends StatefulWidget {
 
 class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
   late final Timer timer;
-  var needUpdate = true;
+  bool needUpdate = true;
   late double totalPhyMem;
   late double freePhyMem;
 
@@ -494,7 +512,9 @@ class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
     super.initState();
     updateMemInfo();
     timer = Timer.periodic(
-        const Duration(seconds: 3), (timer) => setState(updateMemInfo));
+      const Duration(seconds: 3),
+      (timer) => setState(updateMemInfo),
+    );
   }
 
   @override
@@ -522,7 +542,6 @@ class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
         SizedBox(
           height: 5,
           child: ClipRRect(
-            clipBehavior: Clip.antiAlias,
             borderRadius: kDefaultBorderRadius,
             child: Stack(
               children: [
@@ -550,10 +569,12 @@ class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
         Row(
           children: [
             Text(
-                "使用中内存：${_toDecimal(usedMemSize)} / ${_toDecimal(totalPhyMem)} GB"),
+              "使用中内存：${_toDecimal(usedMemSize)} / ${_toDecimal(totalPhyMem)} GB",
+            ),
             const Spacer(),
             Text(
-                "游戏分配：${_toDecimal(widget.allocationMemSize)} GB ${widget.allocationMemSize > freePhyMem ? "(${_toDecimal(freePhyMem)} GB 可用)" : ""}"),
+              "游戏分配：${_toDecimal(widget.allocationMemSize)} GB ${widget.allocationMemSize > freePhyMem ? "(${_toDecimal(freePhyMem)} GB 可用)" : ""}",
+            ),
           ],
         ),
       ],
@@ -568,7 +589,9 @@ class _MemoryTextInputFormatter extends TextInputFormatter {
 
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     if (newValue.text.isEmpty ||
         newValue.text.startsWith('0') ||
         !newValue.text.isNum ||

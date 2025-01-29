@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:one_launcher/api/dio/dio.dart';
 import 'package:one_launcher/api/oauth/client/oauth_client.dart';
 import 'package:one_launcher/api/oauth/token/xbox_oauth_token.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 class XboxOAuthClient extends OAuthClient {
   static const _contentType = Headers.jsonContentType;
@@ -18,7 +19,7 @@ class XboxOAuthClient extends OAuthClient {
       host: "user.auth.xboxlive.com",
       path: "user/authenticate",
     );
-    final response = await _dio.postUri(
+    final response = await _dio.postUri<JsonMap>(
       uri,
       data: {
         "Properties": {
@@ -27,11 +28,15 @@ class XboxOAuthClient extends OAuthClient {
           "RpsTicket": rpsTicket,
         },
         "RelyingParty": "http://auth.xboxlive.com",
-        "TokenType": "JWT"
+        "TokenType": "JWT",
       },
       cancelToken: cancelToken,
     );
-    return XboxOAuthToken.fromJson(response.data);
+    final respData = response.data;
+    if (respData == null) {
+      throw Exception('XboxOAuthToken is null');
+    }
+    return XboxOAuthToken.fromJson(respData);
   }
 
   /// 获取XSTS令牌
@@ -44,20 +49,24 @@ class XboxOAuthClient extends OAuthClient {
       host: 'xsts.auth.xboxlive.com',
       path: 'xsts/authorize',
     );
-    final response = await _dio.postUri(
+    final response = await _dio.postUri<JsonMap>(
       uri,
       data: {
         "Properties": {
           "SandboxId": "RETAIL",
           "UserTokens": [
-            userToken // from above
-          ]
+            userToken, // from above
+          ],
         },
         "RelyingParty": "rp://api.minecraftservices.com/",
-        "TokenType": "JWT"
+        "TokenType": "JWT",
       },
       cancelToken: cancelToken,
     );
-    return XboxOAuthToken.fromJson(response.data);
+    final respData = response.data;
+    if (respData == null) {
+      throw Exception('XboxOAuthToken is null');
+    }
+    return XboxOAuthToken.fromJson(respData);
   }
 }

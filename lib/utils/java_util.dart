@@ -11,16 +11,17 @@ abstract final class JavaManager {
   static Future<void> init() async {
     _set.clear();
     final envPath = await getAllOnPathEnv();
-    _set.addAll(envPath ?? List.empty());
-    _set.addAll(await getAllOnJavaEnv());
+    _set
+      ..addAll(envPath ?? List.empty())
+      ..addAll(await getAllOnJavaEnv());
   }
 
-  static get _searchBinName => Platform.isWindows ? "where" : "which";
+  static String get _searchBinName => Platform.isWindows ? "where" : "which";
 
   /// 从环境变量 PATH 中获取
   static Future<Iterable<Java>?> getAllOnPathEnv() async {
     final args =
-        Platform.isWindows ? ["\$PATH:java"] : ["-a", "\$PATH", "java"];
+        Platform.isWindows ? [r"$PATH:java"] : ["-a", r"$PATH", "java"];
     final processResult =
         await Process.run(_searchBinName, args, runInShell: true);
     final result = (processResult.stdout as String).trim();
@@ -36,7 +37,7 @@ abstract final class JavaManager {
   static Future<Set<Java>> getAllOnJavaEnv() async {
     final results = <Java>{};
 
-    for (var env in ["JAVA_HOME", "JRE_HOME"]) {
+    for (final env in ["JAVA_HOME", "JRE_HOME"]) {
       final variable = Platform.environment[env];
       if (variable == null) continue;
 
@@ -44,8 +45,8 @@ abstract final class JavaManager {
       final args = Platform.isWindows ? ['/R', path, "java"] : [path, "java"];
       final processResult =
           await Process.run(_searchBinName, args, runInShell: true);
-      final stdout = processResult.stdout;
-      if (stdout == "") continue;
+      final stdout = processResult.stdout as String;
+      if (stdout.isEmpty) continue;
 
       final javaPath = resolveSymbolicLink(stdout.trim());
       results.add(Java(javaPath));

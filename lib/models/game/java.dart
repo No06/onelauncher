@@ -1,16 +1,20 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/java_version.dart';
 import 'package:one_launcher/models/json_map.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:path/path.dart';
 
 part 'java.g.dart';
 
+@immutable
 @JsonSerializable()
 class Java {
   Java(this.path);
+
+  factory Java.fromJson(JsonMap json) => _$JavaFromJson(json);
 
   static final binName = Platform.isWindows ? "java.exe" : "java";
 
@@ -40,7 +44,8 @@ class Java {
     }
 
     return JavaVersion.fromString(
-        split.reduce((value, element) => "$value.$element"));
+      split.reduce((value, element) => "$value.$element"),
+    );
   }
 
   String _getVersion() {
@@ -76,7 +81,7 @@ class Java {
     final parentPath = path.substring(0, path.length - binName.length);
     final javacBinName = Platform.isWindows ? "javac.exe" : "javac";
     final javacPath = join(parentPath, javacBinName);
-    ProcessResult result = Process.runSync(javacPath, ["-version"]);
+    final result = Process.runSync(javacPath, ["-version"]);
     final stdout = result.stdout as String;
     final stderr = result.stderr as String;
     if (result.exitCode != 0) {
@@ -86,8 +91,6 @@ class Java {
     final resultStr = (stdout.isEmpty ? stderr : stdout);
     return resultStr.substring("javac ".length).trim();
   }
-
-  factory Java.fromJson(JsonMap json) => _$JavaFromJson(json);
 
   JsonMap toJson() => _$JavaToJson(this);
 

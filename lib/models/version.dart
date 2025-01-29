@@ -6,6 +6,21 @@ class Version {
     this.patched,
   });
 
+  /// 传入 1.x.x 格式的字符串
+  factory Version.fromString(String value) {
+    final split = value.split('.');
+    final major = split[0];
+    final minor = split.elementAtOrNull(1);
+    final revision = split.elementAtOrNull(2);
+    final patched = split.elementAtOrNull(3);
+    return Version(
+      major: int.parse(major),
+      minor: int.tryParse(minor ?? ''),
+      revision: int.tryParse(revision ?? ''),
+      patched: int.tryParse(patched ?? ''),
+    );
+  }
+
   final int major;
   final int? minor;
   final int? revision;
@@ -33,20 +48,5 @@ class Version {
     }
     // 所有版本号都相同或者有一个为空，返回0
     return 0;
-  }
-
-  /// 传入 1.x.x 格式的字符串
-  factory Version.fromString(String value) {
-    final split = value.split('.');
-    final major = split[0];
-    final minor = split.elementAtOrNull(1);
-    final revision = split.elementAtOrNull(2);
-    final patched = split.elementAtOrNull(3);
-    return Version(
-      major: int.parse(major),
-      minor: int.tryParse(minor ?? ''),
-      revision: int.tryParse(revision ?? ''),
-      patched: int.tryParse(patched ?? ''),
-    );
   }
 }

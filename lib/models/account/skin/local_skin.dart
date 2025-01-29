@@ -14,6 +14,8 @@ class LocalSkin extends Skin {
     this.localCapePath,
   }) : _variant = variant;
 
+  factory LocalSkin.fromJson(JsonMap json) => _$LocalSkinFromJson(json);
+
   final SkinType type;
   final TextureModel _variant;
   final String? localSkinPath;
@@ -37,8 +39,6 @@ class LocalSkin extends Skin {
         throw UnimplementedError();
     }
   }
-
-  factory LocalSkin.fromJson(JsonMap json) => _$LocalSkinFromJson(json);
 }
 
 Future<Uint8List> _localImgU8l(String key) => rootBundle.load(key).then(

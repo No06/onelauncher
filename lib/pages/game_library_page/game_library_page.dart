@@ -9,23 +9,23 @@ import 'package:one_launcher/models/game/data/game_type.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game/game_path.dart';
 import 'package:one_launcher/models/json_map.dart';
+import 'package:one_launcher/pages/common/base_page.dart';
+import 'package:one_launcher/pages/game_library_page/game_startup_dialog.dart';
 import 'package:one_launcher/provider/account_provider.dart';
 import 'package:one_launcher/provider/game_path_provider.dart';
-import 'package:one_launcher/pages/game_library_page/game_startup_dialog.dart';
+import 'package:one_launcher/utils/extension/list_extension.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
-import 'package:one_launcher/utils/form_validator.dart';
-import 'package:one_launcher/widgets/build_widgets_with_divider.dart';
 import 'package:one_launcher/utils/file/file_picker.dart';
+import 'package:one_launcher/utils/form_validator.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/dyn_mouse_scroll.dart';
-import 'package:one_launcher/pages/common/base_page.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
 import 'package:open_file/open_file.dart';
 
-part 'filter_rule_provider.dart';
-part 'home_page.dart';
 part 'configuration_page.dart';
+part 'filter_rule_provider.dart';
 part 'game_library_page.g.dart';
+part 'home_page.dart';
 
 class GameLibraryPage extends RoutePage {
   const GameLibraryPage({super.key, super.pageName = "开始游戏"});
@@ -54,7 +54,7 @@ class GameLibraryPage extends RoutePage {
             ),
             Expanded(
               child: TabBarView(children: tabs.values.toList()),
-            )
+            ),
           ],
         ),
       ),

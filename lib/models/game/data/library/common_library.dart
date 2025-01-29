@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/data/library/downloads.dart';
 import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/os.dart';
 import 'package:one_launcher/models/game/data/os_rule.dart';
 import 'package:one_launcher/models/game/data/rule.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'common_library.g.dart';
@@ -18,6 +18,8 @@ class CommonLibrary extends Library {
     this.rules,
   });
 
+  factory CommonLibrary.fromJson(JsonMap json) => _$CommonLibraryFromJson(json);
+
   final Downloads downloads;
   final List<Rule>? rules;
 
@@ -25,7 +27,7 @@ class CommonLibrary extends Library {
   bool get isAllowed {
     if (rules != null) {
       final osRules = <OsName>{};
-      for (var rule in rules!) {
+      for (final rule in rules!) {
         final action = rule.action;
         switch (action) {
           case RuleAction.allow:
@@ -48,7 +50,5 @@ class CommonLibrary extends Library {
     }
     return true;
   }
-
-  factory CommonLibrary.fromJson(JsonMap json) => _$CommonLibraryFromJson(json);
   JsonMap toJson() => _$CommonLibraryToJson(this);
 }

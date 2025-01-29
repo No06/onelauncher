@@ -8,6 +8,14 @@ class _FilterState {
     required this.types,
   });
 
+  factory _FilterState.fromJson(JsonMap json) => _FilterState(
+        name: "",
+        collation: _GameCollation.values[json['collation'] as int],
+        types: (json['types'] as List)
+            .map((index) => _GameType.values[index as int])
+            .toSet(),
+      );
+
   final String name;
   final _GameCollation collation;
   final Set<_GameType> types;
@@ -16,14 +24,6 @@ class _FilterState {
         'collation': collation.index,
         'types': types.map((e) => e.index).toList(),
       };
-
-  factory _FilterState.fromJson(JsonMap json) => _FilterState(
-        name: "",
-        collation: _GameCollation.values[json['collation'] as int],
-        types: (json['types'] as List)
-            .map((index) => _GameType.values[index as int])
-            .toSet(),
-      );
 }
 
 class _FilterStateNotifier extends StateNotifier<_FilterState> {
@@ -58,7 +58,7 @@ class _FilterStateNotifier extends StateNotifier<_FilterState> {
     _saveState();
   }
 
-  void updateTypeWithSelectedValue(_GameType type, bool isSelected) {
+  void updateTypeWithSelectedValue(_GameType type, {required bool isSelected}) {
     final newTypes = Set<_GameType>.from(state.types);
     if (isSelected) {
       newTypes.add(type);
@@ -80,9 +80,9 @@ enum _GameType {
   snapshot("快照"),
   mod("Mod版");
 
-  final String name;
-
   const _GameType(this.name);
+
+  final String name;
 }
 
 enum _GameCollation {

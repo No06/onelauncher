@@ -8,6 +8,8 @@ part 'maven_library.g.dart';
 class MavenLibrary extends Library {
   MavenLibrary(String name, this.url) : super(name: name);
 
+  factory MavenLibrary.fromJson(JsonMap json) => _$MavenLibraryFromJson(json);
+
   final String url;
 
   late final List<String> _nameSplit = name.split(":");
@@ -20,7 +22,5 @@ class MavenLibrary extends Library {
   String get packageVersion => _nameSplit[2];
   String get downloadUrl =>
       "$url/$domainSuffix/$domainName/$packageName/$packageVersion/$packageName-$packageVersion.jar";
-
-  factory MavenLibrary.fromJson(JsonMap json) => _$MavenLibraryFromJson(json);
   JsonMap toJson() => _$MavenLibraryToJson(this);
 }

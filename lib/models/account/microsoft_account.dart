@@ -1,9 +1,9 @@
+import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/api/minecraft_services_api.dart';
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/mc_access_token.dart';
 import 'package:one_launcher/models/account/skin/online_skin.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/json_map.dart';
-import 'package:one_launcher/api/minecraft_services_api.dart';
 
 part 'microsoft_account.g.dart';
 
@@ -25,6 +25,9 @@ class MicrosoftAccount extends Account {
           notAfter: notAfter,
         ),
         _skin = skin;
+
+  factory MicrosoftAccount.fromJson(JsonMap json) =>
+      _$MicrosoftAccountFromJson(json);
 
   @override
   String get displayName => _displayName;
@@ -81,9 +84,6 @@ class MicrosoftAccount extends Account {
 
   @override
   JsonMap toJson() => _$MicrosoftAccountToJson(this);
-
-  factory MicrosoftAccount.fromJson(JsonMap json) =>
-      _$MicrosoftAccountFromJson(json);
 }
 
 @JsonEnum()

@@ -11,6 +11,8 @@ part 'online_skin.g.dart';
 class OnlineSkin extends Skin {
   const OnlineSkin(TextureModel variant, this.url) : _variant = variant;
 
+  factory OnlineSkin.fromJson(JsonMap json) => _$OnlineSkinFromJson(json);
+
   // String id;
   // String state;
   final TextureModel _variant;
@@ -24,10 +26,8 @@ class OnlineSkin extends Skin {
   Future<Uint8List> u8l() async {
     final cache = DefaultCacheManager();
     final imageFile = await cache.getSingleFile(url);
-    return await imageFile.readAsBytes();
+    return imageFile.readAsBytes();
   }
-
-  factory OnlineSkin.fromJson(JsonMap json) => _$OnlineSkinFromJson(json);
 
   @override
   JsonMap toJson() => _$OnlineSkinToJson(this);

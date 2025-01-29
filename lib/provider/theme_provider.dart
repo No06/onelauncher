@@ -6,10 +6,14 @@ import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 
 class AppThemeState {
+  AppThemeState({required this.mode, required this.color});
+
+  factory AppThemeState.fromJson(JsonMap json) => AppThemeState(
+        mode: ThemeMode.values[json['mode'] as int],
+        color: Color(json['color'] as int),
+      );
   final ThemeMode mode;
   final Color color;
-
-  AppThemeState({required this.mode, required this.color});
 
   ThemeData _getTheme(Brightness brightness) => ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -33,11 +37,6 @@ class AppThemeState {
         "mode": mode.index,
         "color": color.value,
       };
-
-  factory AppThemeState.fromJson(JsonMap json) => AppThemeState(
-        mode: ThemeMode.values[json['mode']],
-        color: Color(json['color']),
-      );
 }
 
 class AppThemeNotifier extends StateNotifier<AppThemeState> {
@@ -45,7 +44,7 @@ class AppThemeNotifier extends StateNotifier<AppThemeState> {
 
   static const storageKey = "appTheme";
 
-  static _loadInitialState() {
+  static AppThemeState _loadInitialState() {
     final storedData = storage.read<JsonMap>(storageKey);
     try {
       if (storedData != null) return AppThemeState.fromJson(storedData);

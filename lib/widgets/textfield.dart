@@ -1,5 +1,5 @@
-import 'package:one_launcher/consts.dart';
 import 'package:flutter/material.dart';
+import 'package:one_launcher/consts.dart';
 
 ThemeData simpleInputDecorationThemeData(BuildContext context) {
   return Theme.of(context)
@@ -17,10 +17,8 @@ const simpleInputDecorationtheme = InputDecorationTheme(
 
 class TitleTextFiled extends StatelessWidget {
   const TitleTextFiled({
-    super.key,
+    required this.titleText, required this.textField, super.key,
     this.titleWidth,
-    required this.titleText,
-    required this.textField,
   });
 
   final double? titleWidth;
@@ -38,7 +36,7 @@ class TitleTextFiled extends StatelessWidget {
         ),
         Expanded(
           child: textField,
-        )
+        ),
       ],
     );
   }

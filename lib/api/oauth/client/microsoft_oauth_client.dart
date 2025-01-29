@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:one_launcher/api/dio/dio.dart';
 import 'package:one_launcher/api/oauth/client/oauth_client.dart';
 import 'package:one_launcher/api/oauth/token/microsoft_oauth_token.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 /// https://learn.microsoft.com/en-us/onedrive/developer/rest-api/getting-started/msa-oauth?view=odsp-graph-online
 class MicrosoftOAuthClient extends OAuthClient {
@@ -29,8 +30,12 @@ class MicrosoftOAuthClient extends OAuthClient {
       "scope": scope,
     };
     final response =
-        await _dio.postUri(uri, data: data, cancelToken: cancelToken);
-    return MicrosoftOAuthToken.fromJson(response.data);
+        await _dio.postUri<JsonMap>(uri, data: data, cancelToken: cancelToken);
+    final respData = response.data;
+    if (respData == null) {
+      throw Exception('MicrosoftOAuthToken is null');
+    }
+    return MicrosoftOAuthToken.fromJson(respData);
   }
 
   // Step: 3
@@ -46,7 +51,11 @@ class MicrosoftOAuthClient extends OAuthClient {
       "scope": scope,
     };
     final response =
-        await _dio.postUri(uri, data: data, cancelToken: cancelToken);
-    return MicrosoftOAuthToken.fromJson(response.data);
+        await _dio.postUri<JsonMap>(uri, data: data, cancelToken: cancelToken);
+    final respData = response.data;
+    if (respData == null) {
+      throw Exception('MicrosoftOAuthToken is null');
+    }
+    return MicrosoftOAuthToken.fromJson(respData);
   }
 }

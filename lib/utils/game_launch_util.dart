@@ -9,12 +9,12 @@ import 'package:flutter/foundation.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/account_login_info.dart';
-import 'package:one_launcher/models/game/game.dart';
-import 'package:one_launcher/models/game/java.dart';
 import 'package:one_launcher/models/game/data/library/common_library.dart';
 import 'package:one_launcher/models/game/data/library/library.dart';
 import 'package:one_launcher/models/game/data/library/maven_library.dart';
 import 'package:one_launcher/models/game/data/library/natives_library.dart';
+import 'package:one_launcher/models/game/game.dart';
+import 'package:one_launcher/models/game/java.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';
 import 'package:one_launcher/utils/extension/list_extension.dart';
 import 'package:one_launcher/utils/extension/num_extension.dart';
@@ -31,7 +31,7 @@ class GameLaunchUtil {
   }
 
   late final int allocateMem;
-  final completer = Completer();
+  final completer = Completer<void>();
 
   final Game game;
   final GameSettingState globarSetting;
@@ -39,8 +39,8 @@ class GameLaunchUtil {
   AccountLoginInfo? loginInfo;
 
   Process? process;
-  StreamSubscription? errSubscription;
-  StreamSubscription? subscription;
+  StreamSubscription<String>? errSubscription;
+  StreamSubscription<String>? subscription;
   final List<String> warningMessages = [];
 
   Iterable<Library>? _allowedLibraries;
@@ -50,9 +50,9 @@ class GameLaunchUtil {
       _allowedLibraries ??= getAllowedLibraries();
 
   /// 取消程序监听
-  void cancel() async {
-    subscription?.cancel();
-    errSubscription?.cancel();
+  Future<void> cancel() async {
+    await subscription?.cancel();
+    await errSubscription?.cancel();
   }
 
   void killProcess() => process?.kill();
@@ -61,8 +61,7 @@ class GameLaunchUtil {
 
   /// 启动游戏
   Future<void> launchGame() async {
-    Future(() async => await launchCommand
-      ..printInfo());
+    launchCommand.printInfo();
 
     process = await Process.start(
       await launchCommand,
@@ -96,7 +95,7 @@ class GameLaunchUtil {
         e.printError();
       }
     });
-    return await completer.future;
+    return completer.future;
   }
 
   /// 自动设置内存
@@ -125,7 +124,8 @@ class GameLaunchUtil {
     }
     if (allocateMem < recommendMinimum) {
       warningMessages.add(
-          "可用内存过小，分配的内存为: ${allocateMem}MB，小于建议值: ${recommendMinimum}MB，这可能会导致游戏性能不佳甚至崩溃。");
+        "可用内存过小，分配的内存为: ${allocateMem}MB，小于建议值: ${recommendMinimum}MB，这可能会导致游戏性能不佳甚至崩溃。",
+      );
     }
     return allocateMem;
   }
@@ -133,7 +133,7 @@ class GameLaunchUtil {
   /// 自动设置 Java
   /// 数据来源：https://minecraft.fandom.com/zh/wiki/%E6%95%99%E7%A8%8B/%E6%9B%B4%E6%96%B0Java?variant=zh
   Java? autoJava() {
-    int? minimumVersion = game.data.javaVersion?.majorVersion; // 最低版本
+    var minimumVersion = game.data.javaVersion?.majorVersion; // 最低版本
     int? highestVersion; // 最高支持版本
     // int? recommendVersion; //推荐版本
     final gameMinorVersion = game.versionNumber?.minor ?? 0;
@@ -158,7 +158,7 @@ class GameLaunchUtil {
     if (globarSetting.java == null) {
       // 自动搜寻与游戏版本最佳的 Java
       final targetList = <Java>[];
-      for (var java in JavaManager.set) {
+      for (final java in JavaManager.set) {
         if (java.versionNumber.major >= minimumVersion &&
                 highestVersion == null ||
             highestVersion != null &&
@@ -168,7 +168,7 @@ class GameLaunchUtil {
       }
       if (targetList.isNotEmpty) {
         // 从低到高排序
-        targetList.sort((a, b) => (a.versionNumber).compareTo(b.versionNumber));
+        targetList.sort((a, b) => a.versionNumber.compareTo(b.versionNumber));
         java = targetList.first;
         if (kDebugMode) {
           print(targetList.map((e) => e.version));
@@ -178,7 +178,7 @@ class GameLaunchUtil {
     } else {
       java = globarSetting.java;
       // 检查选择的Java版本是否兼容
-      final majorVersion = (java!.versionNumber).major;
+      final majorVersion = java!.versionNumber.major;
       if (majorVersion < minimumVersion) {
         warningMessages
             .add("选择的Java版本为：$majorVersion, 此游戏版本最低要求为：$minimumVersion。");
@@ -196,7 +196,8 @@ class GameLaunchUtil {
 
   /// 获取可用的游戏资源
   Iterable<Library> getAllowedLibraries() => game.data.libraries.where(
-      (lib) => lib is MavenLibrary || lib is CommonLibrary && lib.isAllowed);
+        (lib) => lib is MavenLibrary || lib is CommonLibrary && lib.isAllowed,
+      );
 
   /// 获取游戏匹配系统平台类型的 Natives 资源
   Iterable<Library> get requiredNativesLibraries =>
@@ -204,10 +205,10 @@ class GameLaunchUtil {
 
   /// 检索游戏资源 返回游戏资源库中不存在的资源
   Stream<Library> get retrieveLibraries async* {
-    for (var lib in allowedLibraries) {
+    for (final lib in allowedLibraries) {
       if (lib is NativesLibrary) {
         _nativesLibraries.add(lib);
-      } else if (!await lib.exists(game.librariesPath)) {
+      } else if (!lib.exists(game.librariesPath)) {
         if (kDebugMode) {
           lib.getPath(game.librariesPath).printInfo('');
         }
@@ -219,14 +220,14 @@ class GameLaunchUtil {
   /// 解压natives资源
   Future<void> extractNativesLibraries() async {
     final outputDirectory = Directory(game.nativesPath);
-    if (!await outputDirectory.exists()) await outputDirectory.create();
+    if (!outputDirectory.existsSync()) await outputDirectory.create();
 
     final targetFiles = outputDirectory.listSync();
     final targerFilesMap = Map.fromIterables(
       targetFiles.map((e) => e.path.split("/").last),
       targetFiles,
     );
-    if (await outputDirectory.exists() && targetFiles.isNotEmpty) {
+    if (outputDirectory.existsSync() && targetFiles.isNotEmpty) {
       final archives = _nativesLibraries.map(
         (e) => ZipDecoder().decodeBytes(
           File(e.getNativePath(game.librariesPath)).readAsBytesSync(),
@@ -234,7 +235,7 @@ class GameLaunchUtil {
       );
       final files = [
         for (final archive in archives)
-          for (final file in archive.files) file
+          for (final file in archive.files) file,
       ];
       // 使用MD5比对
       final needExtract = await Future(() async {
@@ -257,19 +258,21 @@ class GameLaunchUtil {
         outputDirectory.deleteSync(recursive: true);
       }
     }
-    await Future.wait(_nativesLibraries
-        .map((e) => e.extract(game.librariesPath, game.nativesPath)));
+    await Future.wait(
+      _nativesLibraries
+          .map((e) => e.extract(game.librariesPath, game.nativesPath)),
+    );
   }
 
   /// 为字符串添加双引号
-  String addQuote(String string) => "\"$string\"";
+  String addQuote(String string) => '"$string"';
 
   /// 获取游戏拼接资源 -cp 字符串
   String get classPathsArgs => [
         ...allowedLibraries
             .where((element) => element is! NativesLibrary)
             .map((lib) => join(game.librariesPath, lib.jarPath)),
-        game.clientPath
+        game.clientPath,
       ].join(';');
 
   /// 批量替换参数中 ${} 的内容
@@ -282,7 +285,7 @@ class GameLaunchUtil {
   }
 
   /// 替换参数中 ${} 的内容
-  /// [replaceFirst] 为 [true] 时只匹配一次
+  /// [replaceFirst] 为 true 时只匹配一次
   String replaceVariable(
     String value,
     Map<String, String?> valueMap, [
@@ -298,7 +301,7 @@ class GameLaunchUtil {
 
   /// 获取游戏启动项
   String get gameArgs {
-    assert(loginInfo != null);
+    assert(loginInfo != null, '');
 
     /// 一个映射，用来存储变量名和对应的值
     final gameArgsMap = <String, String?>{
@@ -313,29 +316,30 @@ class GameLaunchUtil {
       "version_type": '"$kAppName"',
       "user_properties": "{}",
     };
-    dynamic arguments = game.data.arguments?.gameFilterString;
+    final arguments = game.data.arguments?.gameFilterString;
     // 高版本
     if (arguments != null) {
       return (replaceVariables(
-              game.data.arguments?.gameFilterString, gameArgsMap)
+        game.data.arguments?.gameFilterString,
+        gameArgsMap,
+      )
             ..add("--width ${globarSetting.width}")
             ..add("--height ${globarSetting.height}")
             ..addIf(globarSetting.fullScreen, "--fullscreen"))
           .join(' ');
     }
     // 低版本
-    arguments = game.data.minecraftArguments;
-    if (arguments == null) {
+    final minecraftArguments = game.data.minecraftArguments;
+    if (minecraftArguments == null) {
       throw Exception("未在游戏中找到JVM参数");
     }
 
-    return replaceVariable(arguments, gameArgsMap);
+    return replaceVariable(minecraftArguments, gameArgsMap);
   }
 
   /// 获取JVM参数
   String get jvmArgs {
     /// 一个映射，用来存储变量名和对应的值
-    /// TODO: 待补充
     final jvmArgsMap = <String, String>{
       "natives_directory": game.nativesPath,
       "launcher_name": kAppName,
@@ -345,12 +349,12 @@ class GameLaunchUtil {
     };
     if (game.data.arguments == null) {
       return replaceVariable(
-        '-Djava.library.path=\${natives_directory} -cp \${classpath}',
+        r'-Djava.library.path=${natives_directory} -cp ${classpath}',
         jvmArgsMap,
       );
     }
     return replaceVariables(game.data.arguments?.jvmFilterString, jvmArgsMap)
-        .map((e) => addQuote(e))
+        .map(addQuote)
         .join(' ');
   }
 
@@ -372,17 +376,22 @@ class GameLaunchUtil {
     final args = [
       // 设置相关end
       GameArgument(
-          "-Xmx${setting.autoMemory ? allocateMem : setting.maxMemory}M"),
+        "-Xmx${setting.autoMemory ? allocateMem : setting.maxMemory}M",
+      ),
       const GameArgument(
-          "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Djava.rmi.server.useCodebaseOnly=true -Dcom.sun.jndi.rmi.object.trustURLCodebase=false -Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false -Dlog4j2.formatMsgNoLookups=true"),
+        "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Djava.rmi.server.useCodebaseOnly=true -Dcom.sun.jndi.rmi.object.trustURLCodebase=false -Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false -Dlog4j2.formatMsgNoLookups=true",
+      ),
       if (game.data.logging != null) GameArgument(loggingArg!),
       GameArgument("-Dminecraft.client.jar", addQuote(game.clientRelativePath)),
       GameArgument(setting.adaptiveJvmArgs),
       const GameArgument(
-          "-XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -XX:-DontCompileHugeMethods -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true"),
+        "-XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -XX:-DontCompileHugeMethods -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true",
+      ),
       if (Platform.isWindows)
-        const GameArgument("-XX:HeapDumpPath",
-            "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"),
+        const GameArgument(
+          "-XX:HeapDumpPath",
+          "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
+        ),
       // JVM 启动参数
       GameArgument(jvmArgs),
       if (version.mainClass != null) GameArgument(version.mainClass!),

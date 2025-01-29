@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 abstract class RoutePage extends StatelessWidget {
   const RoutePage({
-    super.key,
-    required this.pageName,
+    required this.pageName, super.key,
     this.actions,
   });
 

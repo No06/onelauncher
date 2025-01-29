@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/api/oauth/token/oauth_token.dart';
+import 'package:one_launcher/models/json_map.dart';
 
 part 'minecraft_oauth_token.g.dart';
 
@@ -10,14 +10,13 @@ class MinecraftOAuthToken extends OAuthToken {
     required this.username,
     required this.tokenType,
     required super.accessToken,
-    super.refreshToken,
-    required super.expiresIn,
+    required super.expiresIn, super.refreshToken,
   });
+
+  factory MinecraftOAuthToken.fromJson(JsonMap json) =>
+      _$MinecraftOAuthTokenFromJson(json);
 
   /// some uuid, not minecraft account uuid
   final String username;
   final String tokenType;
-
-  factory MinecraftOAuthToken.fromJson(JsonMap json) =>
-      _$MinecraftOAuthTokenFromJson(json);
 }

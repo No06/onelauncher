@@ -4,27 +4,27 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/account/mc_access_token.dart';
-import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/api/minecraft_services_api.dart';
 import 'package:one_launcher/api/oauth/client/microsoft_device_oauth_client.dart';
-import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/api/oauth/client/microsoft_oauth_client.dart';
 import 'package:one_launcher/api/oauth/client/minecraft_oauth_client.dart';
 import 'package:one_launcher/api/oauth/client/xbox_oauth_client.dart';
 import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
+import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/account/mc_access_token.dart';
+import 'package:one_launcher/models/account/microsoft_account.dart';
+import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 import 'package:one_launcher/widgets/snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_windows/webview_windows.dart';
 import 'package:window_manager/window_manager.dart';
 
-part 'login_webview_dialog.dart';
 part 'device_code_login_dialog.dart';
+part 'login_webview_dialog.dart';
 
 class MicosoftLoginForm extends StatelessWidget {
-  const MicosoftLoginForm({super.key, required this.onSubmit});
+  const MicosoftLoginForm({required this.onSubmit, super.key});
 
   final void Function(MicrosoftAccount account) onSubmit;
   final _iconSize = 36.0;
@@ -46,7 +46,7 @@ class MicosoftLoginForm extends StatelessWidget {
         _SelectionItem(
           onTap: () => _onTapDeviceCodeLogin(context),
           shape: RoundedRectangleBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
             side: BorderSide(color: primaryColor, width: 1.5),
           ),
           icon: Icon(Icons.computer, size: _iconSize),
@@ -62,14 +62,18 @@ class MicosoftLoginForm extends StatelessWidget {
 
       final cancelToken = CancelToken();
 
-      accountGenerator() async {
+      Future<MicrosoftAccount> accountGenerator() async {
         final msToken = await MicrosoftOAuthClient(kMinecraftClientId)
             .requestTokenByCode(code, cancelToken: cancelToken);
         final xboxOAuthClient = XboxOAuthClient();
-        final xblToken = await xboxOAuthClient.requestToken(msToken.accessToken,
-            cancelToken: cancelToken);
-        final xstsToken = await xboxOAuthClient.requestXstsToken(xblToken.token,
-            cancelToken: cancelToken);
+        final xblToken = await xboxOAuthClient.requestToken(
+          msToken.accessToken,
+          cancelToken: cancelToken,
+        );
+        final xstsToken = await xboxOAuthClient.requestXstsToken(
+          xblToken.token,
+          cancelToken: cancelToken,
+        );
         final mcToken = await MinecraftOAuthClient()
             .requestToken(xstsToken, cancelToken: cancelToken);
         final profile = await MinecraftServicesApi(mcToken.accessToken)
@@ -86,10 +90,13 @@ class MicosoftLoginForm extends StatelessWidget {
         );
       }
 
-      onCancel() => cancelToken.cancel();
+      void onCancel() => cancelToken.cancel();
 
       final account = await _generateAccount(
-          context: context, generator: accountGenerator, onCancel: onCancel);
+        context: context,
+        generator: accountGenerator,
+        onCancel: onCancel,
+      );
       if (account != null) onSubmit(account);
     }
 
@@ -108,12 +115,14 @@ class MicosoftLoginForm extends StatelessWidget {
     submit(MicrosoftDeviceOAuthToken token) async {
       final cancelToken = CancelToken();
 
-      accountGenerator() async {
+      Future<MicrosoftAccount> accountGenerator() async {
         final xboxOAuthClient = XboxOAuthClient();
         final xblToken = await xboxOAuthClient
             .requestToken('d=${token.accessToken}', cancelToken: cancelToken);
-        final xstsToken = await xboxOAuthClient.requestXstsToken(xblToken.token,
-            cancelToken: cancelToken);
+        final xstsToken = await xboxOAuthClient.requestXstsToken(
+          xblToken.token,
+          cancelToken: cancelToken,
+        );
         final mcToken = await MinecraftOAuthClient()
             .requestToken(xstsToken, cancelToken: cancelToken);
         final profile =
@@ -130,10 +139,13 @@ class MicosoftLoginForm extends StatelessWidget {
         );
       }
 
-      onCancel() => cancelToken.cancel();
+      void onCancel() => cancelToken.cancel();
 
       final account = await _generateAccount(
-          context: context, generator: accountGenerator, onCancel: onCancel);
+        context: context,
+        generator: accountGenerator,
+        onCancel: onCancel,
+      );
       if (account != null) onSubmit(account);
     }
 
@@ -159,27 +171,29 @@ class MicosoftLoginForm extends StatelessWidget {
       onCancel();
     };
 
-    showDialog<T>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return DefaultDialog(
-          title: const Text("登录成功"),
-          content: Row(
-            children: [
-              const Text("正在获取游戏授权码"),
-              Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Transform.scale(
-                  scale: 0.8,
-                  child: const CircularProgressIndicator(),
+    unawaited(
+      showDialog<T>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return DefaultDialog(
+            title: const Text("登录成功"),
+            content: Row(
+              children: [
+                const Text("正在获取游戏授权码"),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Transform.scale(
+                    scale: 0.8,
+                    child: const CircularProgressIndicator(),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          actions: [DialogCancelButton(onPressed: onCancel)],
-        );
-      },
+              ],
+            ),
+            actions: [DialogCancelButton(onPressed: onCancel)],
+          );
+        },
+      ),
     );
 
     T? account;
@@ -198,10 +212,10 @@ class MicosoftLoginForm extends StatelessWidget {
 
 class _SelectionItem extends StatelessWidget {
   const _SelectionItem({
-    this.cardColor,
     required this.icon,
     required this.text,
     required this.onTap,
+    this.cardColor,
     this.shape,
   });
 
@@ -215,7 +229,8 @@ class _SelectionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final shape = this.shape ??
         const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)));
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        );
     return Card(
       color: cardColor,
       shape: shape,

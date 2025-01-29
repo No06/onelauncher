@@ -68,7 +68,7 @@ class DefaultDialog extends StatelessWidget {
             if (!onlyConfirm)
               DialogCancelButton(onPressed: onCanceled, cancelText: cancelText),
             DialogConfirmButton(
-                onPressed: onConfirmed, confirmText: confirmText),
+                onPressed: onConfirmed, confirmText: confirmText,),
           ],
     );
   }
@@ -99,8 +99,8 @@ class ErrorDialog extends StatelessWidget {
           DefaultTextStyle(
             style: Theme.of(context).textTheme.bodyLarge!,
             child: content!,
-          )
-      ]),
+          ),
+      ],),
       actions: [
         DialogConfirmButton(onPressed: onConfirmed ?? dialogPop),
       ],
@@ -137,8 +137,8 @@ class WarningDialog extends StatelessWidget {
           DefaultTextStyle(
             style: Theme.of(context).textTheme.bodyLarge!,
             child: content!,
-          )
-      ]),
+          ),
+      ],),
       actions: [
         if (!onlyConfirm)
           DialogCancelButton(onPressed: onCanceled ?? dialogPop),
@@ -150,11 +150,10 @@ class WarningDialog extends StatelessWidget {
 
 class FutureDialog<T> extends StatelessWidget {
   const FutureDialog({
-    super.key,
+    required this.future, super.key,
     this.title,
     this.content,
     this.onCanceled,
-    required this.future,
     this.autoClose = true,
   });
 

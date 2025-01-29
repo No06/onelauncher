@@ -79,26 +79,28 @@ class _AddAccountDialogState extends ConsumerState<_AddAccountDialog> {
       ),
       actions: [
         const DialogCancelButton(onPressed: dialogPop, cancelText: Text("取消")),
-        Consumer(builder: (context, ref, child) {
-          final accountType = ref.watch(_accountTypeProvider);
-          return switch (accountType) {
-            AccountType.microsoft => const SizedBox(),
-            _ => DialogConfirmButton(
-                onPressed: switch (accountType) {
-                  AccountType.offline => () {
-                      if (_formKey.currentState!.validate()) {
-                        account = _offlineLoginFormKey.currentState!.submit();
-                        widget.onSubmit(account);
-                        dialogPop();
-                      }
-                    },
-                  AccountType.microsoft => null,
-                  AccountType.custom => null,
-                },
-                confirmText: const Text("确定"),
-              ),
-          };
-        }),
+        Consumer(
+          builder: (context, ref, child) {
+            final accountType = ref.watch(_accountTypeProvider);
+            return switch (accountType) {
+              AccountType.microsoft => const SizedBox(),
+              _ => DialogConfirmButton(
+                  onPressed: switch (accountType) {
+                    AccountType.offline => () {
+                        if (_formKey.currentState!.validate()) {
+                          account = _offlineLoginFormKey.currentState!.submit();
+                          widget.onSubmit(account);
+                          dialogPop();
+                        }
+                      },
+                    AccountType.microsoft => null,
+                    AccountType.custom => null,
+                  },
+                  confirmText: const Text("确定"),
+                ),
+            };
+          },
+        ),
       ],
     );
   }
