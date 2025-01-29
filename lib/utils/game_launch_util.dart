@@ -17,10 +17,11 @@ import 'package:one_launcher/models/game/data/library/maven_library.dart';
 import 'package:one_launcher/models/game/data/library/natives_library.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';
 import 'package:one_launcher/utils/extension/list_extension.dart';
+import 'package:one_launcher/utils/extension/num_extension.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/utils/file/get_file_md5.dart';
 import 'package:one_launcher/utils/java_util.dart';
-import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
+import 'package:one_launcher/utils/sysinfo/sysinfo.dart';
 import 'package:path/path.dart';
 
 class GameLaunchUtil {

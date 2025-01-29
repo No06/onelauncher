@@ -10,8 +10,8 @@ import 'package:one_launcher/models/game/data/rule.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/utils/file/extract_file_to_disk_and_exclude.dart';
-import 'package:one_launcher/utils/platform/architecture.dart';
-import 'package:one_launcher/utils/platform/sys_info/sys_info.dart';
+import 'package:one_launcher/utils/sysinfo/os_architecture.dart';
+import 'package:one_launcher/utils/sysinfo/sysinfo.dart';
 import 'package:path/path.dart';
 
 part 'natives_library.g.dart';
@@ -43,10 +43,10 @@ class NativesLibrary extends CommonLibrary {
       if (classifiers?.windows != null) {
         return classifiers?.windows;
       }
-      if (sysinfo.architecture == Architecture.x32) {
+      if (sysinfo.osArchitecture == OsArchitecture.bit32) {
         return classifiers?.windows_32;
       }
-      if (sysinfo.architecture == Architecture.x64) {
+      if (sysinfo.osArchitecture == OsArchitecture.bit64) {
         return classifiers?.windows_64;
       }
     }

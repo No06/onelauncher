@@ -69,6 +69,11 @@ dependencies:
   gap: ^3.0.1
   win32: ^5.5.4
   flutter_cache_manager: ^3.4.1
+  stdlibc:
+    # Waiting for https://github.com/canonical/stdlibc.dart/pull/133
+    git:
+      url: https://github.com/No06/stdlibc.dart
+      ref: gnu-add-freeram
 
 dev_dependencies:
 
