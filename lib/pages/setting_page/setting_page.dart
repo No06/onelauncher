@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:flutter/services.dart';
@@ -42,12 +41,14 @@ class SettingPage extends RoutePage {
                 tabAlignment: TabAlignment.start,
                 dividerHeight: 0,
                 isScrollable: true,
-                tabs: tabs.keys.map((text) => Tab(text: text)).toList(),
+                tabs: tabs.keys
+                    .map((text) => Tab(text: text))
+                    .toList(growable: false),
               ),
             ),
             Expanded(
               child: TabBarView(
-                children: tabs.values.toList(),
+                children: tabs.values.toList(growable: false),
               ),
             ),
           ],

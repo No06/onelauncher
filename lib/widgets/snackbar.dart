@@ -7,7 +7,7 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? showSnackbar(
   SnackBar snackBar, {
   BuildContext? context,
 }) {
-  if (context != null) {
+  if (context != null && context.mounted) {
     return ScaffoldMessenger.of(context).showSnackBar(snackBar);
   } else {
     return rootScaffoldKey.currentState?.showSnackBar(snackBar);
@@ -67,21 +67,23 @@ SnackBar defaultSnackBar({
                   ),
                 ),
                 if (hasContent)
-                  Flexible(child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final fontSize =
-                          contentTextStyle.fontSize ?? kDefaultFontSize;
-                      final maxLines =
-                          (constraints.maxHeight / (fontSize * 2)).floor();
+                  Flexible(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final fontSize =
+                            contentTextStyle.fontSize ?? kDefaultFontSize;
+                        final maxLines =
+                            (constraints.maxHeight / (fontSize * 2)).floor();
 
-                      return Text(
-                        content,
-                        style: contentTextStyle,
-                        maxLines: maxLines,
-                        overflow: TextOverflow.ellipsis,
-                      );
-                    },
-                  ),),
+                        return Text(
+                          content,
+                          style: contentTextStyle,
+                          maxLines: maxLines,
+                          overflow: TextOverflow.ellipsis,
+                        );
+                      },
+                    ),
+                  ),
               ],
             ),
           ),

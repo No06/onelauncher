@@ -1,8 +1,5 @@
 part of 'account_page.dart';
 
-final _accountTypeProvider =
-    StateProvider.autoDispose((ref) => AccountType.offline);
-
 class _SegmentedItem {
   const _SegmentedItem({required this.name, required this.icon});
 
@@ -10,16 +7,16 @@ class _SegmentedItem {
   final Widget icon;
 }
 
-class _AddAccountDialog extends ConsumerStatefulWidget {
+class _AddAccountDialog extends StatefulWidget {
   const _AddAccountDialog({required this.onSubmit});
 
   final void Function(Account account) onSubmit;
 
   @override
-  ConsumerState<_AddAccountDialog> createState() => _AddAccountDialogState();
+  State<_AddAccountDialog> createState() => _AddAccountDialogState();
 }
 
-class _AddAccountDialogState extends ConsumerState<_AddAccountDialog> {
+class _AddAccountDialogState extends State<_AddAccountDialog> {
   final _accountTypes = const {
     AccountType.offline:
         _SegmentedItem(name: "离线", icon: Icon(Icons.public_off)),
@@ -28,6 +25,7 @@ class _AddAccountDialogState extends ConsumerState<_AddAccountDialog> {
     AccountType.custom: _SegmentedItem(name: "自定义", icon: Icon(Icons.tune)),
   };
 
+  var _accountType = AccountType.offline;
   final _formKey = GlobalKey<FormState>();
   final _offlineLoginFormKey = GlobalKey<_OfflineLoginFormState>();
 
@@ -38,10 +36,12 @@ class _AddAccountDialogState extends ConsumerState<_AddAccountDialog> {
         .add(DiagnosticsProperty<GlobalKey<FormState>>('formKey', _formKey));
   }
 
+  void _onSelectionChanged(Set<AccountType> set) => setState(() {
+        _accountType = set.first;
+      });
+
   @override
   Widget build(BuildContext context) {
-    final accountType = ref.watch(_accountTypeProvider);
-    final notifier = ref.watch(_accountTypeProvider.notifier);
     late Account account;
     return DefaultDialog(
       title: const Text("添加用户"),
@@ -51,7 +51,7 @@ class _AddAccountDialogState extends ConsumerState<_AddAccountDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             SegmentedButton<AccountType>(
-              onSelectionChanged: (set) => notifier.state = set.first,
+              onSelectionChanged: _onSelectionChanged,
               segments: List.generate(_accountTypes.length, (index) {
                 final key = _accountTypes.keys.elementAt(index);
                 final item = _accountTypes[key]!;
@@ -61,12 +61,12 @@ class _AddAccountDialogState extends ConsumerState<_AddAccountDialog> {
                   icon: item.icon,
                 );
               }),
-              selected: {accountType},
+              selected: {_accountType},
             ),
             const SizedBox(height: 15),
             Form(
               key: _formKey,
-              child: switch (accountType) {
+              child: switch (_accountType) {
                 AccountType.offline =>
                   _OfflineLoginForm(key: _offlineLoginFormKey),
                 AccountType.microsoft =>
@@ -79,28 +79,23 @@ class _AddAccountDialogState extends ConsumerState<_AddAccountDialog> {
       ),
       actions: [
         const DialogCancelButton(onPressed: dialogPop, cancelText: Text("取消")),
-        Consumer(
-          builder: (context, ref, child) {
-            final accountType = ref.watch(_accountTypeProvider);
-            return switch (accountType) {
-              AccountType.microsoft => const SizedBox(),
-              _ => DialogConfirmButton(
-                  onPressed: switch (accountType) {
-                    AccountType.offline => () {
-                        if (_formKey.currentState!.validate()) {
-                          account = _offlineLoginFormKey.currentState!.submit();
-                          widget.onSubmit(account);
-                          dialogPop();
-                        }
-                      },
-                    AccountType.microsoft => null,
-                    AccountType.custom => null,
+        switch (_accountType) {
+          AccountType.microsoft => const SizedBox(),
+          _ => DialogConfirmButton(
+              onPressed: switch (_accountType) {
+                AccountType.offline => () {
+                    if (_formKey.currentState!.validate()) {
+                      account = _offlineLoginFormKey.currentState!.submit();
+                      widget.onSubmit(account);
+                      dialogPop();
+                    }
                   },
-                  confirmText: const Text("确定"),
-                ),
-            };
-          },
-        ),
+                AccountType.microsoft => null,
+                AccountType.custom => null,
+              },
+              confirmText: const Text("确定"),
+            ),
+        },
       ],
     );
   }

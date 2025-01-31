@@ -145,7 +145,6 @@ class _JavaSelectDialog extends StatelessWidget {
       content: Material(
         color: Colors.transparent,
         borderRadius: kDefaultBorderRadius,
-        clipBehavior: Clip.antiAlias,
         child: SingleChildScrollView(
           child: Consumer(
             builder: (context, ref, child) {
@@ -503,7 +502,6 @@ class _MemoryAllocationBar extends StatefulWidget {
 
 class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
   late final Timer timer;
-  bool needUpdate = true;
   late double totalPhyMem;
   late double freePhyMem;
 
@@ -524,11 +522,8 @@ class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
   }
 
   void updateMemInfo() {
-    if (!needUpdate) return;
-    needUpdate = false;
     totalPhyMem = sysinfo.totalPhyMem.toGB();
     freePhyMem = sysinfo.freePhyMem.toGB();
-    Future.delayed(Durations.extralong4).then((value) => needUpdate = true);
   }
 
   @override
@@ -569,11 +564,11 @@ class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
         Row(
           children: [
             Text(
-              "使用中内存：${_toDecimal(usedMemSize)} / ${_toDecimal(totalPhyMem)} GB",
+              "使用中内存：${usedMemSize.toDecimal()} / ${totalPhyMem.toDecimal()} GB",
             ),
             const Spacer(),
             Text(
-              "游戏分配：${_toDecimal(widget.allocationMemSize)} GB ${widget.allocationMemSize > freePhyMem ? "(${_toDecimal(freePhyMem)} GB 可用)" : ""}",
+              "游戏分配：${widget.allocationMemSize.toDecimal()} GB ${widget.allocationMemSize > freePhyMem ? "(${freePhyMem.toDecimal()} GB 可用)" : ""}",
             ),
           ],
         ),
@@ -602,7 +597,3 @@ class _MemoryTextInputFormatter extends TextInputFormatter {
     return newValue;
   }
 }
-
-// 保留小数
-double _toDecimal(num value, [int fractionalDigits = 1]) =>
-    (value * pow(10, fractionalDigits)).truncate() / pow(10, fractionalDigits);
