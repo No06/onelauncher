@@ -101,7 +101,7 @@ class GameLaunchUtil {
   /// 自动设置内存
   int autoMem() {
     if (globarSetting.autoMemory) {
-      final freeMem = sysinfo.freePhyMem.toMB();
+      final freeMem = Sysinfo().freePhyMem.toMB();
       // 内存捉紧按空闲内存一半分配，否则四六开
       final persent = freeMem > 4096 ? 0.6 : 0.5;
       final allocate = freeMem * persent;

@@ -188,7 +188,7 @@ class _MemorySettingListTileGroup extends HookConsumerWidget {
       text: ref.read(gameSettingProvider).maxMemory.toString(),
     );
 
-    void updateText(String newVal) => textController.text = newVal;
+    updateText(String newVal) => textController.text = newVal;
     updateMaxMemory() {
       ref
           .read(gameSettingProvider.notifier)
@@ -197,17 +197,20 @@ class _MemorySettingListTileGroup extends HookConsumerWidget {
 
     final textFieldFocusNode = useFocusNode();
 
-    listener() {
-      if (!textFieldFocusNode.hasFocus) updateMaxMemory();
-    }
-
+    // Update max memory when text field lost focus
     useEffect(
       () {
+        listener() {
+          if (!textFieldFocusNode.hasFocus) updateMaxMemory();
+        }
+
         textFieldFocusNode.addListener(listener);
         return () => textFieldFocusNode.removeListener(listener);
       },
       [textFieldFocusNode],
     );
+
+    final sysinfo = Sysinfo();
 
     return TitleWidgetGroup(
       "内存",
@@ -522,6 +525,7 @@ class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
   }
 
   void updateMemInfo() {
+    final sysinfo = Sysinfo();
     totalPhyMem = sysinfo.totalPhyMem.toGB();
     freePhyMem = sysinfo.freePhyMem.toGB();
   }

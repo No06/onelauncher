@@ -46,10 +46,10 @@ class NativesLibrary extends CommonLibrary {
       if (classifiers?.windows != null) {
         return classifiers?.windows;
       }
-      if (sysinfo.osArchitecture == OsArchitecture.bit32) {
+      if (Sysinfo.osArchitecture == OsArchitecture.bit32) {
         return classifiers?.windows_32;
       }
-      if (sysinfo.osArchitecture == OsArchitecture.bit64) {
+      if (Sysinfo.osArchitecture == OsArchitecture.bit64) {
         return classifiers?.windows_64;
       }
     }

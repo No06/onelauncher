@@ -6,62 +6,47 @@ import 'package:one_launcher/utils/sysinfo/os_architecture.dart';
 import 'package:stdlibc/stdlibc.dart' as libc;
 import 'package:win32/win32.dart';
 
-Sysinfo get sysinfo {
-  if (Platform.isLinux || Platform.isMacOS) return LibCSysinfo._();
-  if (Platform.isWindows) return Win32Sysinfo._();
-  throw UnimplementedError('Unknown system: ${Platform.operatingSystem}');
-}
+class Sysinfo {
+  factory Sysinfo() {
+    if (Platform.isLinux || Platform.isMacOS) {
+      final info = libc.sysinfo();
+      if (info == null) {
+        throw Exception('sysinfo failed');
+      }
+      return Sysinfo._(
+        totalPhyMem: info.totalram,
+        freePhyMem: info.freeram,
+      );
+    }
+    if (Platform.isWindows) {
+      final memoryStatePtr = calloc<MEMORYSTATUSEX>()
+        ..ref.dwLength = sizeOf<MEMORYSTATUSEX>();
+      final result = GlobalMemoryStatusEx(memoryStatePtr);
+      free(memoryStatePtr);
+      if (result != 1) {
+        throw Exception('error code: $result');
+      }
+      final ref = memoryStatePtr.ref;
+      return Sysinfo._(
+        totalPhyMem: ref.ullTotalPhys,
+        freePhyMem: ref.ullAvailPhys,
+      );
+    }
+    throw UnimplementedError('Unknown system: ${Platform.operatingSystem}');
+  }
 
-abstract class Sysinfo {
-  static final _osArchitecture = switch (sizeOf<Pointer<Void>>()) {
+  const Sysinfo._({required this.totalPhyMem, required this.freePhyMem})
+      : assert(totalPhyMem >= freePhyMem, 'Invalid memory size');
+
+  static final osArchitecture = switch (sizeOf<Pointer<Void>>()) {
     4 => OsArchitecture.bit32,
     8 => OsArchitecture.bit64,
     _ => OsArchitecture.unknown,
   };
 
-  OsArchitecture get osArchitecture => _osArchitecture;
+  final int totalPhyMem;
 
-  int get totalPhyMem;
-
-  int get freePhyMem;
+  final int freePhyMem;
 
   int get usedPhyMem => totalPhyMem - freePhyMem;
-}
-
-class LibCSysinfo extends Sysinfo {
-  LibCSysinfo._();
-
-  final _sysinfo = () {
-    final instance = libc.sysinfo();
-    assert(instance != null, 'sysinfo failed');
-    return instance!;
-  }();
-
-  @override
-  int get freePhyMem => _sysinfo.freeram;
-
-  @override
-  int get totalPhyMem => _sysinfo.totalram;
-}
-
-class Win32Sysinfo extends Sysinfo {
-  Win32Sysinfo._() {
-    final memoryStatePtr = calloc<MEMORYSTATUSEX>()
-      ..ref.dwLength = sizeOf<MEMORYSTATUSEX>();
-    final result = GlobalMemoryStatusEx(memoryStatePtr);
-    if (result != 1) {
-      throw Exception('error code: $result');
-    }
-    _freePhyMem = memoryStatePtr.ref.ullAvailPhys;
-    _totalPhyMem = memoryStatePtr.ref.ullTotalPhys;
-    free(memoryStatePtr);
-  }
-
-  late final int _freePhyMem;
-  @override
-  int get freePhyMem => _freePhyMem;
-
-  late final int _totalPhyMem;
-  @override
-  int get totalPhyMem => _totalPhyMem;
 }
