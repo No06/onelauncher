@@ -72,26 +72,22 @@ abstract class _GameLauncherInterface {
   }();
 
   _JavaVersionRange _calculateCompatibleJavaVersionRange() {
-    var minimumVersion = game.data.javaVersion?.majorVersion; // 最低版本
+    var minimumVersion = game.client.javaVersion.majorVersion; // 最低版本
     int? highestVersion; // 最高支持版本
     // int? recommendVersion; //推荐版本
-    final gameMinorVersion = game.versionNumber?.minor ?? 0;
+    final gameMinorVersion = game.versionNumber.minor;
     // Calculate the minimum version of Java required for the game
-    if (minimumVersion == null) {
-      switch (gameMinorVersion) {
-        case <= 12:
-          minimumVersion = 6;
-          highestVersion = 8;
-        case <= 16:
-          minimumVersion = 8;
-          highestVersion = 11;
-        case <= 17:
-          minimumVersion = 16;
-        case <= 18:
-          minimumVersion = 17;
-        default:
-          minimumVersion = 6;
-      }
+    switch (gameMinorVersion) {
+      case <= 12:
+        minimumVersion = 6;
+        highestVersion = 8;
+      case <= 16:
+        minimumVersion = 8;
+        highestVersion = 11;
+      case > 16:
+        break;
+      default:
+        minimumVersion = 6;
     }
     return _JavaVersionRange(minimum: minimumVersion, maximum: highestVersion);
   }
@@ -115,7 +111,7 @@ mixin _Checker on _GameLauncherInterface {
   List<String> checkSettings() {
     memCheck() {
       int recommendMinimum;
-      switch (game.versionNumber?.minor ?? 0) {
+      switch (game.versionNumber.minor) {
         case <= 12:
           recommendMinimum = 1024;
         default:
@@ -171,16 +167,25 @@ mixin _Launcher
     }
 
     final completer = Completer<void>();
-    final command = await _generateGameLaunchCommand(loginInfo);
-    final runInShell = (game.versionNumber?.minor ?? 9) <= 8;
+    final command = await _generateGameLaunchCommand(loginInfo)
+      ..printInfo('Launch command');
+    final runInShell = game.versionNumber.minor <= 8;
     _process = await Process.start(
       command,
       [],
       workingDirectory: game.mainPath,
       runInShell: runInShell,
     );
-    final errSubscription =
-        _process!.stderr.transform(utf8.decoder).listen((data) {
+    StreamSubscription<String>? errSubscription;
+    StreamSubscription<String>? subscription;
+    cancelScription() {
+      subscription?.cancel();
+      errSubscription?.cancel();
+      subscription = null;
+      errSubscription = null;
+    }
+
+    errSubscription = _process!.stderr.transform(utf8.decoder).listen((data) {
       data.printError("Process error message");
       if (data.isNotEmpty) {
         try {
@@ -190,13 +195,13 @@ mixin _Launcher
         }
       }
     });
-    final subscription =
-        _process!.stdout.transform(utf8.decoder).listen((data) {
+    subscription = _process!.stdout.transform(utf8.decoder).listen((data) {
       data.printInfo("Process message");
       try {
         if (data.startsWith("Setting user", 33) ||
             data.startsWith("Minecraft reloaded", 33) ||
             data.startsWith("Stopping!", 33)) {
+          cancelScription();
           completer.complete();
         }
       } catch (e) {
@@ -206,8 +211,7 @@ mixin _Launcher
 
     unawaited(
       _process!.exitCode.then((value) {
-        subscription.cancel();
-        errSubscription.cancel();
+        cancelScription();
       }),
     );
 
@@ -238,13 +242,7 @@ mixin _JvmArgumentParser on _GameLauncherInterface, _LibraryArgumentParser {
       "classpath": _classPathArgs,
       "clientpath": game.clientPath,
     };
-    if (game.data.arguments == null) {
-      return _replaceVariable(
-        r'-Djava.library.path=${natives_directory} -cp ${classpath}',
-        jvmArgsMap,
-      );
-    }
-    return _replaceVariables(game.data.arguments?.jvmFilterString, jvmArgsMap)
+    return _replaceVariables(game.client.arguments.jvmFilterString, jvmArgsMap)
         .map(_addQuote)
         .join(' ');
   }
@@ -254,10 +252,10 @@ mixin _GameArgumentParser on _GameLauncherInterface {
   String _gameArgs(AccountLoginInfo loginInfo) {
     final gameArgsMap = <String, String?>{
       "auth_player_name": loginInfo.username,
-      "version_name": game.data.id,
+      "version_name": game.client.id,
       "game_directory": game.mainPath,
       "assets_root": game.assetsPath,
-      "assets_index_name": game.data.assetIndex?.id,
+      "assets_index_name": game.client.assetIndex.id,
       "auth_uuid": loginInfo.uuid,
       "auth_access_token": loginInfo.accessToken,
       "user_type": "msa",
@@ -265,11 +263,11 @@ mixin _GameArgumentParser on _GameLauncherInterface {
       "user_properties": "{}",
     };
 
-    final arguments = game.data.arguments?.gameFilterString;
+    final arguments = game.client.arguments.gameFilterString;
     if (arguments != null) {
       return [
         ..._replaceVariables(
-          game.data.arguments?.gameFilterString,
+          game.client.arguments.gameFilterString,
           gameArgsMap,
         ),
         "--width ${globalSetting.width}",
@@ -277,17 +275,11 @@ mixin _GameArgumentParser on _GameLauncherInterface {
         if (globalSetting.fullScreen) "--fullscreen",
       ].join(' ');
     }
-    // 低版本
-    final minecraftArguments = game.data.minecraftArguments;
-    if (minecraftArguments == null) {
-      throw Exception("未在游戏中找到JVM参数");
-    }
-
-    return _replaceVariable(minecraftArguments, gameArgsMap);
+    return '';
   }
 
   String? get _loggingArg {
-    var arg = game.data.logging?.client?.argument;
+    var arg = game.client.logging.client?.argument;
     if (arg == null || game.loggingPath == null) return null;
 
     arg = arg.substring(0, arg.lastIndexOf('=') - 1);
@@ -296,7 +288,7 @@ mixin _GameArgumentParser on _GameLauncherInterface {
 }
 
 mixin _LibraryArgumentParser on _GameLauncherInterface {
-  Iterable<Library> get _avaliableLibraries => game.data.libraries.where(
+  Iterable<Library> get _avaliableLibraries => game.client.libraries.where(
         (lib) => lib is MavenLibrary || lib is CommonLibrary && lib.isAllowed,
       );
 
@@ -391,7 +383,7 @@ mixin _GameLaunchCommandGenerator
     AccountLoginInfo loginInfo,
   ) async {
     final setting = globalSetting;
-    final version = game.data;
+    final version = game.client;
     // 命令行参数
     final args = [
       // 设置相关end
@@ -401,7 +393,7 @@ mixin _GameLaunchCommandGenerator
       const GameArgument(
         "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Djava.rmi.server.useCodebaseOnly=true -Dcom.sun.jndi.rmi.object.trustURLCodebase=false -Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false -Dlog4j2.formatMsgNoLookups=true",
       ),
-      if (game.data.logging != null) GameArgument(_loggingArg!),
+      GameArgument(_loggingArg!),
       GameArgument(
         "-Dminecraft.client.jar",
         _addQuote(game.clientRelativePath),
@@ -417,7 +409,7 @@ mixin _GameLaunchCommandGenerator
         ),
       // JVM 启动参数
       GameArgument(_jvmArgs),
-      if (version.mainClass != null) GameArgument(version.mainClass!),
+      GameArgument(version.mainClass),
       // 游戏参数
       GameArgument(_gameArgs(loginInfo)),
     ];

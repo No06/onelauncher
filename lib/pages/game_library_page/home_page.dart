@@ -179,15 +179,15 @@ class _GameProcessor {
   const _GameProcessor();
 
   // 比对配置名
-  int compareByName(Game a, Game b) => a.data.id.compareTo(b.data.id);
+  int compareByName(Game a, Game b) => a.client.id.compareTo(b.client.id);
 
   // 筛选游戏类型
   bool typeFilter(Game game, Set<_GameType> types) {
-    if (types.isEmpty || game.data.type == null) return true;
+    if (types.isEmpty) return true;
 
     final currTypes = {
       if (game.isModVersion) _GameType.mod,
-      switch (game.data.type!) {
+      switch (game.client.type) {
         GameType.release => _GameType.release,
         GameType.snapshot => _GameType.snapshot,
         GameType.oldBeta => _GameType.snapshot,
@@ -348,7 +348,7 @@ class _GameItemState extends ConsumerState<_GameItem> {
       onExit: (_) => isHover.value = false,
       child: ListTile(
         leading: const FlutterLogo(size: 36),
-        title: Text(widget.game.data.id),
+        title: Text(widget.game.client.id),
         subtitle: Text(widget.game.path),
         subtitleTextStyle: textTheme.bodySmall!.copyWith(
           color: colors.outline,

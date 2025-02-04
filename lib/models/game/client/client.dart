@@ -10,86 +10,70 @@ import 'package:one_launcher/models/json_map.dart';
 
 part 'client.g.dart';
 
+/// client.json is the file that accompanies client.jar in `.minecraft/versions/<version>` and lists the version's attributes.
+/// When using the latest version of the Minecraft launcher, it is named `<game version>.json`.
+/// The JSON file for specific versions is located in the `version_manifest.json` file.
+/// docs: https://minecraft.fandom.com/wiki/Client.json
 @JsonSerializable()
 class Client {
-  const Client(
-    this.id,
-    this.patches, {
-    required this.root,
-    required List<Library> libraries,
-    Arguments? arguments,
-    String? minecraftArguments,
-    String? mainClass,
-    String? jar,
-    AssetIndex? assetIndex,
-    JavaVersion? javaVersion,
-    ClientDownloads? downloads,
-    Logging? logging,
-    GameType? type,
-    int? minimumLauncherVersion,
-    String? clientVersion,
-  })  : _arguments = arguments,
-        _minecraftArguments = minecraftArguments,
-        _mainClass = mainClass,
-        _jar = jar,
-        _assetIndex = assetIndex,
-        _javaVersion = javaVersion,
-        _libraries = libraries,
-        _downloads = downloads,
-        _logging = logging,
-        _type = type,
-        _minimumLauncherVersion = minimumLauncherVersion,
-        _clientVersion = clientVersion;
+  const Client({
+    required this.id,
+    required this.arguments,
+    required this.mainClass,
+    required this.jar,
+    required this.assetIndex,
+    required this.assets,
+    required this.complianceLevel,
+    required this.javaVersion,
+    required this.libraries,
+    required this.downloads,
+    required this.logging,
+    required this.releaseTime,
+    required this.type,
+    required this.minimumLauncherVersion,
+  });
 
   factory Client.fromJson(JsonMap json) => _$ClientFromJson(json);
 
-  ///游戏名 可能是版本号，也可能是自定义的名字
+  /// The name of this version client (e.g. 1.14.4).
   final String id;
-  final Arguments? _arguments;
-  Arguments? get arguments => _arguments ?? gamePatch?._arguments;
+  final Arguments arguments;
 
-  final String? _minecraftArguments;
-  String? get minecraftArguments =>
-      _minecraftArguments ?? gamePatch?._minecraftArguments;
+  /// The main game class; for modern versions, it is net.minecraft.client.main.Main, but it may differ for older or ancient versions.
+  final String mainClass;
+  final String jar;
+  final AssetIndex assetIndex;
 
-  final String? _mainClass;
-  String? get mainClass => _mainClass ?? gamePatch?.mainClass;
+  /// The assets version.
+  final String assets;
 
-  final String? _jar;
-  String? get jar => _jar ?? gamePatch?.jar;
+  /// Its value is `1` for all recent versions of the game (1.16.4 and above) or 0 for all others.
+  /// This tag tells the launcher whether it should urge the user to be careful since this version is older and might not support the latest player safety features.
+  @JsonKey(defaultValue: 0)
+  final int complianceLevel;
 
-  final AssetIndex? _assetIndex;
-  AssetIndex? get assetIndex => _assetIndex ?? gamePatch?.assetIndex;
+  /// The version of the Java Runtime Environment.
+  final JavaVersion javaVersion;
 
-  final JavaVersion? _javaVersion;
-  JavaVersion? get javaVersion => _javaVersion ?? gamePatch?.javaVersion;
+  /// A list of libraries.
+  final List<Library> libraries;
+  final ClientDownloads downloads;
 
-  final List<Library> _libraries;
-  List<Library> get libraries =>
-      _libraries.toSet().union(gamePatch?.libraries.toSet() ?? {}).toList();
+  /// Information about Log4j log configuration.
+  final Logging logging;
 
-  final ClientDownloads? _downloads;
-  ClientDownloads? get downloads => _downloads ?? gamePatch?.downloads;
+  /// The release date and time.
+  final DateTime releaseTime;
 
-  final Logging? _logging;
-  Logging? get logging => _logging ?? gamePatch?.logging;
+  /// Same as "releaseTime".
+  DateTime get time => releaseTime;
 
-  final GameType? _type;
-  GameType? get type => _type ?? gamePatch?._type;
+  /// The type of this game version.
+  /// It is shown in the version list when you create a new installation.
+  /// The default values are "release" and "snapshot".
+  final GameType type;
+  final int minimumLauncherVersion;
 
-  final int? _minimumLauncherVersion;
-  int? get minimumLauncherVersion =>
-      _minimumLauncherVersion ?? gamePatch?.minimumLauncherVersion;
-
-  final String? _clientVersion;
-  String? get clientVersion => _clientVersion ?? gamePatch?.clientVersion;
-
-  @JsonKey(defaultValue: false)
-  final bool root;
-  final List<Client>? patches;
-
-  Client? get gamePatch => patches?.firstWhere((patch) => patch.id == "game");
-
-  String get jarFile => _jar == null ? "$id.jar" : "$_jar.jar";
+  String get jarFile => "$jar.jar";
   JsonMap toJson() => _$ClientToJson(this);
 }

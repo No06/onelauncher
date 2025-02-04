@@ -54,10 +54,10 @@ class Game {
   /// 如: version/1.x.x
   final String _versionPath;
 
-  Client get data => _data;
+  Client get client => _data;
 
   // 游戏版本号
-  String? get version => data.clientVersion ?? getVersionFromJar();
+  String get version => client.id;
 
   String? getVersionFromJar() {
     final jarFile = File("$mainPath/$versionPath/${_data.jarFile}");
@@ -78,15 +78,13 @@ class Game {
   }
 
   /// 游戏版本
-  GameVersion? get versionNumber {
-    final split = version?.split('.');
-    if (split == null) return null;
+  GameVersion get versionNumber {
+    final split = version.split('.');
     final major = split[0];
     final minor = split.elementAtOrNull(1);
     final revision = split.elementAtOrNull(2);
 
     int? toInt(String? value) => value != null ? int.tryParse(value) : null;
-    if (int.tryParse(major) == null) return null;
     return GameVersion(
       major: int.parse(major),
       minor: toInt(minor),
@@ -115,29 +113,28 @@ class Game {
 
   /// 客户端路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/1.x.x.jar
-  String get clientPath => join(path, data.jarFile);
+  String get clientPath => join(path, client.jarFile);
 
   /// 客户端相对路径
   /// 如: .minecraft/version/1.x.x/1.x.x.jar
-  String get clientRelativePath => join(relativePath, data.jarFile);
+  String get clientRelativePath => join(relativePath, client.jarFile);
 
   /// log 配置文件路径
   /// 如: /home/onelauncher/.minecraft/version/1.x.x/log4j2.xml
   String? get loggingPath {
-    var logFile = data.logging?.client?.file.id;
-    logFile ??= data.gamePatch?.logging?.client?.file.id;
-    return logFile == null ? null : join(path, logFile);
+    final logFileId = client.logging.client?.file.id;
+    return logFileId == null ? null : join(path, logFileId);
   }
 
   /// 游戏资源路径
   /// 如: /home/onelauncher/.minecraft/assets
   String get assetsPath => join(_mainPath, "assets");
 
-  String? get assetIndex => data.assetIndex?.id;
+  String? get assetIndex => client.assetIndex.id;
 
   bool get isModVersion => _data.mainClass != "net.minecraft.client.main.Main";
 
-  /// 刷新 [data] 游戏文件内容
+  /// 刷新 [client] 游戏文件内容
   Game fresh() => Game(_mainPath, _versionPath, setting: setting);
 
   /// 从指定路径读取文件序列化为 [Client]
@@ -148,7 +145,7 @@ class Game {
       );
 
   @override
-  int get hashCode => data.id.hashCode;
+  int get hashCode => client.id.hashCode;
 
   @override
   bool operator ==(Object other) => other is Game && path == other.path;
