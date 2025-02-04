@@ -1,15 +1,15 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'game_data.dart';
+part of 'client.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-GameData _$GameDataFromJson(Map<String, dynamic> json) => GameData(
+Client _$ClientFromJson(Map<String, dynamic> json) => Client(
       json['id'] as String,
       (json['patches'] as List<dynamic>?)
-          ?.map((e) => GameData.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => Client.fromJson(e as Map<String, dynamic>))
           .toList(),
       root: json['root'] as bool? ?? false,
       libraries: (json['libraries'] as List<dynamic>)
@@ -29,7 +29,7 @@ GameData _$GameDataFromJson(Map<String, dynamic> json) => GameData(
           : JavaVersion.fromJson(json['javaVersion'] as Map<String, dynamic>),
       downloads: json['downloads'] == null
           ? null
-          : GameDownloads.fromJson(json['downloads'] as Map<String, dynamic>),
+          : ClientDownloads.fromJson(json['downloads'] as Map<String, dynamic>),
       logging: json['logging'] == null
           ? null
           : Logging.fromJson(json['logging'] as Map<String, dynamic>),
@@ -38,7 +38,7 @@ GameData _$GameDataFromJson(Map<String, dynamic> json) => GameData(
       clientVersion: json['clientVersion'] as String?,
     );
 
-Map<String, dynamic> _$GameDataToJson(GameData instance) => <String, dynamic>{
+Map<String, dynamic> _$ClientToJson(Client instance) => <String, dynamic>{
       'id': instance.id,
       'arguments': instance.arguments,
       'minecraftArguments': instance.minecraftArguments,

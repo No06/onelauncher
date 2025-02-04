@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/data/library/downloads.dart';
-import 'package:one_launcher/models/game/data/library/library.dart';
-import 'package:one_launcher/models/game/data/os.dart';
-import 'package:one_launcher/models/game/data/os_rule.dart';
-import 'package:one_launcher/models/game/data/rule.dart';
+import 'package:one_launcher/models/game/client/library/downloads.dart';
+import 'package:one_launcher/models/game/client/library/library.dart';
+import 'package:one_launcher/models/game/client/os.dart';
+import 'package:one_launcher/models/game/client/os_rule.dart';
+import 'package:one_launcher/models/game/client/rule.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'common_library.g.dart';
@@ -50,5 +50,6 @@ class CommonLibrary extends Library {
     }
     return true;
   }
+
   JsonMap toJson() => _$CommonLibraryToJson(this);
 }

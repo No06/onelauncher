@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/data/logging/client_logging.dart';
+import 'package:one_launcher/models/game/client/logging/client_logging.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'logging.g.dart';

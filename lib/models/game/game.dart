@@ -6,7 +6,7 @@ import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/models/game/data/game_data.dart';
+import 'package:one_launcher/models/game/client/client.dart';
 import 'package:one_launcher/models/game/game_version.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';
@@ -44,7 +44,7 @@ class Game {
   final GameSetting? setting;
 
   /// 游戏文件 1.x.x.json序列化内容
-  final GameData _data;
+  final Client _data;
 
   /// 主路径
   /// 如: /home/onelauncher/.minecraft
@@ -54,7 +54,7 @@ class Game {
   /// 如: version/1.x.x
   final String _versionPath;
 
-  GameData get data => _data;
+  Client get data => _data;
 
   // 游戏版本号
   String? get version => data.clientVersion ?? getVersionFromJar();
@@ -140,8 +140,8 @@ class Game {
   /// 刷新 [data] 游戏文件内容
   Game fresh() => Game(_mainPath, _versionPath, setting: setting);
 
-  /// 从指定路径读取文件序列化为 [GameData]
-  static GameData _getDataFromPath(String path) => GameData.fromJson(
+  /// 从指定路径读取文件序列化为 [Client]
+  static Client _getDataFromPath(String path) => Client.fromJson(
         jsonDecode(
           File(join(path, "${basename(path)}.json")).readAsStringSync(),
         ) as JsonMap,

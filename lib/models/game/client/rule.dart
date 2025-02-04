@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/data/os_rule.dart';
+import 'package:one_launcher/models/game/client/os_rule.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'rule.g.dart';

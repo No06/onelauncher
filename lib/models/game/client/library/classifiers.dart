@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/data/library/artifact.dart';
+import 'package:one_launcher/models/game/client/library/artifact.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part "classifiers.g.dart";

@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:one_launcher/app.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/main.dart';
-import 'package:one_launcher/models/game/data/game_type.dart';
+import 'package:one_launcher/models/game/client/game_type.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game/game_path.dart';
 import 'package:one_launcher/models/json_map.dart';

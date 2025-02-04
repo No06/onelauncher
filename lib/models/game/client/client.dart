@@ -1,18 +1,18 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/data/arguments.dart';
-import 'package:one_launcher/models/game/data/asset_index.dart';
-import 'package:one_launcher/models/game/data/game_downloads.dart';
-import 'package:one_launcher/models/game/data/game_type.dart';
-import 'package:one_launcher/models/game/data/java_version.dart';
-import 'package:one_launcher/models/game/data/library/library.dart';
-import 'package:one_launcher/models/game/data/logging/logging.dart';
+import 'package:one_launcher/models/game/client/arguments.dart';
+import 'package:one_launcher/models/game/client/asset_index.dart';
+import 'package:one_launcher/models/game/client/client_downloads.dart';
+import 'package:one_launcher/models/game/client/game_type.dart';
+import 'package:one_launcher/models/game/client/java_version.dart';
+import 'package:one_launcher/models/game/client/library/library.dart';
+import 'package:one_launcher/models/game/client/logging/logging.dart';
 import 'package:one_launcher/models/json_map.dart';
 
-part 'game_data.g.dart';
+part 'client.g.dart';
 
 @JsonSerializable()
-class GameData {
-  const GameData(
+class Client {
+  const Client(
     this.id,
     this.patches, {
     required this.root,
@@ -23,7 +23,7 @@ class GameData {
     String? jar,
     AssetIndex? assetIndex,
     JavaVersion? javaVersion,
-    GameDownloads? downloads,
+    ClientDownloads? downloads,
     Logging? logging,
     GameType? type,
     int? minimumLauncherVersion,
@@ -41,7 +41,7 @@ class GameData {
         _minimumLauncherVersion = minimumLauncherVersion,
         _clientVersion = clientVersion;
 
-  factory GameData.fromJson(JsonMap json) => _$GameDataFromJson(json);
+  factory Client.fromJson(JsonMap json) => _$ClientFromJson(json);
 
   ///游戏名 可能是版本号，也可能是自定义的名字
   final String id;
@@ -68,8 +68,8 @@ class GameData {
   List<Library> get libraries =>
       _libraries.toSet().union(gamePatch?.libraries.toSet() ?? {}).toList();
 
-  final GameDownloads? _downloads;
-  GameDownloads? get downloads => _downloads ?? gamePatch?.downloads;
+  final ClientDownloads? _downloads;
+  ClientDownloads? get downloads => _downloads ?? gamePatch?.downloads;
 
   final Logging? _logging;
   Logging? get logging => _logging ?? gamePatch?.logging;
@@ -86,10 +86,10 @@ class GameData {
 
   @JsonKey(defaultValue: false)
   final bool root;
-  final List<GameData>? patches;
+  final List<Client>? patches;
 
-  GameData? get gamePatch => patches?.firstWhere((patch) => patch.id == "game");
+  Client? get gamePatch => patches?.firstWhere((patch) => patch.id == "game");
 
   String get jarFile => _jar == null ? "$id.jar" : "$_jar.jar";
-  JsonMap toJson() => _$GameDataToJson(this);
+  JsonMap toJson() => _$ClientToJson(this);
 }

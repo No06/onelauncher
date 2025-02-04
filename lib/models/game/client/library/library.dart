@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/data/library/common_library.dart';
-import 'package:one_launcher/models/game/data/library/maven_library.dart';
-import 'package:one_launcher/models/game/data/library/natives_library.dart';
+import 'package:one_launcher/models/game/client/library/common_library.dart';
+import 'package:one_launcher/models/game/client/library/maven_library.dart';
+import 'package:one_launcher/models/game/client/library/natives_library.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:path/path.dart';
 
@@ -84,4 +84,6 @@ class Library {
     }
     return parts;
   }
+
+  JsonMap toJson() => _$LibraryToJson(this);
 }

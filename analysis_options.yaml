@@ -39,5 +39,3 @@ analyzer:
     inference_failure_on_instance_creation: ignore
     lines_longer_than_80_chars: ignore
     strict_raw_type: ignore
-  exclude:
-    - "**/*.g.dart"

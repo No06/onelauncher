@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/models/game/data/library/artifact.dart';
-import 'package:one_launcher/models/game/data/library/common_library.dart';
-import 'package:one_launcher/models/game/data/library/downloads.dart';
-import 'package:one_launcher/models/game/data/library/extract.dart';
-import 'package:one_launcher/models/game/data/os.dart';
-import 'package:one_launcher/models/game/data/rule.dart';
+import 'package:one_launcher/models/game/client/library/artifact.dart';
+import 'package:one_launcher/models/game/client/library/common_library.dart';
+import 'package:one_launcher/models/game/client/library/downloads.dart';
+import 'package:one_launcher/models/game/client/library/extract.dart';
+import 'package:one_launcher/models/game/client/os.dart';
+import 'package:one_launcher/models/game/client/rule.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/utils/file/extract_file_to_disk_and_exclude.dart';
