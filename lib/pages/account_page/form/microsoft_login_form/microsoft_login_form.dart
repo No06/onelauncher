@@ -10,6 +10,7 @@ import 'package:one_launcher/api/oauth/client/microsoft_oauth_client.dart';
 import 'package:one_launcher/api/oauth/client/minecraft_oauth_client.dart';
 import 'package:one_launcher/api/oauth/client/xbox_oauth_client.dart';
 import 'package:one_launcher/api/oauth/token/microsoft_device_oauth_token.dart';
+import 'package:one_launcher/app.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/account/mc_access_token.dart';
 import 'package:one_launcher/models/account/microsoft_account.dart';
@@ -105,7 +106,7 @@ class MicosoftLoginForm extends StatelessWidget {
       builder: (context) => const _MicrosoftLoginWebviewDialog(),
     ).then((code) {
       if (code != null) {
-        dialogPop();
+        if (context.mounted) routePop(context: context);
         submit(code);
       }
     });
@@ -155,7 +156,7 @@ class MicosoftLoginForm extends StatelessWidget {
       builder: (context) => const _DeviceCodeLoginDialog(),
     ).then((token) {
       if (token != null) {
-        dialogPop();
+        routePop();
         submit(token);
       }
     });
@@ -167,7 +168,7 @@ class MicosoftLoginForm extends StatelessWidget {
     required VoidCallback onCancel,
   }) async {
     onCancel = () {
-      dialogPop();
+      routePop();
       onCancel();
     };
 
@@ -203,7 +204,7 @@ class MicosoftLoginForm extends StatelessWidget {
       debugPrintError(e.message.toString());
       showSnackbar(errorSnackBar(title: "网络请求错误", content: e.message));
     } finally {
-      dialogPop();
+      routePop();
     }
 
     return account;

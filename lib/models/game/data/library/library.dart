@@ -61,9 +61,10 @@ class Library {
       "$_artifactId-$_version${_classifier == null ? '' : '-$_classifier'}.jar";
   String get jarPath => join(path, artifactId, version, jarName);
 
-  String getPath(String gameLibrariesPath) => join(gameLibrariesPath, jarPath);
-  bool exists(String gameLibrariesPath) =>
-      File(getPath(gameLibrariesPath)).existsSync();
+  String getFullPath(String gameLibrariesPath) =>
+      join(gameLibrariesPath, jarPath);
+  bool existInGame(String gameLibrariesPath) =>
+      File(getFullPath(gameLibrariesPath)).existsSync();
 
   @override
   bool operator ==(Object other) {

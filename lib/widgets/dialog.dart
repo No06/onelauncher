@@ -68,7 +68,9 @@ class DefaultDialog extends StatelessWidget {
             if (!onlyConfirm)
               DialogCancelButton(onPressed: onCanceled, cancelText: cancelText),
             DialogConfirmButton(
-                onPressed: onConfirmed, confirmText: confirmText,),
+              onPressed: onConfirmed,
+              confirmText: confirmText,
+            ),
           ],
     );
   }
@@ -92,17 +94,19 @@ class ErrorDialog extends StatelessWidget {
     return AlertDialog(
       titleTextStyle: textTheme!.copyWith(fontWeight: FontWeight.bold),
       title: title ?? const Text("错误"),
-      content: Row(children: [
-        const Icon(Icons.error, size: 36),
-        const SizedBox(width: 10),
-        if (content != null)
-          DefaultTextStyle(
-            style: Theme.of(context).textTheme.bodyLarge!,
-            child: content!,
-          ),
-      ],),
+      content: Row(
+        children: [
+          const Icon(Icons.error, size: 36),
+          const SizedBox(width: 10),
+          if (content != null)
+            DefaultTextStyle(
+              style: Theme.of(context).textTheme.bodyLarge!,
+              child: content!,
+            ),
+        ],
+      ),
       actions: [
-        DialogConfirmButton(onPressed: onConfirmed ?? dialogPop),
+        DialogConfirmButton(onPressed: onConfirmed ?? routePop),
       ],
     );
   }
@@ -130,18 +134,19 @@ class WarningDialog extends StatelessWidget {
     return AlertDialog(
       titleTextStyle: textTheme!.copyWith(fontWeight: FontWeight.bold),
       title: title ?? const Text("警告"),
-      content: Row(children: [
-        const Icon(Icons.warning, size: 36),
-        const SizedBox(width: 10),
-        if (content != null)
-          DefaultTextStyle(
-            style: Theme.of(context).textTheme.bodyLarge!,
-            child: content!,
-          ),
-      ],),
+      content: Row(
+        children: [
+          const Icon(Icons.warning, size: 36),
+          const SizedBox(width: 10),
+          if (content != null)
+            DefaultTextStyle(
+              style: Theme.of(context).textTheme.bodyLarge!,
+              child: content!,
+            ),
+        ],
+      ),
       actions: [
-        if (!onlyConfirm)
-          DialogCancelButton(onPressed: onCanceled ?? dialogPop),
+        if (!onlyConfirm) DialogCancelButton(onPressed: onCanceled ?? routePop),
         DialogConfirmButton(onPressed: onConfirmed),
       ],
     );
@@ -150,7 +155,8 @@ class WarningDialog extends StatelessWidget {
 
 class FutureDialog<T> extends StatelessWidget {
   const FutureDialog({
-    required this.future, super.key,
+    required this.future,
+    super.key,
     this.title,
     this.content,
     this.onCanceled,
@@ -174,6 +180,3 @@ class FutureDialog<T> extends StatelessWidget {
     );
   }
 }
-
-void dialogPop<T extends Object?>({BuildContext? context, T? result}) =>
-    Navigator.of(context ?? rootNavigatorKey.currentContext!).pop<T>(result);

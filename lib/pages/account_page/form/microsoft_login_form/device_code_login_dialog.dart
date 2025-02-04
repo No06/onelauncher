@@ -101,7 +101,7 @@ class _DeviceCodeLoginDialogState
     final isAlready = activity.hasValue;
 
     return DefaultDialog(
-      onCanceled: dialogPop,
+      onCanceled: routePop,
       confirmText: const Text('复制并前往验证'),
       onConfirmed: isAlready ? _onTapToLogin : null,
       content: ConstrainedBox(

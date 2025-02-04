@@ -78,7 +78,10 @@ class _AddAccountDialogState extends State<_AddAccountDialog> {
         ),
       ),
       actions: [
-        const DialogCancelButton(onPressed: dialogPop, cancelText: Text("取消")),
+        DialogCancelButton(
+          onPressed: context.pop,
+          cancelText: const Text("取消"),
+        ),
         switch (_accountType) {
           AccountType.microsoft => const SizedBox(),
           _ => DialogConfirmButton(
@@ -87,7 +90,7 @@ class _AddAccountDialogState extends State<_AddAccountDialog> {
                     if (_formKey.currentState!.validate()) {
                       account = _offlineLoginFormKey.currentState!.submit();
                       widget.onSubmit(account);
-                      dialogPop();
+                      context.pop();
                     }
                   },
                 AccountType.microsoft => null,

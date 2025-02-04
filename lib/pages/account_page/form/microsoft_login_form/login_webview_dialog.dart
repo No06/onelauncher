@@ -66,7 +66,7 @@ class _MicrosoftLoginWebviewScreenState
         final code = match?.group(0);
         final hasCode = match != null && code != null;
 
-        if (hasCode) dialogPop(result: code);
+        if (hasCode) routePop(result: code);
       });
 
       if (!mounted) return;
@@ -129,7 +129,7 @@ class _MicrosoftLoginWebviewScreenState
                 ),
                 const IconButton(
                   icon: Icon(Icons.close),
-                  onPressed: dialogPop,
+                  onPressed: routePop,
                 ),
               ],
             ),

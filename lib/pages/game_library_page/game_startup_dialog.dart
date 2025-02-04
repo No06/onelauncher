@@ -1,16 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:one_launcher/app.dart';
+import 'package:one_launcher/models/account/account_login_info.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/provider/account_provider.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';
-import 'package:one_launcher/utils/game_launch_util.dart';
+import 'package:one_launcher/utils/game_launcher.dart';
+import 'package:one_launcher/utils/sequence_task.dart';
 import 'package:one_launcher/widgets/dialog.dart';
-
-typedef _TaskFutureFunction<T> = Future<T>? Function()?;
-
-typedef _TaskDoneCallBack<T> = bool? Function(T)?;
 
 class GameStartupDialog extends ConsumerStatefulWidget {
   const GameStartupDialog({required this.game, super.key});
@@ -22,215 +22,224 @@ class GameStartupDialog extends ConsumerStatefulWidget {
 }
 
 class _GameStartupDialogState extends ConsumerState<GameStartupDialog> {
-  late final GameLaunchUtil launchUtil;
-  Timer? timer;
-  int seconds = 5;
+  late final GameLauncher _launcher;
+  static const _timeout = 5;
   var _continue = false;
-
-  List<String> get warningMessages => launchUtil.warningMessages;
+  late final ValueNotifier<(Timer?, int)> _timeoutNotifier;
 
   @override
   void initState() {
     super.initState();
-    launchUtil = GameLaunchUtil(widget.game, ref.read(gameSettingProvider));
+    _launcher = GameLauncher(
+      game: widget.game,
+      globalSetting: ref.read(gameSettingProvider),
+    );
+    _timeoutNotifier = ValueNotifier<(Timer?, int)>((null, _timeout));
   }
 
   @override
   void dispose() {
+    final (timer, _) = _timeoutNotifier.value;
     timer?.cancel();
-    launchUtil.cancel();
+    _timeoutNotifier.dispose();
     super.dispose();
+  }
+
+  void _setCloseTimeout() {
+    var (timer, timeout) = _timeoutNotifier.value;
+    if (timer != null) return;
+
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final isTimeout = timer.tick > _timeout - 1;
+      if (isTimeout) {
+        timer.cancel();
+        context.pop();
+      } else {
+        timeout = _timeout - 1 - timer.tick;
+        _timeoutNotifier.value = (timer, timeout);
+      }
+    });
+    _timeoutNotifier.value = (timer, timeout - 1);
   }
 
   @override
   Widget build(BuildContext context) {
-    return warningMessages.isNotEmpty && !_continue
-        ? WarningDialog(
-            onConfirmed: () => setState(() => _continue = true),
-            onCanceled: dialogPop,
-            content: SingleChildScrollView(
-              child: Text((warningMessages..add('确定要继续吗？')).join('\n')),
-            ),
-          )
-        : DefaultDialog(
-            title: const Text("为启动游戏做准备"),
-            content: SingleChildScrollView(
-              child: _SequenceTaskItems(
-                tasks: [
-                  _Task(
-                    future: launchUtil.retrieveLibraries.toList,
-                    title: const Text("检索资源"),
-                    onDone: (value) => value.isNotEmpty,
-                  ),
-                  _Task(
-                    future: launchUtil.extractNativesLibraries,
-                    title: const Text("解压资源"),
-                  ),
-                  _Task(
-                    future: () => launchUtil
-                        .login(ref.read(accountProvider).selectedAccount!),
-                    title: const Text("登录"),
-                    onDone: (value) => true,
-                  ),
-                  _Task(
-                    future: launchUtil.launchGame,
-                    title: const Text("启动"),
-                  ),
-                ],
+    if (!_continue) {
+      final warningMessages = _launcher.checkSettings();
+      if (warningMessages.isNotEmpty) {
+        return WarningDialog(
+          onConfirmed: () => setState(() => _continue = true),
+          onCanceled: routePop,
+          content: SingleChildScrollView(
+            child: Text((warningMessages..add('确定要继续吗？')).join('\n')),
+          ),
+        );
+      }
+    }
+
+    AccountLoginInfo? loginInfo;
+    return DefaultDialog(
+      title: const Text("为启动游戏做准备"),
+      content: SingleChildScrollView(
+        child: _SequenceTaskList(
+          onFinished: _setCloseTimeout,
+          onTaskError: (index, task, error) {
+            context.pop();
+            showDialog<void>(
+              context: context,
+              builder: (context) => ErrorDialog(
+                title: const Text("启动失败"),
+                content: Text("任务 [${task.name}] 失败: $error"),
+                onConfirmed: routePop,
               ),
+            );
+          },
+          tasks: [
+            Task(
+              name: "检索资源",
+              futureFunction: () => _launcher.retrieveLibraries,
+              onDone: (value) => value.nonExistenceLibraries.isEmpty,
             ),
-            onlyConfirm: true,
-            onConfirmed: () async {
-              if (!launchUtil.completer.isCompleted) {
-                // 强制关闭
-                await launchUtil.cancel();
-                launchUtil.killProcess();
-              }
-              dialogPop();
-            },
-            confirmText: FutureBuilder(
-              future: launchUtil.completer.future,
-              builder: (context, snapshot) {
-                return StatefulBuilder(
-                  builder: (context, setState) {
-                    if (snapshot.connectionState == ConnectionState.done &&
-                        timer == null) {
-                      seconds -= 1;
-                      timer = Timer.periodic(Durations.extralong4, (time) {
-                        if (seconds > 0) {
-                          setState(() => seconds--);
-                          if (seconds == 0) {
-                            // 关闭 Process 并关闭窗口
-                            Future.delayed(Durations.extralong4, dialogPop);
-                          }
-                        }
-                      });
-                    }
-                    return Text("取消${timer != null ? ' ($seconds)' : ''}");
-                  },
-                );
+            Task(
+              name: "解压资源",
+              futureFunction: _launcher.extractUnavaliableNativesLibraries,
+            ),
+            Task(
+              name: "登录",
+              futureFunction: () async {
+                final account = ref.read(accountProvider).selectedAccount!;
+                loginInfo = await account.login();
               },
             ),
-          );
+            Task(
+              name: "启动",
+              futureFunction: () => _launcher.launch(loginInfo!),
+            ),
+          ],
+        ),
+      ),
+      onlyConfirm: true,
+      onConfirmed: () {
+        _launcher.cancelLaunch();
+        routePop();
+      },
+      confirmText: ValueListenableBuilder(
+        valueListenable: _timeoutNotifier,
+        builder: (context, value, child) {
+          final (timer, timeout) = value;
+          if (timer == null) return const Text("取消");
+          return Text("取消 ($timeout)");
+        },
+      ),
+    );
   }
 }
 
-/// 顺序执行任务
-class _SequenceTaskItems<T> extends StatefulWidget {
-  const _SequenceTaskItems({required this.tasks});
+class _SequenceTaskList<T> extends StatefulWidget {
+  const _SequenceTaskList({
+    required this.tasks,
+    this.onTaskStart,
+    this.onTaskDone,
+    this.onTaskError,
+    this.onFinished,
+  });
 
-  final List<_Task<T>> tasks;
+  final List<Task<T>> tasks;
+  final void Function(int index)? onTaskStart;
+  final void Function(int index, Task task, Object? result)? onTaskDone;
+  final void Function(int index, Task task, Object error)? onTaskError;
+  final VoidCallback? onFinished;
 
   @override
-  State<_SequenceTaskItems<T>> createState() => _SequenceTaskItemsState<T>();
+  State<_SequenceTaskList> createState() => _SequenceTaskListState();
 }
 
-class _SequenceTaskItemsState<T> extends State<_SequenceTaskItems<T>> {
-  final listenables = <ValueNotifier<_TaskFutureFunction<T>>>[];
-  final futures = <_TaskFutureFunction<T>>[];
+class _SequenceTaskListState extends State<_SequenceTaskList> {
+  var _currentTaskIndex = -1;
 
   @override
   void initState() {
     super.initState();
-    for (var i = 0; i < widget.tasks.length; i++) {
-      final currentTask = widget.tasks[i];
-      final next = i + 1;
-      final nextTask = widget.tasks.elementAtOrNull(next);
-      // 跳过第一个
-      if (i != 0) {
-        listenables.add(ValueNotifier(null));
-      }
-      // 串联 Future
-      futures.add(
-        currentTask.future == null
-            ? null
-            : () => currentTask.future!()!.then(
-                  (value) {
-                    // 当还有下一个任务时
-                    if (currentTask.onDone != null) {
-                      currentTask.hasError = currentTask.onDone!(value);
-                    }
-                    if (nextTask != null && !(currentTask.hasError ?? false)) {
-                      listenables[i].value = futures[next];
-                    }
-                    return value;
-                  },
-                ),
-      );
-    }
+    SequenceTask(
+      tasks: widget.tasks,
+      onTaskStart: _onTaskStart,
+      onTaskDone: _onTaskDone,
+      onTaskError: _onTaskError,
+      onFinished: _onFinished,
+    ).start();
+  }
+
+  void _onTaskStart(int index) {
+    widget.onTaskStart?.call(index);
+    setState(() {
+      _currentTaskIndex = index;
+    });
+  }
+
+  void _onTaskDone(int index, Task task, Object? result) {
+    widget.onTaskDone?.call(index, task, result);
+  }
+
+  void _onTaskError(int index, Task task, Object error) {
+    widget.onTaskError?.call(index, task, error);
+  }
+
+  void _onFinished() {
+    widget.onFinished?.call();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: List<Widget>.generate(widget.tasks.length, (index) {
         final task = widget.tasks[index];
-        if (index == 0) {
-          return _TaskItem(task, future: futures[index]);
-        }
-        return ValueListenableBuilder(
-          valueListenable: listenables[index - 1],
-          builder: (context, value, child) => _TaskItem(task, future: value),
-        );
+        final future = _currentTaskIndex >= index ? task.future : null;
+        return _TaskItem(task: task, future: future);
       }),
     );
   }
 }
 
-class _Task<T> {
-  _Task({
-    required this.title,
-    this.future,
-    this.onDone,
-    this.hasError,
-  });
-
-  final _TaskFutureFunction<T> future;
-  final Widget title;
-  final _TaskDoneCallBack<T> onDone;
-  bool? hasError;
-}
-
 class _TaskItem<T> extends StatelessWidget {
-  const _TaskItem(this.task, {this.future});
+  const _TaskItem({required this.task, this.future});
 
-  final _Task<T> task;
-  final _TaskFutureFunction<T>? future;
+  final Task<T> task;
+  final Future<T>? future;
 
-  final _errorIconColor = Colors.red;
-  final _doneIconColor = Colors.green;
-  final _height = 32.0;
+  static const _errorIconColor = Colors.red;
+  static const _doneIconColor = Colors.green;
+  static const _height = 32.0;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: _height,
       child: FutureBuilder(
-        future: future == null ? null : future!(),
+        future: future,
         builder: (context, snapshot) {
           final state = snapshot.connectionState;
+          final hasError = snapshot.hasError || task.hasError;
           return Row(
+            spacing: 8,
             children: [
               SizedBox.square(
                 dimension: _height,
                 child: Center(
-                  child: () {
-                    switch (state) {
-                      case ConnectionState.none:
-                        return const Icon(Icons.hourglass_empty);
-                      case ConnectionState.waiting || ConnectionState.active:
-                        return const CircularProgressIndicator();
-                      case ConnectionState.done:
-                        if (task.hasError ?? false) {
-                          return Icon(Icons.error, color: _errorIconColor);
-                        }
-                        return Icon(Icons.done, color: _doneIconColor);
-                    }
-                  }(),
+                  child: switch (state) {
+                    ConnectionState.none => const Icon(Icons.hourglass_empty),
+                    ConnectionState.waiting ||
+                    ConnectionState.active =>
+                      const CircularProgressIndicator(
+                        strokeAlign: BorderSide.strokeAlignInside,
+                      ),
+                    ConnectionState.done => hasError
+                        ? const Icon(Icons.error, color: _errorIconColor)
+                        : const Icon(Icons.done, color: _doneIconColor),
+                  },
                 ),
               ),
-              const SizedBox(width: 8),
-              task.title,
+              Text(task.name),
             ],
           );
         },

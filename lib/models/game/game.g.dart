@@ -11,5 +11,5 @@ Game _$GameFromJson(Map<String, dynamic> json) => Game(
       json['versionPath'] as String,
       setting: json['setting'] == null
           ? null
-          : GameSettingState.fromJson(json['setting'] as Map<String, dynamic>),
+          : GameSetting.fromJson(json['setting'] as Map<String, dynamic>),
     );

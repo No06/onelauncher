@@ -34,7 +34,7 @@ class GameLaunchUtil {
   final completer = Completer<void>();
 
   final Game game;
-  final GameSettingState globarSetting;
+  final GameSetting globarSetting;
   late final Java? java;
   AccountLoginInfo? loginInfo;
 
@@ -208,9 +208,9 @@ class GameLaunchUtil {
     for (final lib in allowedLibraries) {
       if (lib is NativesLibrary) {
         _nativesLibraries.add(lib);
-      } else if (!lib.exists(game.librariesPath)) {
+      } else if (!lib.existInGame(game.librariesPath)) {
         if (kDebugMode) {
-          lib.getPath(game.librariesPath).printInfo('');
+          lib.getFullPath(game.librariesPath).printInfo('');
         }
         yield lib;
       }

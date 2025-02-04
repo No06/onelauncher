@@ -88,7 +88,7 @@ class _JvmArgsEditDialog extends HookConsumerWidget {
       context: context,
       builder: (_) => WarningDialog(
         content: const Text("你确定要重置吗？"),
-        onConfirmed: () => dialogPop(result: true),
+        onConfirmed: () => routePop(result: true),
       ),
     );
     if (result ?? false) controller.clear();
@@ -113,8 +113,8 @@ class _JvmArgsEditDialog extends HookConsumerWidget {
         ],
       ),
       confirmText: const Text("保存"),
-      onCanceled: dialogPop,
-      onConfirmed: () => dialogPop(result: controller.text),
+      onCanceled: routePop,
+      onConfirmed: () => routePop(result: controller.text),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -141,7 +141,7 @@ class _JavaSelectDialog extends StatelessWidget {
       title: const Text("Java路径"),
       onlyConfirm: true,
       confirmText: const Text("返回"),
-      onConfirmed: dialogPop,
+      onConfirmed: routePop,
       content: Material(
         color: Colors.transparent,
         borderRadius: kDefaultBorderRadius,

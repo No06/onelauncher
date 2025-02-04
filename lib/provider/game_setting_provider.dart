@@ -13,8 +13,8 @@ const _kDefaultJvmArgs =
 
 @JsonSerializable()
 @CopyWith()
-class GameSettingState {
-  const GameSettingState({
+class GameSetting {
+  const GameSetting({
     this.java,
     this.jvmArgs,
     this.autoMemory = true,
@@ -27,8 +27,7 @@ class GameSettingState {
     this.serverAddress = "",
   });
 
-  factory GameSettingState.fromJson(JsonMap json) =>
-      _$GameSettingStateFromJson(json);
+  factory GameSetting.fromJson(JsonMap json) => _$GameSettingFromJson(json);
   final Java? java;
   final String? jvmArgs;
   final bool autoMemory;
@@ -44,22 +43,22 @@ class GameSettingState {
   String get adaptiveJvmArgs => useDefaultJvmArgs ? _kDefaultJvmArgs : jvmArgs!;
   bool get useDefaultJvmArgs => jvmArgs == null || jvmArgs!.isEmpty;
 
-  JsonMap toJson() => _$GameSettingStateToJson(this);
+  JsonMap toJson() => _$GameSettingToJson(this);
 }
 
-class GameSettingNotifier extends StateNotifier<GameSettingState> {
+class GameSettingNotifier extends StateNotifier<GameSetting> {
   GameSettingNotifier() : super(_loadInitialState());
 
   static const storageKey = "gameSetting";
 
-  static GameSettingState _loadInitialState() {
+  static GameSetting _loadInitialState() {
     final storedData = storage.read<JsonMap>(storageKey);
     try {
-      if (storedData != null) return GameSettingState.fromJson(storedData);
+      if (storedData != null) return GameSetting.fromJson(storedData);
     } catch (e) {
       e.printError();
     }
-    return const GameSettingState();
+    return const GameSetting();
   }
 
   void _saveState() {
@@ -96,6 +95,6 @@ class GameSettingNotifier extends StateNotifier<GameSettingState> {
 }
 
 final gameSettingProvider =
-    StateNotifierProvider<GameSettingNotifier, GameSettingState>((ref) {
+    StateNotifierProvider<GameSettingNotifier, GameSetting>((ref) {
   return GameSettingNotifier();
 });

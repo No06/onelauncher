@@ -41,7 +41,7 @@ class Game {
   String get nativesPath => join(path, "natives-${Platform.operatingSystem}");
 
   /// 游戏设置配置文件
-  final GameSettingState? setting;
+  final GameSetting? setting;
 
   /// 游戏文件 1.x.x.json序列化内容
   final GameData _data;
@@ -73,9 +73,8 @@ class Game {
     final versionFileContent = versionFile.content as Uint8List?;
     if (versionFileContent == null) return null;
 
-    final json =
-        jsonDecode(utf8.decode(versionFileContent)) as Map<String, String>;
-    return json["id"];
+    final json = jsonDecode(utf8.decode(versionFileContent)) as JsonMap;
+    return json["id"] as String?;
   }
 
   /// 游戏版本

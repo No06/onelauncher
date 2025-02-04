@@ -248,8 +248,8 @@ class _ActionsState extends ConsumerState<_Actions> {
       builder: (context) => WarningDialog(
         title: const Text("删除用户"),
         content: const Text("你确定要删除这条数据吗？"),
-        onConfirmed: () => dialogPop(result: true),
-        onCanceled: dialogPop,
+        onConfirmed: () => routePop(result: true),
+        onCanceled: routePop,
       ),
     );
     if (confirm ?? false) {

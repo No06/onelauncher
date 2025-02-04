@@ -384,7 +384,7 @@ class _GameItemState extends ConsumerState<_GameItem> {
                         return const WarningDialog(
                           content: Text("先添加一个账号再启动吧"),
                           onlyConfirm: true,
-                          onConfirmed: dialogPop,
+                          onConfirmed: routePop,
                         );
                       }
                       return GameStartupDialog(game: widget.game);

@@ -6,34 +6,34 @@ part of 'game_setting_provider.dart';
 // CopyWithGenerator
 // **************************************************************************
 
-abstract class _$GameSettingStateCWProxy {
-  GameSettingState java(Java? java);
+abstract class _$GameSettingCWProxy {
+  GameSetting java(Java? java);
 
-  GameSettingState jvmArgs(String? jvmArgs);
+  GameSetting jvmArgs(String? jvmArgs);
 
-  GameSettingState autoMemory(bool autoMemory);
+  GameSetting autoMemory(bool autoMemory);
 
-  GameSettingState maxMemory(int maxMemory);
+  GameSetting maxMemory(int maxMemory);
 
-  GameSettingState fullScreen(bool fullScreen);
+  GameSetting fullScreen(bool fullScreen);
 
-  GameSettingState width(int width);
+  GameSetting width(int width);
 
-  GameSettingState height(int height);
+  GameSetting height(int height);
 
-  GameSettingState recordLog(bool recordLog);
+  GameSetting recordLog(bool recordLog);
 
-  GameSettingState args(String args);
+  GameSetting args(String args);
 
-  GameSettingState serverAddress(String serverAddress);
+  GameSetting serverAddress(String serverAddress);
 
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GameSettingState(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GameSetting(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
   /// ```dart
-  /// GameSettingState(...).copyWith(id: 12, name: "My name")
+  /// GameSetting(...).copyWith(id: 12, name: "My name")
   /// ````
-  GameSettingState call({
+  GameSetting call({
     Java? java,
     String? jvmArgs,
     bool? autoMemory,
@@ -47,52 +47,52 @@ abstract class _$GameSettingStateCWProxy {
   });
 }
 
-/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfGameSettingState.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfGameSettingState.copyWith.fieldName(...)`
-class _$GameSettingStateCWProxyImpl implements _$GameSettingStateCWProxy {
-  const _$GameSettingStateCWProxyImpl(this._value);
+/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfGameSetting.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfGameSetting.copyWith.fieldName(...)`
+class _$GameSettingCWProxyImpl implements _$GameSettingCWProxy {
+  const _$GameSettingCWProxyImpl(this._value);
 
-  final GameSettingState _value;
-
-  @override
-  GameSettingState java(Java? java) => this(java: java);
+  final GameSetting _value;
 
   @override
-  GameSettingState jvmArgs(String? jvmArgs) => this(jvmArgs: jvmArgs);
+  GameSetting java(Java? java) => this(java: java);
 
   @override
-  GameSettingState autoMemory(bool autoMemory) => this(autoMemory: autoMemory);
+  GameSetting jvmArgs(String? jvmArgs) => this(jvmArgs: jvmArgs);
 
   @override
-  GameSettingState maxMemory(int maxMemory) => this(maxMemory: maxMemory);
+  GameSetting autoMemory(bool autoMemory) => this(autoMemory: autoMemory);
 
   @override
-  GameSettingState fullScreen(bool fullScreen) => this(fullScreen: fullScreen);
+  GameSetting maxMemory(int maxMemory) => this(maxMemory: maxMemory);
 
   @override
-  GameSettingState width(int width) => this(width: width);
+  GameSetting fullScreen(bool fullScreen) => this(fullScreen: fullScreen);
 
   @override
-  GameSettingState height(int height) => this(height: height);
+  GameSetting width(int width) => this(width: width);
 
   @override
-  GameSettingState recordLog(bool recordLog) => this(recordLog: recordLog);
+  GameSetting height(int height) => this(height: height);
 
   @override
-  GameSettingState args(String args) => this(args: args);
+  GameSetting recordLog(bool recordLog) => this(recordLog: recordLog);
 
   @override
-  GameSettingState serverAddress(String serverAddress) =>
+  GameSetting args(String args) => this(args: args);
+
+  @override
+  GameSetting serverAddress(String serverAddress) =>
       this(serverAddress: serverAddress);
 
   @override
 
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GameSettingState(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GameSetting(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
   /// ```dart
-  /// GameSettingState(...).copyWith(id: 12, name: "My name")
+  /// GameSetting(...).copyWith(id: 12, name: "My name")
   /// ````
-  GameSettingState call({
+  GameSetting call({
     Object? java = const $CopyWithPlaceholder(),
     Object? jvmArgs = const $CopyWithPlaceholder(),
     Object? autoMemory = const $CopyWithPlaceholder(),
@@ -104,7 +104,7 @@ class _$GameSettingStateCWProxyImpl implements _$GameSettingStateCWProxy {
     Object? args = const $CopyWithPlaceholder(),
     Object? serverAddress = const $CopyWithPlaceholder(),
   }) {
-    return GameSettingState(
+    return GameSetting(
       java: java == const $CopyWithPlaceholder()
           ? _value.java
           // ignore: cast_nullable_to_non_nullable
@@ -152,18 +152,17 @@ class _$GameSettingStateCWProxyImpl implements _$GameSettingStateCWProxy {
   }
 }
 
-extension $GameSettingStateCopyWith on GameSettingState {
-  /// Returns a callable class that can be used as follows: `instanceOfGameSettingState.copyWith(...)` or like so:`instanceOfGameSettingState.copyWith.fieldName(...)`.
+extension $GameSettingCopyWith on GameSetting {
+  /// Returns a callable class that can be used as follows: `instanceOfGameSetting.copyWith(...)` or like so:`instanceOfGameSetting.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$GameSettingStateCWProxy get copyWith => _$GameSettingStateCWProxyImpl(this);
+  _$GameSettingCWProxy get copyWith => _$GameSettingCWProxyImpl(this);
 }
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-GameSettingState _$GameSettingStateFromJson(Map<String, dynamic> json) =>
-    GameSettingState(
+GameSetting _$GameSettingFromJson(Map<String, dynamic> json) => GameSetting(
       java: json['java'] == null
           ? null
           : Java.fromJson(json['java'] as Map<String, dynamic>),
@@ -178,7 +177,7 @@ GameSettingState _$GameSettingStateFromJson(Map<String, dynamic> json) =>
       serverAddress: json['serverAddress'] as String? ?? "",
     );
 
-Map<String, dynamic> _$GameSettingStateToJson(GameSettingState instance) =>
+Map<String, dynamic> _$GameSettingToJson(GameSetting instance) =>
     <String, dynamic>{
       'java': instance.java,
       'jvmArgs': instance.jvmArgs,

@@ -172,7 +172,7 @@ class _AddGamePathDialog extends HookConsumerWidget {
     return DefaultDialog(
       title: const Text("添加游戏目录"),
       onConfirmed: () => _confirm(nameTextCtl.text, pathTextCtl.text, ref),
-      onCanceled: dialogPop,
+      onCanceled: routePop,
       confirmText: const Text("添加"),
       content: SizedBox(
         width: 450,
@@ -224,7 +224,7 @@ class _AddGamePathDialog extends HookConsumerWidget {
         .addPath(GamePath(name: name, path: path));
 
     if (add()) {
-      dialogPop(result: true);
+      routePop(result: true);
     } else {
       showSnackbar(warningSnackBar(title: "已有重复目录"));
     }

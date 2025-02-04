@@ -3,6 +3,9 @@ part of 'app.dart';
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
+void routePop<T extends Object?>({BuildContext? context, T? result}) =>
+    Navigator.of(context ?? rootNavigatorKey.currentContext!).pop<T>(result);
+
 final _routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
