@@ -99,6 +99,12 @@ abstract class _GameLauncherInterface {
   List<String> checkSettings();
 
   Future<void> launch(AccountLoginInfo loginInfo);
+
+  void cancelLaunch();
+
+  Future<_LibraryRetrieveResult> get retrieveLibraries;
+
+  Future<void> extractUnavaliableNativesLibraries();
 }
 
 mixin _Checker on _GameLauncherInterface {
@@ -208,6 +214,7 @@ mixin _Launcher
     return completer.future;
   }
 
+  @override
   void cancelLaunch() {
     _process?.kill();
   }
@@ -296,6 +303,7 @@ mixin _LibraryArgumentParser on _GameLauncherInterface {
   Iterable<NativesLibrary> get _nativesLibraries =>
       _avaliableLibraries.whereType<NativesLibrary>();
 
+  @override
   Future<_LibraryRetrieveResult> get retrieveLibraries async {
     final nativesLibraries = <NativesLibrary>[];
     final nonExistenceLibraries = <Library>[];
@@ -361,6 +369,7 @@ mixin _LibraryArgumentParser on _GameLauncherInterface {
     return unavaliableNativesLibraries;
   }
 
+  @override
   Future<void> extractUnavaliableNativesLibraries() async {
     final unavaliableNativesLibraries = await _unavaliableNativesLibraries;
     for (final nativesLibrary in unavaliableNativesLibraries) {
