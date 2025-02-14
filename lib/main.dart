@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/app.dart';
 import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/window_state.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -18,18 +19,22 @@ Future<void> _init() async {
 
   Future<void> initWindow() async {
     await windowManager.ensureInitialized();
-    const defaultWindowWidth = 960.0;
-    const defaultWindowHeight = 593.0;
-    const windowSize = Size(defaultWindowWidth, defaultWindowHeight);
+    const defaultWindowSize = Size(960, 593);
+    final windowState = await WindowState.get();
+    final windowSize = windowState?.size ?? defaultWindowSize;
+    final position = windowState?.position;
+    final hasPosition = position != null;
     final windowOptions = WindowOptions(
+      center: !hasPosition,
       size: windowSize,
-      center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
       titleBarStyle:
           kHideTitleBar ? TitleBarStyle.hidden : TitleBarStyle.normal,
     );
+    windowManager.addListener(WindowStateListener());
     return windowManager.waitUntilReadyToShow(windowOptions, () async {
+      if (hasPosition) await windowManager.setPosition(position);
       await windowManager.show();
       await windowManager.focus();
     });
@@ -37,7 +42,8 @@ Future<void> _init() async {
 
   await Future.wait([
     JavaManager.init(),
-    initWindow(),
     storage.initStorage,
   ]);
+
+  await initWindow();
 }
