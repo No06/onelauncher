@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:one_launcher/app.dart';
+import 'package:one_launcher/config/preference.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/models/window_state.dart';
 import 'package:one_launcher/utils/java_util.dart';
 import 'package:window_manager/window_manager.dart';
-
-final storage = GetStorage("$kAppName/config");
 
 void main() async {
   await _init();
@@ -42,7 +40,7 @@ Future<void> _init() async {
 
   await Future.wait([
     JavaManager.init(),
-    storage.initStorage,
+    Preference.init(kAppName),
   ]);
 
   await initWindow();

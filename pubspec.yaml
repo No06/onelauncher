@@ -48,7 +48,6 @@ dependencies:
   flutter_mdi_icons: ^0.1.1
   flutter_riverpod: ^2.5.1
   gap: ^3.0.1
-  get_storage: ^2.1.1
   go_router: ^14.1.3
   handy_window: ^0.4.0
   hooks_riverpod: ^2.5.1
@@ -60,6 +59,7 @@ dependencies:
   package_info_plus: ^8.0.0
   path: ^1.8.3
   path_provider: ^2.1.1
+  shared_preferences: ^2.5.2
   smooth_scroll_multiplatform: ^1.0.8
   stdlibc:
     # Waiting for https://github.com/canonical/stdlibc.dart/pull/133

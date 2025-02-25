@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:one_launcher/config/preference.dart';
 import 'package:one_launcher/consts.dart';
-import 'package:one_launcher/main.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/models/game/game_path.dart';
 import 'package:one_launcher/models/json_map.dart';
@@ -27,7 +27,11 @@ class _GamePathUtils {
         return join(value, kGameDirectoryName);
       } else if (Platform.isMacOS) {
         return join(
-            value, "Library", "Application Support", kGameDirectoryName,);
+          value,
+          "Library",
+          "Application Support",
+          kGameDirectoryName,
+        );
       } else {
         throw Exception("Unsupported platform: ${Platform.operatingSystem}");
       }
@@ -48,7 +52,6 @@ class _GamePathUtils {
 @JsonSerializable()
 @CopyWith()
 class GamePathState {
-
   GamePathState({Set<GamePath>? paths})
       : paths = paths ?? {...launcherGamePaths};
 
@@ -83,22 +86,17 @@ class GamePathState {
 class GamePathStateNotifier extends StateNotifier<GamePathState> {
   GamePathStateNotifier() : super(_loadInitialState());
 
-  static const storageKey = "gamePathState";
-
   static GamePathState _loadInitialState() {
-    final storedData = storage.read<JsonMap>(storageKey);
+    GamePathState? data;
     try {
-      if (storedData != null) return GamePathState.fromJson(storedData);
+      data = prefs.gamePath;
     } catch (e) {
       e.printError();
     }
-    return GamePathState();
+    return data ?? GamePathState();
   }
 
-  void _saveState() {
-    storageKey.printInfo("Save storage");
-    storage.write(storageKey, state.toJson());
-  }
+  Future<bool> _saveState() => prefs.setGamePath(state);
 
   bool _updatePath(bool Function() updater) {
     final updated = updater();

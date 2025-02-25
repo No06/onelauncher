@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/main.dart';
+import 'package:one_launcher/config/preference.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/debouncer.dart';
 import 'package:one_launcher/utils/json_converter/offset_json_converter.dart';
@@ -19,16 +18,10 @@ class WindowState {
   factory WindowState.fromJson(JsonMap json) => _$WindowStateFromJson(json);
 
   static const storageKey = "windowState";
-  static Future<WindowState?> get() async {
-    final jsonString = storage.read<String>(storageKey);
-    if (jsonString == null) return null;
-    final jsonData = jsonDecode(jsonString) as JsonMap;
-    final windowState = WindowState.fromJson(jsonData);
-    return windowState;
-  }
+  static WindowState? get() => prefs.windowState;
 
-  static Future<void> save(WindowState windowState) =>
-      storage.write(storageKey, jsonEncode(windowState.toJson()));
+  static Future<bool> save(WindowState windowState) =>
+      prefs.setWindowState(windowState);
 
   @OffsetJsonConverter()
   final Offset position;
@@ -42,7 +35,7 @@ class WindowState {
 class WindowStateListener extends WindowListener {
   late final _debouncer = Debouncer(const Duration(milliseconds: 500));
 
-  Future<void> _updateState() async {
+  Future<bool> _updateState() async {
     final windowState = WindowState(
       await windowManager.getPosition(),
       await windowManager.getSize(),

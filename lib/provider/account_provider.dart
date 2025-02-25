@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/main.dart';
+import 'package:one_launcher/config/preference.dart';
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/models/json_map.dart';
@@ -12,13 +14,13 @@ part 'account_provider.g.dart';
 @JsonSerializable()
 @CopyWith()
 class AccountState {
-
   AccountState({
     required this.selectedAccount,
     required this.accounts,
   });
 
   factory AccountState.fromJson(JsonMap json) => _$AccountStateFromJson(json);
+
   /// 被选中的用户
   final Account? selectedAccount;
 
@@ -31,25 +33,21 @@ class AccountState {
 class AccountStateNotifier extends StateNotifier<AccountState> {
   AccountStateNotifier() : super(_loadInitialState());
 
-  static const storageKey = "accountState";
-
   static AccountState _loadInitialState() {
-    final storedData = storage.read<JsonMap>(storageKey);
+    AccountState? data;
     try {
-      if (storedData != null) return AccountState.fromJson(storedData);
+      data = prefs.account;
     } catch (e) {
       e.printError();
     }
-    return AccountState(
-      selectedAccount: null,
-      accounts: {},
-    );
+    return data ??
+        AccountState(
+          selectedAccount: null,
+          accounts: {},
+        );
   }
 
-  void _saveState() {
-    storageKey.printInfo("Save storage");
-    storage.write(storageKey, state.toJson());
-  }
+  Future<bool> _saveState() => prefs.setAccount(state);
 
   void updateSelectedAccount(Account account) {
     if (state.selectedAccount != account) {
@@ -60,7 +58,7 @@ class AccountStateNotifier extends StateNotifier<AccountState> {
 
   Future<void> updateAccountProfile(MicrosoftAccount account) async {
     await account.updateProfile();
-    _saveState();
+    unawaited(_saveState());
   }
 
   bool addAccount(Account value) {

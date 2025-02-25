@@ -1,7 +1,7 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:one_launcher/main.dart';
+import 'package:one_launcher/config/preference.dart';
 import 'package:one_launcher/models/game/java.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
@@ -49,21 +49,14 @@ class GameSetting {
 class GameSettingNotifier extends StateNotifier<GameSetting> {
   GameSettingNotifier() : super(_loadInitialState());
 
-  static const storageKey = "gameSetting";
-
   static GameSetting _loadInitialState() {
-    final storedData = storage.read<JsonMap>(storageKey);
+    GameSetting? data;
     try {
-      if (storedData != null) return GameSetting.fromJson(storedData);
+      data = prefs.gameSetting;
     } catch (e) {
       e.printError();
     }
-    return const GameSetting();
-  }
-
-  void _saveState() {
-    storageKey.printInfo("Save storage");
-    storage.write(storageKey, state.toJson());
+    return data ?? const GameSetting();
   }
 
   void update({
@@ -90,7 +83,7 @@ class GameSettingNotifier extends StateNotifier<GameSetting> {
       args: args,
       serverAddress: serverAddress,
     );
-    _saveState();
+    prefs.setGameSetting(state);
   }
 }
 

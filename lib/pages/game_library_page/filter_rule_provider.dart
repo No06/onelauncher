@@ -29,24 +29,26 @@ class _FilterState {
 class _FilterStateNotifier extends StateNotifier<_FilterState> {
   _FilterStateNotifier() : super(_loadInitialState());
 
-  static const storageKey = "gameFilterRule";
-
   static _FilterState _loadInitialState() {
-    final storedData = storage.read<JsonMap>(storageKey);
+    _FilterState? data;
     try {
-      if (storedData != null) return _FilterState.fromJson(storedData);
+      data = prefs.getFromJson(
+        PreferenceKeys.filterState,
+        _FilterState.fromJson,
+      );
     } catch (e) {
       e.printError();
     }
-    return _FilterState(
-      name: '',
-      collation: _GameCollation.recentlyPlayed,
-      types: <_GameType>{},
-    );
+    return data ??
+        _FilterState(
+          name: '',
+          collation: _GameCollation.recentlyPlayed,
+          types: <_GameType>{},
+        );
   }
 
   void _saveState() {
-    storage.write(storageKey, state.toJson());
+    prefs.setToJson(PreferenceKeys.filterState, state.toJson);
   }
 
   void updateName(String name) {

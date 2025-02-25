@@ -1,7 +1,7 @@
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:one_launcher/main.dart';
+import 'package:one_launcher/config/preference.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 
@@ -42,22 +42,17 @@ class AppThemeState {
 class AppThemeNotifier extends StateNotifier<AppThemeState> {
   AppThemeNotifier() : super(_loadInitialState());
 
-  static const storageKey = "appTheme";
-
   static AppThemeState _loadInitialState() {
-    final storedData = storage.read<JsonMap>(storageKey);
+    AppThemeState? data;
     try {
-      if (storedData != null) return AppThemeState.fromJson(storedData);
+      data = prefs.theme;
     } catch (e) {
       e.printError();
     }
-    return AppThemeState(mode: ThemeMode.system, color: Colors.blue);
+    return data ?? AppThemeState(mode: ThemeMode.system, color: Colors.blue);
   }
 
-  void _saveState() {
-    storageKey.printInfo("Save storage");
-    storage.write(storageKey, state.toJson());
-  }
+  Future<bool> _saveState() => prefs.setTheme(state);
 
   void updateMode(ThemeMode? mode) {
     state = state.copyWith(mode: mode);
