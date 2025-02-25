@@ -43,10 +43,9 @@ class _JavaSettingEditListTileGroup extends StatelessWidget {
           title: const Text("Java路径"),
           subtitle: Consumer(
             builder: (context, ref, child) {
-              final path = ref
-                  .watch(gameSettingProvider.select((state) => state.java))
-                  ?.path;
-              return Text(path ?? "自动选择最佳版本");
+              final java =
+                  ref.watch(gameSettingProvider.select((state) => state.java));
+              return Text(java is EmptyJava ? "自动选择最佳版本" : java.path);
             },
           ),
           onTap: () => showDialog<void>(
@@ -63,7 +62,7 @@ class _JavaSettingEditListTileGroup extends StatelessWidget {
             return ListTile(
               title: const Text("JVM启动参数"),
               subtitle: Text(
-                useDefaultJvmArgs ? "默认" : jvmArgs!,
+                useDefaultJvmArgs ? "默认" : jvmArgs,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -154,7 +153,7 @@ class _JavaSelectDialog extends StatelessWidget {
               return Column(
                 children: [
                   RadioListTile(
-                    value: null,
+                    value: const EmptyJava(),
                     groupValue: java,
                     title: const Text("自动选择最佳版本"),
                     onChanged: (value) => notifier.update(java: value),

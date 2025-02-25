@@ -6,6 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:one_launcher/app.dart';
 import 'package:one_launcher/consts.dart';
+import 'package:one_launcher/models/game/java.dart';
 import 'package:one_launcher/pages/common/base_page.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';
 import 'package:one_launcher/utils/extension/color_extension.dart';

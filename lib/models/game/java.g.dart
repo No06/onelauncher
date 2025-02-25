@@ -6,10 +6,10 @@ part of 'java.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Java _$JavaFromJson(Map<String, dynamic> json) => Java(
+_JavaImpl _$JavaImplFromJson(Map<String, dynamic> json) => _JavaImpl(
       json['path'] as String,
     );
 
-Map<String, dynamic> _$JavaToJson(Java instance) => <String, dynamic>{
+Map<String, dynamic> _$JavaImplToJson(_JavaImpl instance) => <String, dynamic>{
       'path': instance.path,
     };

@@ -30,7 +30,7 @@ abstract final class JavaManager {
     if (splitStr.length == 1 && splitStr[0].isEmpty) {
       return null;
     }
-    return splitStr.map((path) => Java(resolveSymbolicLink(path)));
+    return splitStr.map((path) => Java.fromPath(resolveSymbolicLink(path)));
   }
 
   /// 从 Java 环境变量获取
@@ -49,7 +49,7 @@ abstract final class JavaManager {
       if (stdout.isEmpty) continue;
 
       final javaPath = resolveSymbolicLink(stdout.trim());
-      results.add(Java(javaPath));
+      results.add(Java.fromPath(javaPath));
     }
 
     return results;

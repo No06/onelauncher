@@ -9,20 +9,47 @@ import 'package:path/path.dart';
 
 part 'java.g.dart';
 
-@immutable
-@JsonSerializable()
-class Java {
-  Java(this.path);
+abstract class Java {
+  const Java(this.path);
 
-  factory Java.fromJson(JsonMap json) => _$JavaFromJson(json);
+  factory Java.fromJson(JsonMap json) {
+    if (json.isEmpty) {
+      return const EmptyJava();
+    }
+    return _JavaImpl.fromJson(json);
+  }
 
-  static final binName = Platform.isWindows ? "java.exe" : "java";
+  factory Java.fromPath(String path) {
+    if (path.isEmpty) {
+      return const EmptyJava();
+    }
+    return _JavaImpl(path);
+  }
+
+  JsonMap toJson();
 
   final String path;
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  late final String version = _getVersion();
+  String get version;
+  JavaVersion get versionNumber;
+}
 
+@immutable
+@JsonSerializable()
+class _JavaImpl extends Java {
+  _JavaImpl(super.path);
+
+  factory _JavaImpl.fromJson(JsonMap json) => _$JavaImplFromJson(json);
+
+  static final binName = Platform.isWindows ? "java.exe" : "java";
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  late final String _version = _getVersion();
+
+  @override
+  String get version => _version;
+
+  @override
   JavaVersion get versionNumber {
     final split = version.split('.');
     var major = split[0];
@@ -92,11 +119,26 @@ class Java {
     return resultStr.substring("javac ".length).trim();
   }
 
-  JsonMap toJson() => _$JavaToJson(this);
+  @override
+  JsonMap toJson() => _$JavaImplToJson(this);
 
   @override
   int get hashCode => path.hashCode;
 
   @override
-  bool operator ==(Object other) => other is Java && path == other.path;
+  bool operator ==(Object other) => other is _JavaImpl && path == other.path;
+}
+
+class EmptyJava extends Java {
+  const EmptyJava() : super("");
+
+  @override
+  String get version => "unknown";
+
+  @override
+  JavaVersion get versionNumber =>
+      JavaVersion(major: -1, minor: null, revision: null);
+
+  @override
+  JsonMap toJson() => {};
 }

@@ -15,8 +15,8 @@ const _kDefaultJvmArgs =
 @CopyWith()
 class GameSetting {
   const GameSetting({
-    this.java,
-    this.jvmArgs,
+    this.java = const EmptyJava(),
+    this.jvmArgs = "",
     this.autoMemory = true,
     this.maxMemory = 2048,
     this.fullScreen = false,
@@ -28,8 +28,8 @@ class GameSetting {
   });
 
   factory GameSetting.fromJson(JsonMap json) => _$GameSettingFromJson(json);
-  final Java? java;
-  final String? jvmArgs;
+  final Java java;
+  final String jvmArgs;
   final bool autoMemory;
   final int maxMemory;
   final bool fullScreen;
@@ -40,8 +40,8 @@ class GameSetting {
   final String serverAddress;
 
   /// 如果 [jvmArgs] 为空，则返回默认启动项 [_kDefaultJvmArgs]
-  String get adaptiveJvmArgs => useDefaultJvmArgs ? _kDefaultJvmArgs : jvmArgs!;
-  bool get useDefaultJvmArgs => jvmArgs == null || jvmArgs!.isEmpty;
+  String get adaptiveJvmArgs => useDefaultJvmArgs ? _kDefaultJvmArgs : jvmArgs;
+  bool get useDefaultJvmArgs => jvmArgs.isEmpty;
 
   JsonMap toJson() => _$GameSettingToJson(this);
 }

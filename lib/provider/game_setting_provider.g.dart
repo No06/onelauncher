@@ -7,9 +7,9 @@ part of 'game_setting_provider.dart';
 // **************************************************************************
 
 abstract class _$GameSettingCWProxy {
-  GameSetting java(Java? java);
+  GameSetting java(Java java);
 
-  GameSetting jvmArgs(String? jvmArgs);
+  GameSetting jvmArgs(String jvmArgs);
 
   GameSetting autoMemory(bool autoMemory);
 
@@ -54,10 +54,10 @@ class _$GameSettingCWProxyImpl implements _$GameSettingCWProxy {
   final GameSetting _value;
 
   @override
-  GameSetting java(Java? java) => this(java: java);
+  GameSetting java(Java java) => this(java: java);
 
   @override
-  GameSetting jvmArgs(String? jvmArgs) => this(jvmArgs: jvmArgs);
+  GameSetting jvmArgs(String jvmArgs) => this(jvmArgs: jvmArgs);
 
   @override
   GameSetting autoMemory(bool autoMemory) => this(autoMemory: autoMemory);
@@ -105,14 +105,14 @@ class _$GameSettingCWProxyImpl implements _$GameSettingCWProxy {
     Object? serverAddress = const $CopyWithPlaceholder(),
   }) {
     return GameSetting(
-      java: java == const $CopyWithPlaceholder()
+      java: java == const $CopyWithPlaceholder() || java == null
           ? _value.java
           // ignore: cast_nullable_to_non_nullable
-          : java as Java?,
-      jvmArgs: jvmArgs == const $CopyWithPlaceholder()
+          : java as Java,
+      jvmArgs: jvmArgs == const $CopyWithPlaceholder() || jvmArgs == null
           ? _value.jvmArgs
           // ignore: cast_nullable_to_non_nullable
-          : jvmArgs as String?,
+          : jvmArgs as String,
       autoMemory:
           autoMemory == const $CopyWithPlaceholder() || autoMemory == null
               ? _value.autoMemory
@@ -164,9 +164,9 @@ extension $GameSettingCopyWith on GameSetting {
 
 GameSetting _$GameSettingFromJson(Map<String, dynamic> json) => GameSetting(
       java: json['java'] == null
-          ? null
+          ? const EmptyJava()
           : Java.fromJson(json['java'] as Map<String, dynamic>),
-      jvmArgs: json['jvmArgs'] as String?,
+      jvmArgs: json['jvmArgs'] as String? ?? "",
       autoMemory: json['autoMemory'] as bool? ?? true,
       maxMemory: (json['maxMemory'] as num?)?.toInt() ?? 2048,
       fullScreen: json['fullScreen'] as bool? ?? false,
