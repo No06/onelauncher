@@ -244,7 +244,7 @@ class _MemorySettingListTileGroup extends HookConsumerWidget {
                       child: ValueListenableBuilder(
                         valueListenable: textController,
                         builder: (context, textValue, child) => Slider(
-                          inactiveColor: colors.primary.withOpacity(.2),
+                          inactiveColor: colors.primary.withValues(alpha: .2),
                           value: double.parse(textValue.text),
                           min: 1,
                           max: sysinfo.totalPhyMem.toMB(),
@@ -545,14 +545,14 @@ class _MemoryAllocationBarState extends State<_MemoryAllocationBar> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: colors.primary.withOpacity(.2),
+                    color: colors.primary.withValues(alpha: .2),
                     borderRadius: kDefaultBorderRadius,
                   ),
                 ),
                 AnimatedFractionallySizedBox(
                   duration: const Duration(milliseconds: 100),
                   widthFactor: usedPercent + allocationMemPercent,
-                  child: Container(color: colors.primary.withOpacity(.3)),
+                  child: Container(color: colors.primary.withValues(alpha: .3)),
                 ),
                 AnimatedFractionallySizedBox(
                   duration: const Duration(milliseconds: 100),

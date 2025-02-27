@@ -86,8 +86,10 @@ class TitleWidgetGroup extends StatelessWidget {
 
   Widget _defaultDivider(BuildContext context) => Divider(
         height: 1,
-        color:
-            Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(.08),
+        color: Theme.of(context)
+            .colorScheme
+            .onPrimaryContainer
+            .withValues(alpha: .08),
       );
 
   @override

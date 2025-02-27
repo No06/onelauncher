@@ -97,7 +97,7 @@ class Acrylic extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Blurred(
-      Container(color: color.withOpacity(opacity)),
+      Container(color: color.withValues(alpha: opacity)),
       blurValue: blurValue,
       alignment: alignment,
       child: child,

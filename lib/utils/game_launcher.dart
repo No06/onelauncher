@@ -59,7 +59,7 @@ abstract class _GameLauncherInterface {
 
   late final _java = () {
     final range = _calculateCompatibleJavaVersionRange();
-    if (globalSetting.java == null) {
+    if (globalSetting.java is EmptyJava) {
       Java? minimumVersionJava;
       for (final java in JavaManager.set) {
         if (range.contains(java.versionNumber.major)) {

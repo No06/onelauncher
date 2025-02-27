@@ -1,18 +1,27 @@
 import 'package:chinese_font_library/chinese_font_library.dart';
+import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/config/preference.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
+import 'package:one_launcher/utils/json_converter/color_json_converter.dart';
+import 'package:one_launcher/utils/json_converter/theme_mode_json_converter.dart';
 
+part 'theme_provider.g.dart';
+
+@CopyWith()
+@JsonSerializable()
 class AppThemeState {
   AppThemeState({required this.mode, required this.color});
 
-  factory AppThemeState.fromJson(JsonMap json) => AppThemeState(
-        mode: ThemeMode.values[json['mode'] as int],
-        color: Color(json['color'] as int),
-      );
+  factory AppThemeState.fromJson(JsonMap json) => _$AppThemeStateFromJson(json);
+
+  @ThemeModeJsonConverter()
   final ThemeMode mode;
+
+  @ColorJsonConverter()
   final Color color;
 
   ThemeData _getTheme(Brightness brightness) => ThemeData(
@@ -26,17 +35,7 @@ class AppThemeState {
   ThemeData get lightTheme => _getTheme(Brightness.light);
   ThemeData get darkTheme => _getTheme(Brightness.dark);
 
-  AppThemeState copyWith({ThemeMode? mode, Color? color}) {
-    return AppThemeState(
-      mode: mode ?? this.mode,
-      color: color ?? this.color,
-    );
-  }
-
-  JsonMap toJson() => {
-        "mode": mode.index,
-        "color": color.value,
-      };
+  JsonMap toJson() => _$AppThemeStateToJson(this);
 }
 
 class AppThemeNotifier extends StateNotifier<AppThemeState> {

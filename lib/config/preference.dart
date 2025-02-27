@@ -102,7 +102,7 @@ late final SharedPreferences _sharedPrefs;
 @protected
 Preference? _prefs;
 
-/// should invoke after [initSharedPreferences]
+/// should invoke after [Preference.init]
 Preference get prefs {
   assert(_prefs != null, "Should invoke after initialization");
   return _prefs!;

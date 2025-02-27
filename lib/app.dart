@@ -88,7 +88,7 @@ class _NavigationItem extends ConsumerWidget {
     final selectedColor = colors.primary;
     final selectedTextColor = colors.onPrimary;
     final unSelectedTextColor = colors.inverseSurface;
-    final hoverColor = selectedColor.withOpacity(.15);
+    final hoverColor = selectedColor.withValues(alpha: .15);
 
     final isSelected = ref.watch(
       _routeInformationNotifierProvider.select(

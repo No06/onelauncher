@@ -31,7 +31,10 @@ abstract class Account {
   AccountType get type;
 
   Future<AccountLoginInfo> login() async => AccountLoginInfo(
-      username: displayName, uuid: uuid, accessToken: await getAccessToken(),);
+        username: displayName,
+        uuid: uuid,
+        accessToken: await getAccessToken(),
+      );
 
   JsonMap toJson() => _$AccountToJson(this);
 }

@@ -268,7 +268,7 @@ class _ActionsState extends ConsumerState<_Actions> {
             onPressed: updating ? null : onTapUpdate,
             icon: Icon(
               Icons.refresh,
-              color: widget.fontColor.withOpacity(updating ? .5 : 1),
+              color: widget.fontColor.withValues(alpha: updating ? .5 : 1),
             ),
           ),
         // AbsorbPointer(
