@@ -148,6 +148,7 @@ Map<String, dynamic> _$MicrosoftAccountToJson(MicrosoftAccount instance) =>
       'uuid': instance.uuid,
       'accessToken': instance.accessToken,
       'loginType': _$MicrosoftLoginTypeEnumMap[instance.loginType]!,
+      'type': _$AccountTypeEnumMap[instance.type]!,
       'refreshToken': instance.refreshToken,
       'notAfter': instance.notAfter,
     };
@@ -155,4 +156,10 @@ Map<String, dynamic> _$MicrosoftAccountToJson(MicrosoftAccount instance) =>
 const _$MicrosoftLoginTypeEnumMap = {
   MicrosoftLoginType.devicecode: 'devicecode',
   MicrosoftLoginType.oauth20: 'oauth20',
+};
+
+const _$AccountTypeEnumMap = {
+  AccountType.offline: 'offline',
+  AccountType.microsoft: 'microsoft',
+  AccountType.custom: 'custom',
 };

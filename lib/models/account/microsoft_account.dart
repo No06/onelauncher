@@ -7,6 +7,7 @@ import 'package:one_launcher/models/account/mc_access_token.dart';
 import 'package:one_launcher/models/account/skin/online_skin.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/json/json_key_ignore.dart';
+import 'package:one_launcher/utils/json/json_key_include.dart';
 
 part 'microsoft_account.g.dart';
 
@@ -61,6 +62,7 @@ class MicrosoftAccount extends Account {
   final MicrosoftLoginType loginType;
 
   @override
+  @JsonKeyInclude()
   AccountType get type => AccountType.microsoft;
 
   String get refreshToken => _minecraftAccessToken.refreshToken;
