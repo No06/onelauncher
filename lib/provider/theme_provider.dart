@@ -6,8 +6,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/config/preference.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
-import 'package:one_launcher/utils/json_converter/color_json_converter.dart';
-import 'package:one_launcher/utils/json_converter/theme_mode_json_converter.dart';
+import 'package:one_launcher/utils/json/converter/color_json_converter.dart';
+import 'package:one_launcher/utils/json/converter/theme_mode_json_converter.dart';
 
 part 'theme_provider.g.dart';
 

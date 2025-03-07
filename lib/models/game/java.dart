@@ -5,6 +5,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/game/java_version.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
+import 'package:one_launcher/utils/json/json_key_ignore.dart';
 import 'package:path/path.dart';
 
 part 'java.g.dart';
@@ -43,7 +44,7 @@ class _JavaImpl extends Java {
 
   static final binName = Platform.isWindows ? "java.exe" : "java";
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKeyIgnore()
   late final String _version = _getVersion();
 
   @override

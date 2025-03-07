@@ -4,6 +4,7 @@ import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/models/account/offline_account.dart';
 import 'package:one_launcher/models/account/skin/skin.dart';
 import 'package:one_launcher/models/json_map.dart';
+import 'package:one_launcher/utils/json/json_key_ignore.dart';
 
 part 'account.g.dart';
 
@@ -28,6 +29,7 @@ abstract class Account {
   AccountType get type;
   Skin get skin;
 
+  @JsonKeyIgnore()
   AccountLoginInfo get loginInfo => AccountLoginInfo(
         username: displayName,
         uuid: uuid,

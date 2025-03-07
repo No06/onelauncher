@@ -5,8 +5,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/config/preference.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/debouncer.dart';
-import 'package:one_launcher/utils/json_converter/offset_json_converter.dart';
-import 'package:one_launcher/utils/json_converter/size_json_converter.dart';
+import 'package:one_launcher/utils/json/converter/offset_json_converter.dart';
+import 'package:one_launcher/utils/json/converter/size_json_converter.dart';
 import 'package:window_manager/window_manager.dart';
 
 part 'window_state.g.dart';

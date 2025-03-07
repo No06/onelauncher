@@ -140,16 +140,11 @@ MicrosoftAccount _$MicrosoftAccountFromJson(Map<String, dynamic> json) =>
       refreshToken: json['refreshToken'] as String,
       notAfter: (json['notAfter'] as num).toInt(),
       loginType: $enumDecode(_$MicrosoftLoginTypeEnumMap, json['loginType']),
-      skins: (json['skins'] as List<dynamic>?)
-              ?.map((e) => OnlineSkin.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
     );
 
 Map<String, dynamic> _$MicrosoftAccountToJson(MicrosoftAccount instance) =>
     <String, dynamic>{
       'displayName': instance.displayName,
-      'skins': instance.skins,
       'uuid': instance.uuid,
       'accessToken': instance.accessToken,
       'loginType': _$MicrosoftLoginTypeEnumMap[instance.loginType]!,

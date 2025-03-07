@@ -7,7 +7,7 @@ import 'package:one_launcher/models/json_map.dart';
 
 part 'online_skin.g.dart';
 
-@JsonSerializable(includeIfNull: false)
+@JsonSerializable(createToJson: false)
 class OnlineSkin extends Skin {
   const OnlineSkin(TextureModel variant, this.url) : _variant = variant;
 
@@ -28,7 +28,4 @@ class OnlineSkin extends Skin {
     final imageFile = await cache.getSingleFile(url);
     return imageFile.readAsBytes();
   }
-
-  @override
-  JsonMap toJson() => _$OnlineSkinToJson(this);
 }

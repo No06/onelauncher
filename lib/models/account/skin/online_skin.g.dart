@@ -11,12 +11,6 @@ OnlineSkin _$OnlineSkinFromJson(Map<String, dynamic> json) => OnlineSkin(
       json['url'] as String,
     );
 
-Map<String, dynamic> _$OnlineSkinToJson(OnlineSkin instance) =>
-    <String, dynamic>{
-      'url': instance.url,
-      'variant': _$TextureModelEnumMap[instance.variant]!,
-    };
-
 const _$TextureModelEnumMap = {
   TextureModel.classic: 'CLASSIC',
   TextureModel.slim: 'SLIM',
