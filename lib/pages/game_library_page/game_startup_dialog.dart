@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:one_launcher/app.dart';
 import 'package:one_launcher/models/account/account_login_info.dart';
+import 'package:one_launcher/models/account/microsoft_account.dart';
 import 'package:one_launcher/models/game/game.dart';
 import 'package:one_launcher/provider/account_provider.dart';
 import 'package:one_launcher/provider/game_setting_provider.dart';
@@ -108,7 +109,10 @@ class _GameStartupDialogState extends ConsumerState<GameStartupDialog> {
               name: "登录",
               futureFunction: () async {
                 final account = ref.read(accountProvider).selectedAccount!;
-                loginInfo = await account.login();
+                if (account is MicrosoftAccount && account.isExpired) {
+                  await account.refresh();
+                }
+                loginInfo = account.loginInfo;
               },
             ),
             Task(

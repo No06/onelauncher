@@ -22,5 +22,6 @@ class MavenLibrary extends Library {
   String get packageVersion => _nameSplit[2];
   String get downloadUrl =>
       "$url/$domainSuffix/$domainName/$packageName/$packageVersion/$packageName-$packageVersion.jar";
+  @override
   JsonMap toJson() => _$MavenLibraryToJson(this);
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/models/account/account.dart';
 import 'package:one_launcher/models/account/skin/local_skin.dart';
-import 'package:one_launcher/models/account/skin/skin.dart';
 import 'package:one_launcher/models/json_map.dart';
 
 part 'offline_account.g.dart';
@@ -10,7 +9,7 @@ part 'offline_account.g.dart';
 @immutable
 @JsonSerializable(explicitToJson: true)
 class OfflineAccount extends Account {
-  OfflineAccount({
+  const OfflineAccount({
     required String displayName,
     required String uuid,
     LocalSkin? skin,
@@ -38,11 +37,9 @@ class OfflineAccount extends Account {
   @override
   String get displayName => _displayName;
 
-  @JsonKey(includeIfNull: false)
-  Skin? get skin => _skin;
-
   @override
-  Future<Skin> getSkin() async {
+  @JsonKey(includeIfNull: false)
+  LocalSkin get skin {
     return _skin ??
         LocalSkin(
           type: _uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve,
@@ -50,7 +47,7 @@ class OfflineAccount extends Account {
   }
 
   @override
-  Future<String> getAccessToken() async => "0";
+  String get accessToken => "0";
 
   @override
   int get hashCode => displayName.hashCode;

@@ -108,5 +108,6 @@ Preference get prefs {
   return _prefs!;
 }
 
+/// private method to encode object to json string
 // ignore: avoid_dynamic_calls
 String _objectJsonEncode(dynamic object) => jsonEncode(object.toJson());

@@ -18,7 +18,7 @@ Future<void> _init() async {
   Future<void> initWindow() async {
     await windowManager.ensureInitialized();
     const defaultWindowSize = Size(960, 593);
-    final windowState = await WindowState.get();
+    final windowState = WindowState.get();
     final windowSize = windowState?.size ?? defaultWindowSize;
     final position = windowState?.position;
     final hasPosition = position != null;

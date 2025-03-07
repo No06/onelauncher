@@ -57,7 +57,9 @@ class AccountStateNotifier extends StateNotifier<AccountState> {
   }
 
   Future<void> updateAccountProfile(MicrosoftAccount account) async {
-    await account.updateProfile();
+    final newAccount = await account.refresh();
+    state.accounts.remove(account);
+    state.accounts.add(newAccount);
     unawaited(_saveState());
   }
 

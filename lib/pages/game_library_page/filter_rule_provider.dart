@@ -91,6 +91,7 @@ enum _GameCollation {
   recentlyPlayed(name: "最近游玩"),
   byName(name: "名称");
 
-  final String name;
   const _GameCollation({required this.name});
+
+  final String name;
 }

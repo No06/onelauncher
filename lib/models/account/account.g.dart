@@ -9,6 +9,7 @@ part of 'account.dart';
 Map<String, dynamic> _$AccountToJson(Account instance) => <String, dynamic>{
       'uuid': instance.uuid,
       'displayName': instance.displayName,
+      'accessToken': instance.accessToken,
       'type': _$AccountTypeEnumMap[instance.type]!,
     };
 

@@ -129,7 +129,7 @@ class _AvatarState extends State<_Avatar> {
 
   Future<void> _initAvatar() async {
     try {
-      final skin = await widget.account.getSkin();
+      final skin = widget.account.skin;
       avatarImageCompleter.complete(
         switch (widget.account) {
           OfflineAccount() ||

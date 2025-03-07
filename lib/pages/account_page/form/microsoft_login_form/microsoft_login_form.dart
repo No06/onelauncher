@@ -86,7 +86,7 @@ class MicosoftLoginForm extends StatelessWidget {
           refreshToken: msToken.refreshToken!,
           notAfter:
               MinecraftAccessToken.validityToExpiredTime(mcToken.expiresIn),
-          skin: profile.skins.first,
+          skins: profile.skins,
           loginType: MicrosoftLoginType.oauth20,
         );
       }
@@ -135,7 +135,7 @@ class MicosoftLoginForm extends StatelessWidget {
           refreshToken: token.refreshToken!,
           notAfter:
               MinecraftAccessToken.validityToExpiredTime(mcToken.expiresIn),
-          skin: profile.skins.first,
+          skins: profile.skins,
           loginType: MicrosoftLoginType.devicecode,
         );
       }

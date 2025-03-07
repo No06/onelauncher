@@ -51,5 +51,6 @@ class CommonLibrary extends Library {
     return true;
   }
 
+  @override
   JsonMap toJson() => _$CommonLibraryToJson(this);
 }

@@ -20,7 +20,7 @@ Map<String, dynamic> _$OfflineAccountToJson(OfflineAccount instance) =>
       'type': _$AccountTypeEnumMap[instance.type]!,
       'uuid': instance.uuid,
       'displayName': instance.displayName,
-      if (instance.skin?.toJson() case final value?) 'skin': value,
+      'skin': instance.skin.toJson(),
     };
 
 const _$AccountTypeEnumMap = {

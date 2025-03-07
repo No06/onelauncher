@@ -24,16 +24,14 @@ abstract class Account {
 
   String get uuid;
   String get displayName;
-
-  Future<Skin> getSkin();
-  Future<String> getAccessToken();
-
+  String get accessToken;
   AccountType get type;
+  Skin get skin;
 
-  Future<AccountLoginInfo> login() async => AccountLoginInfo(
+  AccountLoginInfo get loginInfo => AccountLoginInfo(
         username: displayName,
         uuid: uuid,
-        accessToken: await getAccessToken(),
+        accessToken: accessToken,
       );
 
   JsonMap toJson() => _$AccountToJson(this);

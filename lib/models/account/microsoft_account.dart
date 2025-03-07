@@ -1,3 +1,5 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:one_launcher/api/minecraft_services_api.dart';
 import 'package:one_launcher/models/account/account.dart';
@@ -7,6 +9,8 @@ import 'package:one_launcher/models/json_map.dart';
 
 part 'microsoft_account.g.dart';
 
+@immutable
+@CopyWith()
 @JsonSerializable()
 class MicrosoftAccount extends Account {
   MicrosoftAccount({
@@ -16,62 +20,63 @@ class MicrosoftAccount extends Account {
     required String refreshToken,
     required int notAfter,
     required this.loginType,
-    OnlineSkin? skin,
+    this.skins = const [],
   })  : _uuid = uuid,
         _displayName = displayName,
         _minecraftAccessToken = MinecraftAccessToken(
           accessToken: accessToken,
           refreshToken: refreshToken,
           notAfter: notAfter,
-        ),
-        _skin = skin;
+        );
 
   factory MicrosoftAccount.fromJson(JsonMap json) =>
       _$MicrosoftAccountFromJson(json);
 
   @override
   String get displayName => _displayName;
-  String _displayName;
+  final String _displayName;
 
   @override
-  Future<OnlineSkin> getSkin() async => _skin ??= await _getSkin();
-  OnlineSkin? _skin;
+  OnlineSkin get skin => skins.first;
+  final List<OnlineSkin> skins;
 
   @override
   String get uuid => _uuid;
   final String _uuid;
 
   final MinecraftAccessToken _minecraftAccessToken;
-  @override
-  Future<String> getAccessToken() async {
-    if (_minecraftAccessToken.isExpired) {
-      await _minecraftAccessToken.refreshAccessToken(loginType);
-    }
+
+  Future<String> refreshAccessToken() async {
+    await _minecraftAccessToken.refreshAccessToken(loginType);
     return _minecraftAccessToken.accessToken;
   }
+
+  @override
+  String get accessToken => _minecraftAccessToken.accessToken;
 
   final MicrosoftLoginType loginType;
 
   @override
-  @JsonKey(includeToJson: true)
   AccountType get type => AccountType.microsoft;
-
-  String get accessToken => _minecraftAccessToken.accessToken;
 
   String get refreshToken => _minecraftAccessToken.refreshToken;
 
   int get notAfter => _minecraftAccessToken.notAfter;
 
-  Future<void> updateProfile() async {
+  bool get isExpired => _minecraftAccessToken.isExpired;
+
+  Future<MicrosoftAccount> refresh() async {
     final newProfile = await requestProfile();
-    _displayName = newProfile.name;
-    _skin = newProfile.skins.first;
+    return copyWith(
+      displayName: newProfile.name,
+      skins: newProfile.skins,
+    );
   }
 
-  Future<Profile> requestProfile() async =>
-      MinecraftServicesApi(await getAccessToken()).requestProfile();
-
-  Future<OnlineSkin> _getSkin() async => (await requestProfile()).skins.first;
+  Future<Profile> requestProfile() async {
+    await refreshAccessToken();
+    return MinecraftServicesApi(accessToken).requestProfile();
+  }
 
   @override
   int get hashCode => uuid.hashCode;

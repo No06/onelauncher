@@ -15,6 +15,9 @@ class LocalSkin extends Skin {
   }) : _variant = variant;
 
   factory LocalSkin.fromJson(JsonMap json) => _$LocalSkinFromJson(json);
+  factory LocalSkin.fromUuid(String uuid) => LocalSkin(
+        type: uuid.hashCode & 1 == 1 ? SkinType.alex : SkinType.steve,
+      );
 
   final SkinType type;
   final TextureModel _variant;
