@@ -7,6 +7,7 @@ import 'package:one_launcher/pages/account_page/account_page.dart';
 import 'package:one_launcher/pages/appearance_page.dart';
 import 'package:one_launcher/pages/download_page/download_page.dart';
 import 'package:one_launcher/pages/game_library_page/game_library_page.dart';
+import 'package:one_launcher/pages/download_page/install_game_dialog.dart';
 import 'package:one_launcher/pages/setting_page/setting_page.dart';
 import 'package:one_launcher/provider/theme_provider.dart';
 import 'package:one_launcher/widgets/window_caption.dart';
@@ -182,6 +183,7 @@ class _NavigationBar extends StatelessWidget {
               iconData: Icons.sports_esports_outlined,
               selectedIconData: Icons.sports_esports,
             ),
+            divider,
             _NavigationItem(
               routePath: "/download",
               title: "下载",

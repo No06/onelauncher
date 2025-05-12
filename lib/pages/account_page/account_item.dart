@@ -140,18 +140,33 @@ class _AvatarState extends State<_Avatar> {
       );
     } catch (e, st) {
       avatarImageCompleter.completeError(e, st);
-      switch (e) {
-        case DioException():
-          final data = e.response?.data as JsonMap;
-          showSnackbar(
-            errorSnackBar(
-              title: "${widget.account.displayName} 头像获取失败",
-              content: "${data['error']}: ${data['error_description']}",
-            ),
-          );
-        default:
-          showSnackbar(errorSnackBar(title: "发生未知错误", content: e.toString()));
-      }
+      // TODO: 临时修复
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        switch (e) {
+          case DioException():
+            final data = e.response?.data as JsonMap;
+            showSnackbar(
+              errorSnackBar(
+                title: "${widget.account.displayName} 头像获取失败",
+                content: "${data['error']}: ${data['error_description']}",
+              ),
+            );
+          default:
+            showSnackbar(errorSnackBar(title: "发生未知错误", content: e.toString()));
+        }
+      });
+      // switch (e) {
+      //   case DioException():
+      //     final data = e.response?.data as JsonMap;
+      //     showSnackbar(
+      //       errorSnackBar(
+      //         title: "${widget.account.displayName} 头像获取失败",
+      //         content: "${data['error']}: ${data['error_description']}",
+      //       ),
+      //     );
+      //   default:
+      //     showSnackbar(errorSnackBar(title: "发生未知错误", content: e.toString()));
+      // }
     }
   }
 
@@ -173,6 +188,7 @@ class _AvatarState extends State<_Avatar> {
         builder: (context, snapshot) {
           final avatarImage = snapshot.data;
           if (snapshot.connectionState == ConnectionState.done) {
+            // FIXME: 当第一次登录时头像正常显示，重启程序后头像显示为错误图标
             if (snapshot.hasError || avatarImage == null) {
               return const Icon(Icons.error);
             }

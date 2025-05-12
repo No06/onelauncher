@@ -2,7 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:one_launcher/pages/common/base_page.dart';
-part 'game_download_page.dart';
+import 'package:one_launcher/pages/download_page/install_game_dialog.dart';
+import 'package:intl/intl.dart';
+part 'download_game_page.dart';
 
 class DownloadPage extends RoutePage {
   const DownloadPage({super.key, super.pageName = "下载"});

@@ -53,6 +53,7 @@ dependencies:
   hooks_riverpod: ^2.5.1
   http: ^1.1.0
   image: ^4.0.17
+  intl: 
   json_annotation: ^4.9.0
   multi_value_listenable_builder: ^0.0.2
   open_file: ^3.3.2
@@ -93,6 +94,7 @@ flutter:
   assets:
     - assets/images/skins/steve.png
     - assets/images/skins/alex.png
+    - assets/images/games/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

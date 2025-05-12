@@ -56,19 +56,30 @@ class _GameDownloadPage extends ConsumerWidget {
 class GameVersion {
   final String id;
   final String type;
-  final String releaseTime;
+  final String releaseTimeRaw;
+  final DateTime releaseDate;
 
   GameVersion({
     required this.id,
     required this.type,
-    required this.releaseTime,
+    required this.releaseTimeRaw,
+    required this.releaseDate,
   });
 
-  factory GameVersion.fromJson(Map<String, dynamic> json) => GameVersion(
-        id: json['id'] as String,
-        type: json['type'] as String,
-        releaseTime: json['releaseTime'] as String,
-      );
+  factory GameVersion.fromJson(Map<String, dynamic> json) {
+    final raw = json['releaseTime'] as String;
+    final dt = DateTime.parse(raw).toLocal();
+    return GameVersion(
+      id: json['id'] as String,
+      type: json['type'] as String,
+      releaseTimeRaw: raw,
+      releaseDate: dt,
+    );
+  }
+
+  String get formattedReleaseTime {
+    return DateFormat('yyyy-MM-dd HH:mm').format(releaseDate);
+  }
 }
 
 class VersionListView extends StatelessWidget {
@@ -184,23 +195,40 @@ class _ExpandableSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
-        leading: Icon(icon),
-        title: Text(title),
-        maintainState: true,
-        children: [
-          SizedBox(
-            height: 300,
-            child: ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (_, i) {
-                final v = items[i];
-                return ListTile(
-                  title: Text(v.id),
-                  subtitle: Text(v.releaseTime),
-                );
-              },
-            ),
+      leading: Icon(icon),
+      title: Text(title),
+      maintainState: true,
+      children: [
+        SizedBox(
+          height: 300,
+          child: ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (_, i) {
+              final v = items[i];
+              return ListTile(
+                leading: title == "正式版本"
+                    ? Image.asset("assets/images/games/release.png",
+                        fit: BoxFit.contain)
+                    : Image.asset("assets/images/games/snapshot.png",
+                        fit: BoxFit.contain),
+                title: Text(v.id),
+                subtitle: Text('发布时间：${v.formattedReleaseTime}'),
+                onTap: () {
+                  showModalBottomSheet<dynamic>(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (ctx) => InstallGamePage(
+                      gameVersion: v.id,
+                      gameType: title,
+                    ),
+                  );
+                },
+              );
+            },
           ),
-        ]);
+        ),
+      ],
+    );
   }
 }
