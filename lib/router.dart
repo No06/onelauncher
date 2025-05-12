@@ -29,6 +29,13 @@ final _routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            path: '/download',
+            pageBuilder: (context, state) => _SharedAxisPage(
+              key: state.pageKey,
+              child: const DownloadPage(),
+            ),
+          ),
+          GoRoute(
             path: '/appearance',
             pageBuilder: (context, state) => _SharedAxisPage(
               key: state.pageKey,

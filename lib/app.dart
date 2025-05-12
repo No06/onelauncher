@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:one_launcher/consts.dart';
 import 'package:one_launcher/pages/account_page/account_page.dart';
 import 'package:one_launcher/pages/appearance_page.dart';
+import 'package:one_launcher/pages/download_page/download_page.dart';
 import 'package:one_launcher/pages/game_library_page/game_library_page.dart';
 import 'package:one_launcher/pages/setting_page/setting_page.dart';
 import 'package:one_launcher/provider/theme_provider.dart';
@@ -180,6 +181,12 @@ class _NavigationBar extends StatelessWidget {
               title: "开始游戏",
               iconData: Icons.sports_esports_outlined,
               selectedIconData: Icons.sports_esports,
+            ),
+            _NavigationItem(
+              routePath: "/download",
+              title: "下载",
+              iconData: Icons.download_outlined,
+              selectedIconData: Icons.download,
             ),
             divider,
             _NavigationItem(
