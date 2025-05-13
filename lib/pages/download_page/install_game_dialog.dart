@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:one_launcher/app.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 
 class ForgeInfo {
@@ -49,6 +50,8 @@ class NeoforgeInfo {
   }
 }
 
+enum GameVersionType { none, forge, neoforge, fabric, quilt }
+
 class InstallGamePage extends StatefulWidget {
   final String gameVersion;
   final String gameType;
@@ -65,27 +68,38 @@ class InstallGamePage extends StatefulWidget {
 
 class _InstallGamePageState extends State<InstallGamePage> {
   late final TextEditingController _gameNameController;
-
   bool _loadingList = true;
 
-  // Forge 列表
-  final _forgeListController = ExpansionTileController();
+  // 数据列表
   List<ForgeInfo> _forges = [];
-  bool _chooseForge = false;
-  String? _chooseForgeVersion;
-
-  // NeoForge 列表
-  final _neoforgeListController = ExpansionTileController();
   List<NeoforgeInfo> _neoforges = [];
-  bool _chooseNeoforge = false;
-  String? _chooseNeoforgeVersion;
+
+  // 统一选择状态
+  GameVersionType _selectionType = GameVersionType.none;
+  String? _selectedVersion;
+
+  // 控制器
+  final _forgeController = ExpansionTileController();
+  final _neoforgeController = ExpansionTileController();
 
   @override
   void initState() {
     super.initState();
     _gameNameController = TextEditingController(text: widget.gameVersion);
-    _loadForgeByGameVersion();
-    _loadNeoforgeByGameVersion();
+
+    Future.wait([
+      _loadForgeByGameVersion(),
+      _loadNeoforgeByGameVersion(),
+    ]).then((results) {
+      setState(() {
+        _loadingList = false;
+      });
+    }).catchError((e) {
+      setState(() {
+        _loadingList = false;
+      });
+      debugPrint("列表加载失败：$e");
+    });
   }
 
   @override
@@ -104,148 +118,172 @@ class _InstallGamePageState extends State<InstallGamePage> {
         final list = data
             .map((e) => ForgeInfo.fromJson(e as Map<String, dynamic>))
             .toList()
-          // 按时间降序排序
           ..sort((a, b) => b.modifiedDate.compareTo(a.modifiedDate));
-
+        // 仅更新 _forges 列表
         setState(() {
           _forges = list;
-          _loadingList = false;
         });
-      } else {
-        setState(() => _loadingList = false);
       }
     } catch (e) {
-      setState(() => _loadingList = false);
       debugPrint("加载 Forge 列表失败：$e");
     }
   }
 
   Future<void> _loadNeoforgeByGameVersion() async {
     const urlTemplate = "https://bmclapi2.bangbang93.com/neoforge/list/:id";
-    final url = urlTemplate.replaceFirst(':id', widget.gameVersion);
+    final url = urlTemplate.replaceFirst(":id", widget.gameVersion);
     try {
       final resp = await Dio().get(url);
       if (resp.statusCode == 200) {
         final data = resp.data as List;
         final list = data
             .map((e) => NeoforgeInfo.fromJson(e as Map<String, dynamic>))
+            .toList()
+            .reversed
             .toList();
-
+        // 仅更新 _neoforges 列表
         setState(() {
           _neoforges = list;
-          _loadingList = false;
         });
-      } else {
-        setState(() => _loadingList = false);
       }
     } catch (e) {
-      setState(() => _loadingList = false);
-      debugPrint("加载 Neoforge 列表失败：$e");
+      debugPrint("加载 NeoForge 列表失败：$e");
     }
+  }
+
+  Widget _buildExpandableList<T>({
+    required String title,
+    required List<T> items,
+    required GameVersionType type,
+    required ExpansionTileController controller,
+    required String Function(T) versionBuilder,
+    String? Function(T)? subtitleBuilder,
+  }) {
+    final isSelected = _selectionType == type;
+    final enabled = _selectionType == GameVersionType.none || isSelected;
+
+    return ExpansionTile(
+      controller: controller,
+      title: Text(title),
+      trailing: items.isEmpty
+          ? const Text("不可用")
+          : isSelected
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("已选择$_selectedVersion"),
+                    IconButton(
+                      icon: const Icon(Icons.clear, size: 20),
+                      onPressed: () {
+                        setState(() {
+                          _selectionType = GameVersionType.none;
+                          _selectedVersion = null;
+                          _gameNameController.text = widget.gameVersion;
+                        });
+                      },
+                    ),
+                  ],
+                )
+              : null,
+      enabled: enabled && items.isNotEmpty,
+      children: items.map((item) {
+        final ver = versionBuilder(item);
+        final isLatest = items.indexOf(item) == 0;
+        final titleText = isLatest ? "$ver（最新版本）" : ver;
+        return ListTile(
+          leading: Image.asset(
+            "assets/images/games/${title.toLowerCase()}.png",
+            fit: BoxFit.contain,
+          ),
+          title: Text(titleText),
+          subtitle:
+              subtitleBuilder != null ? Text(subtitleBuilder(item)!) : null,
+          onTap: enabled
+              ? () {
+                  setState(() {
+                    _selectionType = type;
+                    _selectedVersion = ver;
+                    _gameNameController.text =
+                        "${widget.gameVersion}-${title.toLowerCase()}-$ver";
+                    controller.collapse();
+                    debugPrint("选择了 $ver");
+                    debugPrint("$type");
+                    if (type == GameVersionType.forge) {
+                      _neoforgeController.collapse();
+                    } else {
+                      _forgeController.collapse();
+                    }
+                  });
+                }
+              : null,
+        );
+      }).toList(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return DefaultDialog(
-        content: SizedBox(
-      width: MediaQuery.of(context).size.width * 0.8,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Row(
-              children: [
-                if (widget.gameType == "正式版本")
-                  Image.asset(
-                    "assets/images/games/release.png",
-                    fit: BoxFit.contain,
-                    width: 100,
-                  )
-                else
-                  Image.asset(
-                    "assets/images/games/snapshot.png",
-                    fit: BoxFit.contain,
-                  ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _gameNameController,
-                    decoration: const InputDecoration(labelText: "游戏名称"),
-                    maxLength: 30,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_loadingList)
-              const Center(child: CircularProgressIndicator())
-            else
-              Column(
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.8,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Row(
                 children: [
-                  // TODO: 逻辑待优化
-                  ExpansionTile(
-                    controller: _forgeListController,
-                    title: const Text("Forge"),
-                    trailing:
-                        _chooseForge ? Text("已选择$_chooseForgeVersion") : null,
-                    enabled: !_chooseNeoforge,
-                    children: _forges.map((forge) {
-                      return ListTile(
-                        leading: Image.asset(
-                          "assets/images/games/forge.png",
-                          fit: BoxFit.contain,
-                        ),
-                        title: _forges.indexOf(forge) == 0
-                            ? Text("${forge.version}（最新版本）")
-                            : Text(forge.version),
-                        subtitle: Text(forge.formattedModified),
-                        onTap: () {
-                          setState(() {
-                            _gameNameController.text =
-                                "${widget.gameVersion}-forge-${forge.version}";
-                            _chooseForge = true;
-                            _chooseForgeVersion = forge.version;
-                            _forgeListController.collapse();
-                            _neoforgeListController.collapse();
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  ExpansionTile(
-                    controller: _neoforgeListController,
-                    title: const Text("NeoForge"),
-                    trailing: _chooseNeoforge
-                        ? Text("已选择$_chooseNeoforgeVersion")
-                        : null,
-                    enabled: !_chooseForge,
-                    children: _neoforges.map((neoforge) {
-                      return ListTile(
-                        leading: Image.asset(
-                          "assets/images/games/neoforge.png",
-                          fit: BoxFit.contain,
-                        ),
-                        title: _neoforges.indexOf(neoforge) == 0
-                            ? Text("${neoforge.version}（最新版本）")
-                            : Text(neoforge.version),
-                        onTap: () {
-                          setState(() {
-                            _gameNameController.text =
-                                "${widget.gameVersion}-neoforge-${neoforge.version}";
-                            _chooseNeoforge = true;
-                            _chooseNeoforgeVersion = neoforge.version;
-                            _chooseForge = false;
-                            _forgeListController.collapse();
-                            _neoforgeListController.collapse();
-                          });
-                        },
-                      );
-                    }).toList(),
+                  if (widget.gameType == "正式版本")
+                    Image.asset(
+                      "assets/images/games/release.png",
+                      fit: BoxFit.contain,
+                      width: 100,
+                    )
+                  else
+                    Image.asset(
+                      "assets/images/games/snapshot.png",
+                      fit: BoxFit.contain,
+                    ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _gameNameController,
+                      decoration: const InputDecoration(labelText: "游戏名称"),
+                      maxLength: 30,
+                    ),
                   ),
                 ],
-              )
-          ],
+              ),
+              const SizedBox(height: 16),
+              if (_loadingList)
+                const Center(child: CircularProgressIndicator())
+              else
+                Column(
+                  children: [
+                    _buildExpandableList<ForgeInfo>(
+                      title: "Forge",
+                      items: _forges,
+                      type: GameVersionType.forge,
+                      controller: _forgeController,
+                      versionBuilder: (f) => f.version,
+                      subtitleBuilder: (f) => f.formattedModified,
+                    ),
+                    _buildExpandableList<NeoforgeInfo>(
+                      title: "NeoForge",
+                      items: _neoforges,
+                      type: GameVersionType.neoforge,
+                      controller: _neoforgeController,
+                      versionBuilder: (n) => n.version,
+                      subtitleBuilder: null,
+                    ),
+                  ],
+                )
+            ],
+          ),
         ),
       ),
-    ));
+      onCanceled: routePop,
+      onConfirmed: () {
+        // TODO: 下载assets, libraries, version.json, version.jar, 根据用户选择安装Forge
+      },
+    );
   }
 }
