@@ -213,17 +213,15 @@ class _ExpandableSection extends StatelessWidget {
                         fit: BoxFit.contain),
                 title: Text(v.id),
                 subtitle: Text('发布时间：${v.formattedReleaseTime}'),
-                onTap: () {
-                  showModalBottomSheet<dynamic>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (ctx) => InstallGamePage(
+                onTap: () => showDialog<void>(
+                  context: context,
+                  builder: (context) {
+                    return InstallGamePage(
                       gameVersion: v.id,
                       gameType: title,
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               );
             },
           ),
