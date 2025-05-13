@@ -1,7 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:one_launcher/app.dart';
+import 'package:one_launcher/provider/game_path_provider.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 
 class ForgeInfo {
@@ -50,7 +53,7 @@ class NeoforgeInfo {
   }
 }
 
-enum GameVersionType { none, forge, neoforge, fabric, quilt }
+enum GameVersionType { none, forge, neoforge }
 
 class InstallGamePage extends StatefulWidget {
   final String gameVersion;
@@ -118,8 +121,9 @@ class _InstallGamePageState extends State<InstallGamePage> {
         final list = data
             .map((e) => ForgeInfo.fromJson(e as Map<String, dynamic>))
             .toList()
-          ..sort((a, b) => b.modifiedDate.compareTo(a.modifiedDate));
-        // 仅更新 _forges 列表
+            .reversed
+            .toList();
+
         setState(() {
           _forges = list;
         });
@@ -141,7 +145,7 @@ class _InstallGamePageState extends State<InstallGamePage> {
             .toList()
             .reversed
             .toList();
-        // 仅更新 _neoforges 列表
+
         setState(() {
           _neoforges = list;
         });
@@ -149,6 +153,242 @@ class _InstallGamePageState extends State<InstallGamePage> {
     } catch (e) {
       debugPrint("加载 NeoForge 列表失败：$e");
     }
+  }
+
+  Future<String> get _installDir async {
+    return await GamePathState.launcherGamePaths.first.path;
+  }
+
+  Future<void> _downloadFile(String url, String savePath) async {
+    final dio = Dio();
+
+    final saveFile = File(savePath);
+    if (!await saveFile.parent.exists()) {
+      await saveFile.parent.create(recursive: true);
+    }
+
+    try {
+      final options = Options(
+        receiveTimeout: const Duration(minutes: 10),
+        sendTimeout: const Duration(minutes: 2),
+      );
+
+      await dio.download(
+        url,
+        savePath,
+        options: options,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            final progress = (received / total * 100).toStringAsFixed(1);
+            debugPrint('Download progress: $progress% ($received/$total)');
+          }
+        },
+      );
+
+      final file = File(savePath);
+      if (!await file.exists() || await file.length() == 0) {
+        throw Exception(
+            'Download failed - file is empty or does not exist: $savePath');
+      }
+    } catch (e) {
+      if (e is DioException) {
+        if (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.sendTimeout ||
+            e.type == DioExceptionType.receiveTimeout) {
+          debugPrint('Download timeout for $url: ${e.message}');
+          throw Exception(
+              'Connection timed out. Please check your internet connection and try again.');
+        } else if (e.error is HandshakeException) {
+          debugPrint('SSL handshake failed for $url: ${e.message}');
+          await _fallbackDownload(url, savePath);
+          return;
+        }
+      }
+
+      debugPrint('Download failed for $url: $e');
+      throw Exception('Failed to download file: ${e.toString()}');
+    }
+  }
+
+  Future<void> _fallbackDownload(String url, String savePath) async {
+    debugPrint('Attempting fallback download for: $url');
+
+    final httpClient = HttpClient()
+      ..badCertificateCallback = (cert, host, port) => true;
+
+    try {
+      final request = await httpClient.getUrl(Uri.parse(url));
+      final response = await request.close();
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed with status code: ${response.statusCode}');
+      }
+
+      final file = File(savePath);
+      final sink = file.openWrite();
+      await sink.addStream(response);
+      await sink.close();
+
+      if (!await file.exists() || await file.length() == 0) {
+        throw Exception('Fallback download failed - file is empty or missing');
+      }
+    } catch (e) {
+      debugPrint('Fallback download failed: $e');
+      throw Exception(
+          'All download methods failed. Please check your connection or try an alternative source.');
+    } finally {
+      httpClient.close();
+    }
+  }
+
+  Future<void> _onConfirmed() async {
+    final installDir = await _installDir;
+    final customId = _gameNameController.text;
+
+    // 获取version_manifest (通过)
+    final manifestResp = await Dio().get(
+      'https://launchermeta.mojang.com/mc/game/version_manifest.json',
+    );
+    final manifest = manifestResp.data as Map<String, dynamic>;
+    final entry = (manifest['versions'] as List)
+        .firstWhere((v) => v['id'] == widget.gameVersion);
+    final versionJsonUrl = entry['url'] as String;
+
+    // 获取version.json (通过)
+    final versionJsonResp = await Dio().get(versionJsonUrl);
+    final versionJson = versionJsonResp.data as Map<String, dynamic>;
+
+    // 创建versions文件夹 (通过)
+    final versionDir = Directory('$installDir/versions/$customId');
+    await versionDir.create(recursive: true);
+
+    // 下载client jar (通过)
+    final clientUrl = versionJson['downloads']['client']['url'] as String;
+    await _downloadFile(clientUrl, '${versionDir.path}/$customId.jar');
+
+    // 下载libraries (通过)
+    for (var lib in versionJson['libraries'] as List) {
+      final downloads = lib['downloads'] as Map<String, dynamic>?;
+      if (downloads != null && downloads.containsKey('artifact')) {
+        final artifact = downloads['artifact'] as Map<String, dynamic>;
+        final libUrl = artifact['url'] as String;
+        final path = artifact['path'] as String;
+        final file = File('$installDir/libraries/$path');
+        await file.parent.create(recursive: true);
+        await _downloadFile(libUrl, file.path);
+      }
+    }
+
+    // 下载assets (TODO: objects无法成功下载，待修复)
+    final assetsIndex = versionJson['assets'] as String;
+    final indexInfo = versionJson['assetIndex'] as Map<String, dynamic>;
+    final assetsDir = Directory('$installDir/assets');
+    final objectsDir = Directory('${assetsDir.path}/objects');
+    final indexesDir = Directory('${assetsDir.path}/indexes');
+
+    await indexesDir.create(recursive: true);
+    await objectsDir.create(recursive: true);
+
+    final indexUrl = indexInfo['url'] as String;
+    final indexFile = File('${indexesDir.path}/$assetsIndex.json');
+    await _downloadFile(indexUrl, indexFile.path);
+
+    final indexContent = await indexFile.readAsString();
+    final indexJson = jsonDecode(indexContent) as Map<String, dynamic>;
+
+    final isLegacy = assetsIndex == 'legacy' || assetsIndex == 'pre-1.6';
+    Directory? virtualDir;
+    if (isLegacy) {
+      virtualDir = Directory('${assetsDir.path}/virtual/$assetsIndex');
+      await virtualDir.create(recursive: true);
+    }
+
+    if (indexJson.containsKey('objects')) {
+      final objects = indexJson['objects'] as Map<String, dynamic>;
+
+      int downloaded = 0;
+      final total = objects.length;
+
+      for (var entry in objects.entries) {
+        final resourcePath = entry.key;
+        final info = entry.value as Map<String, dynamic>;
+        final hash = info['hash'] as String;
+        final size = info['size'] as int;
+
+        final hashPrefix = hash.substring(0, 2);
+        final objectPath = '${objectsDir.path}/$hashPrefix/$hash';
+        final objectFile = File(objectPath);
+
+        await objectFile.parent.create(recursive: true);
+
+        // Download the asset if it doesn't exist or has wrong size
+        if (!await objectFile.exists() || await objectFile.length() != size) {
+          final assetUrl =
+              'http://resources.download.minecraft.net/$hashPrefix/$hash';
+          await _downloadFile(assetUrl, objectPath);
+          downloaded++;
+          if (downloaded % 20 == 0) {
+            debugPrint('Downloaded $downloaded/$total assets');
+          }
+        }
+
+        // For legacy versions, also copy to the virtual directory
+        if (isLegacy && virtualDir != null) {
+          final virtualPath = '${virtualDir.path}/$resourcePath';
+          final virtualFile = File(virtualPath);
+
+          // Ensure parent directory exists
+          await virtualFile.parent.create(recursive: true);
+
+          // Copy from objects to virtual path (if needed)
+          if (!await virtualFile.exists() ||
+              await virtualFile.length() != size) {
+            await objectFile.copy(virtualPath);
+          }
+        }
+      }
+
+      debugPrint(
+          'Asset download complete: $downloaded new files of $total total');
+    } else {
+      debugPrint('No assets found in index: $assetsIndex');
+    }
+
+    // 下载Forge/NeoForge Jar
+    late String installerUrl;
+    if (_selectionType == GameVersionType.forge) {
+      installerUrl =
+          'https://bmclapi2.bangbang93.com/forge/download/$_selectedVersion';
+    } else if (_selectionType == GameVersionType.neoforge) {
+      final nf = _neoforges.firstWhere((n) => n.version == _selectedVersion);
+      installerUrl =
+          'https://bmclapi2.bangbang93.com/neoforge/download/${nf.rawVersion}';
+    } else {
+      return;
+    }
+    final installerPath = '${versionDir.path}/installer.jar';
+    await _downloadFile(installerUrl, installerPath);
+
+    // 运行Installer
+    await Process.run('java', [
+      '-jar',
+      installerPath,
+      '--installClient',
+      '--target',
+      versionDir.path
+    ]);
+
+    // 写入合并版本json
+    final merged = Map<String, dynamic>.from(versionJson)
+      ..['id'] = customId
+      ..['inheritsFrom'] = widget.gameVersion;
+    await File('${versionDir.path}/$customId.json')
+        .writeAsString(jsonEncode(merged));
+
+    // TODO: 弹出安装提示框
+
+    // 关闭对话框
+    routePop();
   }
 
   Widget _buildExpandableList<T>({
@@ -281,9 +521,7 @@ class _InstallGamePageState extends State<InstallGamePage> {
         ),
       ),
       onCanceled: routePop,
-      onConfirmed: () {
-        // TODO: 下载assets, libraries, version.json, version.jar, 根据用户选择安装Forge
-      },
+      onConfirmed: _onConfirmed,
     );
   }
 }
