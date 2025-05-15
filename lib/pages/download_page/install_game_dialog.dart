@@ -7,6 +7,8 @@ import 'package:one_launcher/app.dart';
 import 'package:one_launcher/provider/game_path_provider.dart';
 import 'package:one_launcher/widgets/dialog.dart';
 
+// TODO: 代码结构优化
+
 class ForgeInfo {
   final String version;
   final String modifiedRaw;
@@ -20,11 +22,10 @@ class ForgeInfo {
 
   factory ForgeInfo.fromJson(Map<String, dynamic> json) {
     final raw = json['modified'] as String;
-    final dt = DateTime.parse(raw);
     return ForgeInfo(
       version: json['version'] as String,
       modifiedRaw: raw,
-      modifiedDate: dt,
+      modifiedDate: DateTime.parse(raw),
     );
   }
 
@@ -38,7 +39,7 @@ class NeoforgeInfo {
   final String version;
   final String installerPath;
 
-  NeoforgeInfo({
+  const NeoforgeInfo({
     required this.rawVersion,
     required this.version,
     required this.installerPath,
@@ -70,18 +71,25 @@ class InstallGamePage extends StatefulWidget {
 }
 
 class _InstallGamePageState extends State<InstallGamePage> {
+  static const _apiBaseUrl = 'https://bmclapi2.bangbang93.com';
+  static const _minecraftAssetsUrl = 'https://resources.download.minecraft.net';
+  static const _batchSize = 32;
+
   late final TextEditingController _gameNameController;
+  final Dio _dio = Dio(BaseOptions(
+    connectTimeout: const Duration(minutes: 2),
+    receiveTimeout: const Duration(minutes: 10),
+    sendTimeout: const Duration(minutes: 2),
+  ));
+
   bool _loadingList = true;
 
-  // 数据列表
   List<ForgeInfo> _forges = [];
   List<NeoforgeInfo> _neoforges = [];
 
-  // 统一选择状态
   GameVersionType _selectionType = GameVersionType.none;
   String? _selectedVersion;
 
-  // 控制器
   final _forgeController = ExpansionTileController();
   final _neoforgeController = ExpansionTileController();
 
@@ -89,94 +97,94 @@ class _InstallGamePageState extends State<InstallGamePage> {
   void initState() {
     super.initState();
     _gameNameController = TextEditingController(text: widget.gameVersion);
-
-    Future.wait([
-      _loadForgeByGameVersion(),
-      _loadNeoforgeByGameVersion(),
-    ]).then((results) {
-      setState(() {
-        _loadingList = false;
-      });
-    }).catchError((e) {
-      setState(() {
-        _loadingList = false;
-      });
-      debugPrint("列表加载失败：$e");
-    });
+    _loadModLoaderData();
   }
 
   @override
   void dispose() {
     _gameNameController.dispose();
+    _dio.close();
     super.dispose();
   }
 
-  Future<void> _loadForgeByGameVersion() async {
-    const urlTemplate = "https://bmclapi2.bangbang93.com/forge/minecraft/:id";
-    final url = urlTemplate.replaceFirst(":id", widget.gameVersion);
+  Future<void> _loadModLoaderData() async {
     try {
-      final resp = await Dio().get(url);
-      if (resp.statusCode == 200) {
-        final data = resp.data as List;
-        final list = data
+      await Future.wait([
+        _loadForgeByGameVersion(),
+        _loadNeoforgeByGameVersion(),
+      ]);
+    } catch (e) {
+      debugPrint("Failed to load mod loader data: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingList = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadForgeByGameVersion() async {
+    try {
+      final url = "$_apiBaseUrl/forge/minecraft/${widget.gameVersion}";
+      final resp = await _dio.get(url);
+
+      if (resp.statusCode == 200 && resp.data is List) {
+        final list = (resp.data as List)
             .map((e) => ForgeInfo.fromJson(e as Map<String, dynamic>))
             .toList()
             .reversed
             .toList();
 
-        setState(() {
-          _forges = list;
-        });
+        if (mounted) {
+          setState(() {
+            _forges = list;
+          });
+        }
       }
     } catch (e) {
-      debugPrint("加载 Forge 列表失败：$e");
+      debugPrint("Failed to load Forge list: $e");
     }
   }
 
   Future<void> _loadNeoforgeByGameVersion() async {
-    const urlTemplate = "https://bmclapi2.bangbang93.com/neoforge/list/:id";
-    final url = urlTemplate.replaceFirst(":id", widget.gameVersion);
     try {
-      final resp = await Dio().get(url);
-      if (resp.statusCode == 200) {
-        final data = resp.data as List;
-        final list = data
+      final url = "$_apiBaseUrl/neoforge/list/${widget.gameVersion}";
+      final resp = await _dio.get(url);
+
+      if (resp.statusCode == 200 && resp.data is List) {
+        final list = (resp.data as List)
             .map((e) => NeoforgeInfo.fromJson(e as Map<String, dynamic>))
             .toList()
             .reversed
             .toList();
 
-        setState(() {
-          _neoforges = list;
-        });
+        if (mounted) {
+          setState(() {
+            _neoforges = list;
+          });
+        }
       }
     } catch (e) {
-      debugPrint("加载 NeoForge 列表失败：$e");
+      debugPrint("Failed to load NeoForge list: $e");
     }
   }
 
+  // TODO: 由用户选择下载位置
   Future<String> get _installDir async {
-    return await GamePathState.launcherGamePaths.first.path;
+    return GamePathState.launcherGamePaths.first.path;
   }
 
   Future<void> _downloadFile(String url, String savePath) async {
-    final dio = Dio();
-
     final saveFile = File(savePath);
     if (!await saveFile.parent.exists()) {
       await saveFile.parent.create(recursive: true);
     }
 
     try {
-      final options = Options(
-        receiveTimeout: const Duration(minutes: 10),
-        sendTimeout: const Duration(minutes: 2),
-      );
-
-      await dio.download(
+      await _dio.download(
         url,
         savePath,
-        options: options,
         onReceiveProgress: (received, total) {
           if (total != -1) {
             final progress = (received / total * 100).toStringAsFixed(1);
@@ -187,26 +195,22 @@ class _InstallGamePageState extends State<InstallGamePage> {
 
       final file = File(savePath);
       if (!await file.exists() || await file.length() == 0) {
-        throw Exception(
-            'Download failed - file is empty or does not exist: $savePath');
+        throw Exception('Download failed - file is empty or does not exist');
       }
     } catch (e) {
       if (e is DioException) {
         if (e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.sendTimeout ||
             e.type == DioExceptionType.receiveTimeout) {
-          debugPrint('Download timeout for $url: ${e.message}');
           throw Exception(
               'Connection timed out. Please check your internet connection and try again.');
         } else if (e.error is HandshakeException) {
-          debugPrint('SSL handshake failed for $url: ${e.message}');
           await _fallbackDownload(url, savePath);
           return;
         }
       }
-
       debugPrint('Download failed for $url: $e');
-      throw Exception('Failed to download file: ${e.toString()}');
+      throw Exception('Failed to download file: $e');
     }
   }
 
@@ -214,7 +218,7 @@ class _InstallGamePageState extends State<InstallGamePage> {
     debugPrint('Attempting fallback download for: $url');
 
     final httpClient = HttpClient()
-      ..badCertificateCallback = (cert, host, port) => true;
+      ..badCertificateCallback = (_, __, ___) => true;
 
     try {
       final request = await httpClient.getUrl(Uri.parse(url));
@@ -242,11 +246,46 @@ class _InstallGamePageState extends State<InstallGamePage> {
   }
 
   Future<void> _onConfirmed() async {
-    final installDir = await _installDir;
-    final customId = _gameNameController.text;
+    try {
+      final installDir = await _installDir;
+      final customId = _gameNameController.text;
+      final versionDir = Directory('$installDir/versions/$customId');
+      await versionDir.create(recursive: true);
 
-    // 获取version_manifest (通过)
-    final manifestResp = await Dio().get(
+      // TODO: 弹出安装进度条对话框
+
+      // 获取版本信息
+      final Map<String, dynamic> versionJson =
+          await _downloadVersionJson(versionDir.path, customId);
+
+      // 下载客户端jar
+      await _downloadClientJar(versionJson, versionDir.path, customId);
+
+      // 下载依赖库
+      await _downloadLibraries(versionJson, installDir);
+
+      // 下载资源包
+      await _downloadAssets(versionJson, installDir);
+
+      // FIXME: 下载ModLoader
+      // if (_selectionType != GameVersionType.none) {
+      //   await _installModLoader(versionDir.path);
+      // }
+
+      // 写入合并后的版本信息
+      await _writeMergedVersionJson(versionJson, versionDir.path, customId);
+
+      // 关闭窗口
+      routePop();
+    } catch (e) {
+      debugPrint('Installation failed: $e');
+      // TODO: 弹出失败信息
+    }
+  }
+
+  Future<Map<String, dynamic>> _downloadVersionJson(
+      String versionDirPath, String customId) async {
+    final manifestResp = await _dio.get(
       'https://launchermeta.mojang.com/mc/game/version_manifest.json',
     );
     final manifest = manifestResp.data as Map<String, dynamic>;
@@ -254,32 +293,49 @@ class _InstallGamePageState extends State<InstallGamePage> {
         .firstWhere((v) => v['id'] == widget.gameVersion);
     final versionJsonUrl = entry['url'] as String;
 
-    // 获取version.json (通过)
-    final versionJsonResp = await Dio().get(versionJsonUrl);
-    final versionJson = versionJsonResp.data as Map<String, dynamic>;
+    final versionJsonResp = await _dio.get(versionJsonUrl);
+    // 保存至/versions/<customId>/<customId>.json
+    await File('$versionDirPath/$customId.json')
+        .writeAsString(jsonEncode(versionJsonResp.data));
+    return versionJsonResp.data as Map<String, dynamic>;
+  }
 
-    // 创建versions文件夹 (通过)
-    final versionDir = Directory('$installDir/versions/$customId');
-    await versionDir.create(recursive: true);
-
-    // 下载client jar (通过)
+  Future<void> _downloadClientJar(Map<String, dynamic> versionJson,
+      String versionDirPath, String customId) async {
     final clientUrl = versionJson['downloads']['client']['url'] as String;
-    await _downloadFile(clientUrl, '${versionDir.path}/$customId.jar');
+    await _downloadFile(clientUrl, '$versionDirPath/$customId.jar');
+  }
 
-    // 下载libraries (通过)
-    for (var lib in versionJson['libraries'] as List) {
+  Future<void> _downloadLibraries(
+      Map<String, dynamic> versionJson, String installDir) async {
+    final libraries = versionJson['libraries'] as List;
+    final tasks = <Future>[];
+
+    for (var lib in libraries) {
       final downloads = lib['downloads'] as Map<String, dynamic>?;
       if (downloads != null && downloads.containsKey('artifact')) {
         final artifact = downloads['artifact'] as Map<String, dynamic>;
         final libUrl = artifact['url'] as String;
         final path = artifact['path'] as String;
         final file = File('$installDir/libraries/$path');
-        await file.parent.create(recursive: true);
-        await _downloadFile(libUrl, file.path);
+        tasks.add(file.parent
+            .create(recursive: true)
+            .then((_) => _downloadFile(libUrl, file.path)));
+
+        if (tasks.length >= _batchSize) {
+          await Future.wait(tasks);
+          tasks.clear();
+        }
       }
     }
 
-    // 下载assets (TODO: objects无法成功下载，待修复)
+    if (tasks.isNotEmpty) {
+      await Future.wait(tasks);
+    }
+  }
+
+  Future<void> _downloadAssets(
+      Map<String, dynamic> versionJson, String installDir) async {
     final assetsIndex = versionJson['assets'] as String;
     final indexInfo = versionJson['assetIndex'] as Map<String, dynamic>;
     final assetsDir = Directory('$installDir/assets');
@@ -297,98 +353,87 @@ class _InstallGamePageState extends State<InstallGamePage> {
     final indexJson = jsonDecode(indexContent) as Map<String, dynamic>;
 
     final isLegacy = assetsIndex == 'legacy' || assetsIndex == 'pre-1.6';
-    Directory? virtualDir;
     if (isLegacy) {
-      virtualDir = Directory('${assetsDir.path}/virtual/$assetsIndex');
-      await virtualDir.create(recursive: true);
+      await Directory('${assetsDir.path}/virtual/$assetsIndex')
+          .create(recursive: true);
     }
 
     if (indexJson.containsKey('objects')) {
-      final objects = indexJson['objects'] as Map<String, dynamic>;
+      await _downloadAssetObjects(indexJson, objectsDir.path);
+    } else {
+      debugPrint('No assets found in index: $assetsIndex');
+    }
+  }
 
-      int downloaded = 0;
-      final total = objects.length;
+  Future<void> _downloadAssetObjects(
+      Map<String, dynamic> indexJson, String objectsDirPath) async {
+    final objects = indexJson['objects'] as Map<String, dynamic>;
+    int downloaded = 0;
+    final total = objects.length;
+    final tasks = <Future>[];
 
-      for (var entry in objects.entries) {
-        final resourcePath = entry.key;
-        final info = entry.value as Map<String, dynamic>;
-        final hash = info['hash'] as String;
-        final size = info['size'] as int;
+    for (var entry in objects.entries) {
+      final hash = (entry.value as Map<String, dynamic>)['hash'] as String;
+      final size = (entry.value as Map<String, dynamic>)['size'] as int;
+      final prefix = hash.substring(0, 2);
+      final objectPath = '$objectsDirPath/$prefix/$hash';
+      final objectFile = File(objectPath);
 
-        final hashPrefix = hash.substring(0, 2);
-        final objectPath = '${objectsDir.path}/$hashPrefix/$hash';
-        final objectFile = File(objectPath);
-
-        await objectFile.parent.create(recursive: true);
-
-        // Download the asset if it doesn't exist or has wrong size
-        if (!await objectFile.exists() || await objectFile.length() != size) {
-          final assetUrl =
-              'http://resources.download.minecraft.net/$hashPrefix/$hash';
-          await _downloadFile(assetUrl, objectPath);
+      if (!await objectFile.exists() || await objectFile.length() != size) {
+        final url = '$_minecraftAssetsUrl/$prefix/$hash';
+        tasks.add(_downloadFile(url, objectPath).then((_) {
           downloaded++;
           if (downloaded % 20 == 0) {
             debugPrint('Downloaded $downloaded/$total assets');
           }
-        }
-
-        // For legacy versions, also copy to the virtual directory
-        if (isLegacy && virtualDir != null) {
-          final virtualPath = '${virtualDir.path}/$resourcePath';
-          final virtualFile = File(virtualPath);
-
-          // Ensure parent directory exists
-          await virtualFile.parent.create(recursive: true);
-
-          // Copy from objects to virtual path (if needed)
-          if (!await virtualFile.exists() ||
-              await virtualFile.length() != size) {
-            await objectFile.copy(virtualPath);
-          }
-        }
+        }));
       }
 
-      debugPrint(
-          'Asset download complete: $downloaded new files of $total total');
-    } else {
-      debugPrint('No assets found in index: $assetsIndex');
+      if (tasks.length >= _batchSize) {
+        await Future.wait(tasks);
+        tasks.clear();
+      }
     }
 
-    // 下载Forge/NeoForge Jar
+    if (tasks.isNotEmpty) {
+      await Future.wait(tasks);
+    }
+    debugPrint(
+        'Asset download complete: $downloaded new files of $total total');
+  }
+
+  Future<void> _installModLoader(String versionDirPath) async {
     late String installerUrl;
+
     if (_selectionType == GameVersionType.forge) {
-      installerUrl =
-          'https://bmclapi2.bangbang93.com/forge/download/$_selectedVersion';
+      final mcversion = widget.gameVersion;
+      installerUrl = '$_apiBaseUrl/forge/download?mcversion=$mcversion'
+          '&version=$_selectedVersion'
+          '&category=universal'
+          '&format=jar';
     } else if (_selectionType == GameVersionType.neoforge) {
-      final nf = _neoforges.firstWhere((n) => n.version == _selectedVersion);
       installerUrl =
-          'https://bmclapi2.bangbang93.com/neoforge/download/${nf.rawVersion}';
+          '$_apiBaseUrl/neoforge/version/$_selectedVersion/download/universal.jar';
     } else {
       return;
     }
-    final installerPath = '${versionDir.path}/installer.jar';
+
+    final installerPath = '$versionDirPath/installer.jar';
     await _downloadFile(installerUrl, installerPath);
 
-    // 运行Installer
-    await Process.run('java', [
-      '-jar',
-      installerPath,
-      '--installClient',
-      '--target',
-      versionDir.path
-    ]);
+    // FIXME: 安装ModLoader(没用)
+    await Process.run('java',
+        ['-jar', installerPath, '--installClient', '--target', versionDirPath]);
+  }
 
-    // 写入合并版本json
+  Future<void> _writeMergedVersionJson(Map<String, dynamic> versionJson,
+      String versionDirPath, String customId) async {
     final merged = Map<String, dynamic>.from(versionJson)
       ..['id'] = customId
       ..['inheritsFrom'] = widget.gameVersion;
-    await File('${versionDir.path}/$customId.json')
+
+    await File('$versionDirPath/$customId.json')
         .writeAsString(jsonEncode(merged));
-
-    // TODO: 弹出安装提示框
-
-    // 关闭对话框
-    routePop();
   }
 
   Widget _buildExpandableList<T>({
@@ -401,11 +446,12 @@ class _InstallGamePageState extends State<InstallGamePage> {
   }) {
     final isSelected = _selectionType == type;
     final enabled = _selectionType == GameVersionType.none || isSelected;
+    final hasItems = items.isNotEmpty;
 
     return ExpansionTile(
       controller: controller,
       title: Text(title),
-      trailing: items.isEmpty
+      trailing: !hasItems
           ? const Text("不可用")
           : isSelected
               ? Row(
@@ -414,22 +460,17 @@ class _InstallGamePageState extends State<InstallGamePage> {
                     Text("已选择$_selectedVersion"),
                     IconButton(
                       icon: const Icon(Icons.clear, size: 20),
-                      onPressed: () {
-                        setState(() {
-                          _selectionType = GameVersionType.none;
-                          _selectedVersion = null;
-                          _gameNameController.text = widget.gameVersion;
-                        });
-                      },
+                      onPressed: _clearSelection,
                     ),
                   ],
                 )
               : null,
-      enabled: enabled && items.isNotEmpty,
+      enabled: enabled && hasItems,
       children: items.map((item) {
         final ver = versionBuilder(item);
         final isLatest = items.indexOf(item) == 0;
         final titleText = isLatest ? "$ver（最新版本）" : ver;
+
         return ListTile(
           leading: Image.asset(
             "assets/images/games/${title.toLowerCase()}.png",
@@ -439,26 +480,31 @@ class _InstallGamePageState extends State<InstallGamePage> {
           subtitle:
               subtitleBuilder != null ? Text(subtitleBuilder(item)!) : null,
           onTap: enabled
-              ? () {
-                  setState(() {
-                    _selectionType = type;
-                    _selectedVersion = ver;
-                    _gameNameController.text =
-                        "${widget.gameVersion}-${title.toLowerCase()}-$ver";
-                    controller.collapse();
-                    debugPrint("选择了 $ver");
-                    debugPrint("$type");
-                    if (type == GameVersionType.forge) {
-                      _neoforgeController.collapse();
-                    } else {
-                      _forgeController.collapse();
-                    }
-                  });
-                }
+              ? () => _selectModLoader(type, ver, title.toLowerCase())
               : null,
         );
       }).toList(),
     );
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectionType = GameVersionType.none;
+      _selectedVersion = null;
+      _gameNameController.text = widget.gameVersion;
+    });
+  }
+
+  void _selectModLoader(
+      GameVersionType type, String version, String loaderName) {
+    setState(() {
+      _selectionType = type;
+      _selectedVersion = version;
+      _gameNameController.text = "${widget.gameVersion}-$loaderName-$version";
+
+      _forgeController.collapse();
+      _neoforgeController.collapse();
+    });
   }
 
   @override
@@ -471,17 +517,13 @@ class _InstallGamePageState extends State<InstallGamePage> {
             children: [
               Row(
                 children: [
-                  if (widget.gameType == "正式版本")
-                    Image.asset(
-                      "assets/images/games/release.png",
-                      fit: BoxFit.contain,
-                      width: 100,
-                    )
-                  else
-                    Image.asset(
-                      "assets/images/games/snapshot.png",
-                      fit: BoxFit.contain,
-                    ),
+                  Image.asset(
+                    widget.gameType == "正式版本"
+                        ? "assets/images/games/release.png"
+                        : "assets/images/games/snapshot.png",
+                    fit: BoxFit.contain,
+                    width: 100,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
