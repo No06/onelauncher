@@ -41,7 +41,7 @@ class Client {
 
   /// The main game class; for modern versions, it is net.minecraft.client.main.Main, but it may differ for older or ancient versions.
   final String mainClass;
-  final String jar;
+  final String? jar;
   final AssetIndex assetIndex;
 
   /// The assets version.

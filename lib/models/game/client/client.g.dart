@@ -10,7 +10,7 @@ Client _$ClientFromJson(Map<String, dynamic> json) => Client(
       id: json['id'] as String,
       arguments: Arguments.fromJson(json['arguments'] as Map<String, dynamic>),
       mainClass: json['mainClass'] as String,
-      jar: json['jar'] as String,
+      jar: json['jar'] as String?,
       assetIndex:
           AssetIndex.fromJson(json['assetIndex'] as Map<String, dynamic>),
       assets: json['assets'] as String,
