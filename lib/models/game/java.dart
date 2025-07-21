@@ -6,7 +6,6 @@ import 'package:one_launcher/models/game/java_version.dart';
 import 'package:one_launcher/models/json_map.dart';
 import 'package:one_launcher/utils/extension/print_extension.dart';
 import 'package:one_launcher/utils/json/json_key_ignore.dart';
-import 'package:path/path.dart';
 
 part 'java.g.dart';
 
@@ -106,18 +105,19 @@ class _JavaImpl extends Java {
 
   /// 通过运行二进制文件获取版本号
   String _getVersionByRun() {
-    final parentPath = path.substring(0, path.length - binName.length);
-    final javacBinName = Platform.isWindows ? "javac.exe" : "javac";
-    final javacPath = join(parentPath, javacBinName);
-    final result = Process.runSync(javacPath, ["-version"]);
+    //使用java -fullversion 获取版本号
+    final result = Process.runSync(path, ["-fullversion"]);
     final stdout = result.stdout as String;
     final stderr = result.stderr as String;
     if (result.exitCode != 0) {
       throw Exception("Command Error: $stderr");
     }
-
-    final resultStr = (stdout.isEmpty ? stderr : stdout);
-    return resultStr.substring("javac ".length).trim();
+    //预期输出： java full version "1.8.0_202-b08"
+    final resultStr = (stdout.isEmpty ? stderr : stdout).trim();
+    // final regex = RegExp('"([^"]*)"');
+    // final Match? match = regex.firstMatch(resultStr);
+    // return match?.group(1) ?? "UNKNOW";
+    return resultStr.substring(19, resultStr.length - 1);
   }
 
   @override
