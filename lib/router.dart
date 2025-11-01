@@ -6,71 +6,53 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 void routePop<T extends Object?>({BuildContext? context, T? result}) =>
     Navigator.of(context ?? rootNavigatorKey.currentContext!).pop<T>(result);
 
-final _routerProvider = Provider<GoRouter>((ref) {
-  return GoRouter(
-    navigatorKey: rootNavigatorKey,
-    initialLocation: '/play',
-    routes: [
-      ShellRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) => _MainPage(child: child),
-        routes: [
-          GoRoute(
-            path: '/account',
-            pageBuilder: (context, state) =>
-                _SharedAxisPage(key: state.pageKey, child: const AccountPage()),
+final router = GoRouter(
+  navigatorKey: rootNavigatorKey,
+  initialLocation: '/play',
+  routes: [
+    ShellRoute(
+      parentNavigatorKey: rootNavigatorKey,
+      navigatorKey: _shellNavigatorKey,
+      builder: (context, state, child) => _MainPage(child: child),
+      routes: [
+        GoRoute(
+          path: '/account',
+          pageBuilder: (context, state) =>
+              _SharedAxisPage(key: state.pageKey, child: const AccountPage()),
+        ),
+        GoRoute(
+          path: '/play',
+          pageBuilder: (context, state) => _SharedAxisPage(
+            key: state.pageKey,
+            child: const GameLibraryPage(),
           ),
-          GoRoute(
-            path: '/play',
-            pageBuilder: (context, state) => _SharedAxisPage(
-              key: state.pageKey,
-              child: const GameLibraryPage(),
-            ),
+        ),
+        GoRoute(
+          path: '/download',
+          pageBuilder: (context, state) => _SharedAxisPage(
+            key: state.pageKey,
+            child: const DownloadPage(),
           ),
-          GoRoute(
-            path: '/download',
-            pageBuilder: (context, state) => _SharedAxisPage(
-              key: state.pageKey,
-              child: const DownloadPage(),
-            ),
+        ),
+        GoRoute(
+          path: '/appearance',
+          pageBuilder: (context, state) => _SharedAxisPage(
+            key: state.pageKey,
+            child: const AppearancePage(),
           ),
-          GoRoute(
-            path: '/appearance',
-            pageBuilder: (context, state) => _SharedAxisPage(
-              key: state.pageKey,
-              child: const AppearancePage(),
-            ),
-          ),
-          GoRoute(
-            path: '/setting',
-            pageBuilder: (context, state) =>
-                _SharedAxisPage(key: state.pageKey, child: const SettingPage()),
-          ),
-        ],
-      ),
-    ],
-  );
-});
+        ),
+        GoRoute(
+          path: '/setting',
+          pageBuilder: (context, state) =>
+              _SharedAxisPage(key: state.pageKey, child: const SettingPage()),
+        ),
+      ],
+    ),
+  ],
+);
 
-class _RouteInformationNotifier extends ChangeNotifier {
-  _RouteInformationNotifier(this.routeInformationProvider) {
-    routeInformationProvider.addListener(notifyListeners);
-  }
-  final RouteInformationProvider routeInformationProvider;
-
-  @override
-  void dispose() {
-    routeInformationProvider.removeListener(notifyListeners);
-    super.dispose();
-  }
-}
-
-final _routeInformationNotifierProvider =
-    ChangeNotifierProvider<_RouteInformationNotifier>((ref) {
-  final goRouter = ref.watch(_routerProvider);
-  return _RouteInformationNotifier(goRouter.routeInformationProvider);
-});
+final routeInformationProvider =
+    ChangeNotifierProvider((ref) => router.routeInformationProvider);
 
 class _SharedAxisPage<T> extends Page<T> {
   const _SharedAxisPage({required this.child, super.key});

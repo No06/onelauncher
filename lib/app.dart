@@ -7,7 +7,6 @@ import 'package:one_launcher/pages/account_page/account_page.dart';
 import 'package:one_launcher/pages/appearance_page.dart';
 import 'package:one_launcher/pages/download_page/download_page.dart';
 import 'package:one_launcher/pages/game_library_page/game_library_page.dart';
-import 'package:one_launcher/pages/download_page/install_game_dialog.dart';
 import 'package:one_launcher/pages/setting_page/setting_page.dart';
 import 'package:one_launcher/provider/theme_provider.dart';
 import 'package:one_launcher/widgets/window_caption.dart';
@@ -24,7 +23,6 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(appThemeProvider);
-    final router = ref.read(_routerProvider);
     final themeMode = theme.mode;
     final lightTheme = theme.lightTheme;
     final darkTheme = theme.darkTheme;
@@ -93,8 +91,8 @@ class _NavigationItem extends ConsumerWidget {
     final hoverColor = selectedColor.withValues(alpha: .15);
 
     final isSelected = ref.watch(
-      _routeInformationNotifierProvider.select(
-        (state) => state.routeInformationProvider.value.uri.path == routePath,
+      routeInformationProvider.notifier.select(
+        (routeInfomation) => routeInfomation.value.uri.path == routePath,
       ),
     );
 
